@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -11,6 +11,7 @@ import Player from '../Player/player';
 import config from '../../constants/config.json';
 import defaultAvatar from '../../images/defaultAvatar.jpg'
 import calculateWinner from './gameServices';
+import OnlineUsers from '../OnlineUsers'
 
 const chatMessages = [
   { owner: 'you', message: 'hello' },
@@ -23,7 +24,7 @@ const chatMessages = [
   { owner: 'opponent', message: 'all good' }
 ];
 
-const player = { 
+const player = {
   id: 1,
   name: "Ho Khanh Nguyen"
 }
@@ -91,7 +92,7 @@ function Game() {
     const boardSize = config.boardSize;
     const rowIndex = Math.floor(step.position / boardSize);
     const colIndex = step.position % boardSize;
-    const desc = move ? 'Go to move #' + move + 
+    const desc = move ? 'Go to move #' + move +
       ' (' + colIndex + ', ' + rowIndex + ')' : 'Go to game start';
     const buttonClassName = (move === stepNumber) ? "selected-move" : "";
     return (
@@ -129,73 +130,81 @@ function Game() {
   }
 
   let element = (
-    <div className="game">
-      <div className="player-info">
-        <CardHeader title="OPPONENT"></CardHeader>
-        <CardMedia image={defaultAvatar}
-          style={{ height: '200px', width: '200px' }}
-        >
-        </CardMedia>
-        <Player
-          data={opponent}
-        >
-        </Player>
-        <CardHeader title="YOU"></CardHeader>
-        <CardMedia image={defaultAvatar}
-          style={{ height: '200px', width: '200px' }}
-        >
-        </CardMedia>
-        <Player
-          data={player}
-        >
-        </Player>
+    <div style={{ position: 'relative' }}>
+
+      <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
+        <OnlineUsers />
       </div>
-      <div className="game-board">
-        <CardHeader title={"GAME " + gameID}></CardHeader>
-        <Board
-          squares={current.squares}
-          onClick={i => handleClick(i)}
-          winLine={winInfo.winLine}
-        />
-      </div>
-      <div className="game-info">
-        <CardHeader title="GAME INFO"></CardHeader>
-        <div>{status}</div>
-        <div>
-          <button onClick={() => sortButtonClicked()}>
-            {isAscending ? "Descending" : "Ascending"}
-          </button>
+      <div className="game" style={{ paddingTop: '40px' }}>
+        <div className="player-info">
+          <CardHeader title="OPPONENT"></CardHeader>
+          <CardMedia image={defaultAvatar}
+            style={{ height: '200px', width: '200px' }}
+          >
+          </CardMedia>
+          <Player
+            data={opponent}
+          >
+          </Player>
+          <CardHeader title="YOU"></CardHeader>
+          <CardMedia image={defaultAvatar}
+            style={{ height: '200px', width: '200px' }}
+          >
+          </CardMedia>
+          <Player
+            data={player}
+          >
+          </Player>
         </div>
-        <ol style={{ maxHeight: '275px', overflowY: 'scroll' }}>{moves}</ol>
-        <div className="chat-box">
-          <CardHeader title="CHAT BOX"></CardHeader>
-          <Card style={{ width: '100%', maxHeight: '175px', overflowY: 'scroll' }}>
-            {chatHistory.map(item => {
-              return (
-                <div className="chat-item" style={{ color: item.owner === "you" ? 'orange' : 'green' }}>
-                  {item.owner + ": " + item.message}
-                </div>
-              );
-            })}
-          </Card>
-          <form className="form" onSubmit={handleSubmit}>
-            <TextField id="message" name="message" label="Message" variant="outlined" size="small" 
-              margin="normal" required fullWidth autoFocus onChange={e => setChatItemMessage(e.target.value)}
-            />
-            <IconButton className="submit-button" size="small" type="submit"
-              fullWidth color="primary"
-            >
-              <SendMessageIcon />
-            </IconButton>
-          </form>
+        <div className="game-board">
+          <CardHeader title={"GAME " + gameID}></CardHeader>
+          <Board
+            squares={current.squares}
+            onClick={i => handleClick(i)}
+            winLine={winInfo.winLine}
+          />
         </div>
+        <div className="game-info">
+          <CardHeader title="GAME INFO"></CardHeader>
+          <div>{status}</div>
+          <div>
+            <button onClick={() => sortButtonClicked()}>
+              {isAscending ? "Descending" : "Ascending"}
+            </button>
+          </div>
+          <ol style={{ maxHeight: '275px', overflowY: 'scroll' }}>{moves}</ol>
+          <div className="chat-box">
+            <CardHeader title="CHAT BOX"></CardHeader>
+            <Card style={{ width: '100%', maxHeight: '175px', overflowY: 'scroll' }}>
+              {chatHistory.map(item => {
+                return (
+                  <div className="chat-item" style={{ color: item.owner === "you" ? 'orange' : 'green' }}>
+                    {item.owner + ": " + item.message}
+                  </div>
+                );
+              })}
+            </Card>
+            <form className="form" onSubmit={handleSubmit}>
+              <TextField id="message" name="message" label="Message" variant="outlined" size="small"
+                margin="normal" required fullWidth autoFocus onChange={e => setChatItemMessage(e.target.value)}
+              />
+              <IconButton className="submit-button" size="small" type="submit"
+                fullWidth color="primary"
+              >
+                <SendMessageIcon />
+              </IconButton>
+            </form>
+          </div>
+        </div>
+
       </div>
+
     </div>
   );
 
   return (
-    element    
-  );  
+    element
+  );
 }
 
 export default Game;
