@@ -4,6 +4,7 @@ import {
   Switch
 } from 'react-router-dom';
 
+import Games from './components/GameList/games';
 import Game from './components/Game/game';
 import Home from './components/Home/home';
 import Login from './components/Login/login';
@@ -29,7 +30,10 @@ function App() {
           <Route path='/login'>
             <Login />
           </Route>
-          <Route path='/games'>
+          <Route exact path='/games'>
+            <Games />
+          </Route>
+          <Route path='/games/:gameID'>
             <Game />
           </Route>
           <Route path='/signup'>

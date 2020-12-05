@@ -1,11 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
+import CardMedia from '@material-ui/core/CardMedia';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
 import SendMessageIcon from '@material-ui/icons/Send';
+
 import Board from './board';
+import Player from '../Player/player';
 import config from '../../constants/config.json';
+import defaultAvatar from '../../images/defaultAvatar.jpg'
 import calculateWinner from './gameServices';
 
 const chatMessages = [
@@ -19,7 +23,19 @@ const chatMessages = [
   { owner: 'opponent', message: 'all good' }
 ];
 
+const player = { 
+  id: 1,
+  name: "Ho Khanh Nguyen"
+}
+
+const opponent = {
+  id: 2,
+  name: "My opponent"
+}
+
 function Game() {
+  const pathTokensArray = window.location.toString().split('/');
+  const gameID = pathTokensArray[pathTokensArray.length - 1];
   const [hasWinner, setHasWinner] = useState(false);
   const [chatHistory, setChatHistory] = useState(chatMessages);
   const [chatItemMessage, setChatItemMessage] = useState("");
@@ -116,10 +132,26 @@ function Game() {
     <div className="game">
       <div className="player-info">
         <CardHeader title="OPPONENT"></CardHeader>
+        <CardMedia image={defaultAvatar}
+          style={{ height: '200px', width: '200px' }}
+        >
+        </CardMedia>
+        <Player
+          data={opponent}
+        >
+        </Player>
         <CardHeader title="YOU"></CardHeader>
+        <CardMedia image={defaultAvatar}
+          style={{ height: '200px', width: '200px' }}
+        >
+        </CardMedia>
+        <Player
+          data={player}
+        >
+        </Player>
       </div>
       <div className="game-board">
-        <CardHeader title="GAME"></CardHeader>
+        <CardHeader title={"GAME " + gameID}></CardHeader>
         <Board
           squares={current.squares}
           onClick={i => handleClick(i)}
