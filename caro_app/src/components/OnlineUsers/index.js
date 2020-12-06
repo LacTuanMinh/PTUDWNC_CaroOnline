@@ -1,30 +1,21 @@
 import React from 'react';
 import clsx from 'clsx';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Button from '@material-ui/core/Button';
 
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import List from '@material-ui/core/List';
-import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import Input from '@material-ui/core/Input';
 import CloseIcon from '@material-ui/icons/Close';
 import FaceIcon from '@material-ui/icons/Face';
 
-const drawerWidth = 240;
+const drawerWidth = 300;
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -85,7 +76,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function OnlineUsers() {
     const classes = useStyles();
-    const theme = useTheme();
     const [open, setOpen] = React.useState(false);
 
     const handleDrawerOpen = () => {
@@ -125,13 +115,14 @@ export default function OnlineUsers() {
             </IconButton>
             <Drawer
                 className={classes.drawer}
-                variant="persistent"
+                variant="temporary"
                 anchor="right"
                 open={open}
                 classes={{
                     paper: classes.drawerPaper,
                 }}
                 onClose={handleDrawerClose}
+                
             >
                 <div className={classes.drawerHeader}>
                     <IconButton onClick={handleDrawerClose}>
@@ -142,22 +133,15 @@ export default function OnlineUsers() {
                 <Divider />
                 <List>
                     {userList.map((item) => (
-                        <ListItem button key={item}>
-                            <ListItemIcon><FaceIcon /></ListItemIcon>
+                        <ListItem key={item}>
+                            <ListItemIcon>
+                                <FaceIcon />
+                            </ListItemIcon>
                             <ListItemText primary={item} style={{ fontSize: 'small' }} />
                             <Button variant="outlined" style={{ fontSize: '7px', borderRadius: '5px' }}>Invite</Button>
                         </ListItem>
                     ))}
                 </List>
-                {/* <Divider />
-                <List>
-                    {['All mail', 'Trash', 'Spam'].map((text, index) => (
-                        <ListItem button key={text}>
-                            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                            <ListItemText primary={text} />
-                        </ListItem>
-                    ))}
-                </List> */}
             </Drawer>
         </div>
     );

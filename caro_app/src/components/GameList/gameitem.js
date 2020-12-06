@@ -7,6 +7,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
+import LockIcon from '@material-ui/icons/Lock';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -46,6 +47,9 @@ function GameItem({game}) {
                 Join
               </Button>
             </Link>
+            {game.password !== null ?
+            <LockIcon size="small" color="primary"></LockIcon>
+            : <React.Fragment></React.Fragment>}
           </CardActions>
         </Card>
       </Grid>

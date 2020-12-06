@@ -131,7 +131,6 @@ function Game() {
 
   let element = (
     <div style={{ position: 'relative' }}>
-
       <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
         <OnlineUsers />
       </div>
@@ -159,6 +158,7 @@ function Game() {
         <div className="game-board">
           <CardHeader title={"GAME " + gameID}></CardHeader>
           <Board
+            key={stepNumber}
             squares={current.squares}
             onClick={i => handleClick(i)}
             winLine={winInfo.winLine}
@@ -176,9 +176,9 @@ function Game() {
           <div className="chat-box">
             <CardHeader title="CHAT BOX"></CardHeader>
             <Card style={{ width: '100%', maxHeight: '175px', overflowY: 'scroll' }}>
-              {chatHistory.map(item => {
+              {chatHistory.map((item, i) => {
                 return (
-                  <div className="chat-item" style={{ color: item.owner === "you" ? 'orange' : 'green' }}>
+                  <div key={i} className="chat-item" style={{ color: item.owner === "you" ? 'orange' : 'green' }}>
                     {item.owner + ": " + item.message}
                   </div>
                 );
@@ -188,17 +188,13 @@ function Game() {
               <TextField id="message" name="message" label="Message" variant="outlined" size="small"
                 margin="normal" required fullWidth autoFocus onChange={e => setChatItemMessage(e.target.value)}
               />
-              <IconButton className="submit-button" size="small" type="submit"
-                fullWidth color="primary"
-              >
+              <IconButton className="submit-button" size="small" type="submit"color="primary">
                 <SendMessageIcon />
               </IconButton>
             </form>
           </div>
         </div>
-
       </div>
-
     </div>
   );
 

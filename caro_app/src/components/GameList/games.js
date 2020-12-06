@@ -13,11 +13,13 @@ import GameList from './gamelist';
 const games = [
   {
     id: 1,
-    name: "Game 1"
+    name: "Game 1",
+    password: "123456"
   },
   {
     id: 2,
-    name: "Game 2"
+    name: "Game 2",
+    password: null
   }
 ];
 

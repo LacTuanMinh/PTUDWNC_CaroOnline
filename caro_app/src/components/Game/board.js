@@ -23,7 +23,7 @@ function Board({squares, winLine, onClick}) {
         rows.push(renderSquare(boardSize * i + j));
       }
       squares.push(
-        <div className="board-row">
+        <div key={i} className="board-row">
           {rows}
         </div>
       );
