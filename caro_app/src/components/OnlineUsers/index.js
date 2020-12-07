@@ -122,7 +122,7 @@ export default function OnlineUsers() {
                     paper: classes.drawerPaper,
                 }}
                 onClose={handleDrawerClose}
-                
+
             >
                 <div className={classes.drawerHeader}>
                     <IconButton onClick={handleDrawerClose}>
