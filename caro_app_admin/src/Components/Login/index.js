@@ -11,7 +11,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
-import { authen } from '../../utils/helper';
+import { authen } from '../../Utils/helper';
 
 function Copyright() {
   return (
@@ -76,7 +76,7 @@ function Login() {
         password: password
       };
       console.log(data);
-      const res = await fetch('http://localhost:8000/signin', {
+      const res = await fetch('http://localhost:8001/signin', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
@@ -89,7 +89,7 @@ function Login() {
         window.localStorage.setItem('jwtToken', result.token);
         window.localStorage.setItem('userID', result.id);
         window.localStorage.setItem('name', result.name);
-        history.push("/games");
+        history.push("/");
 
       } else {
         alert(result.mesg);

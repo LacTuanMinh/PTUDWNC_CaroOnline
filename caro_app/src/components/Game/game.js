@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
 import SendMessageIcon from '@material-ui/icons/Send';
-
 import Board from './board';
 import Player from '../Player/player';
 import config from '../../constants/config.json';
 import defaultAvatar from '../../images/defaultAvatar.jpg'
 import calculateWinner from './gameServices';
 import OnlineUsers from '../OnlineUsers'
+import { authen } from '../../utils/helper';
 
 const chatMessages = [
   { owner: 'you', message: 'hello' },
@@ -40,7 +41,6 @@ function Game() {
   const [hasWinner, setHasWinner] = useState(false);
   const [chatHistory, setChatHistory] = useState(chatMessages);
   const [chatItemMessage, setChatItemMessage] = useState("");
-
   const [history, setHistory] = useState([
     {
       squares: Array(0).fill(null),
@@ -50,6 +50,17 @@ function Game() {
   const [stepNumber, setStepNumber] = useState(0);
   const [xIsNext, setXIsNext] = useState(true);
   const [isAscending, setIsAscending] = useState(true);
+
+  const History = useHistory();
+  useEffect(() => {
+    async function Authen() {
+      const status = await authen();
+      if (status === 401) {
+        History.push('/login')
+      }
+    }
+    Authen();
+  }, []);
 
   const handleClick = (i) => {
     const newHistory = history.slice(0, stepNumber + 1);
@@ -188,7 +199,7 @@ function Game() {
               <TextField id="message" name="message" label="Message" variant="outlined" size="small"
                 margin="normal" required fullWidth autoFocus onChange={e => setChatItemMessage(e.target.value)}
               />
-              <IconButton className="submit-button" size="small" type="submit"color="primary">
+              <IconButton className="submit-button" size="small" type="submit" color="primary">
                 <SendMessageIcon />
               </IconButton>
             </form>

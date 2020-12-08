@@ -1,0 +1,13 @@
+{
+  "mysql": {
+    "connectionLimit": 50,
+    "host": "remotemysql.com",
+    "port": 3306,
+    "user": "VBstmQITNU",
+    "password": "nlqeCngeug",
+    "database": "VBstmQITNU",
+    "insecureAuth": true
+  },
+  "serverPort": 8001,
+  "passportKey": "quickbrownfoxjumpsoverthelazydog"
+}

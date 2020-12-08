@@ -14,8 +14,8 @@ import CardHeader from '@material-ui/core/CardHeader';
 import ImageUploadDialog from '../Dialogs/ImageUploadDialog';
 import Badge from '@material-ui/core/Badge';
 import { useHistory } from "react-router-dom";
-import logo from '../../images/caro.ico';
-import { authen } from '../../utils/helper';
+import logo from '../../Images/caro.ico';
+import { authen } from '../../Utils/helper';
 
 const useStyles = makeStyles((theme) => ({
   cardGrid: {

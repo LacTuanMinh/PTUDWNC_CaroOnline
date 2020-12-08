@@ -8,7 +8,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 
-import logo from '../../images/caro.ico';
+import logo from '../../Images/caro.ico';
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -59,11 +59,11 @@ function Navbar() {
                 Home
               </Button>
             </NavLink>
-            <NavLink to='/games' className={classes.navLink}>
+            {/* <NavLink to='/games' className={classes.navLink}>
               <Button variant="contained" color="secondary">
                 Games
               </Button>
-            </NavLink>
+            </NavLink> */}
             {isLoggedIn ?
               <React.Fragment>
                 <NavLink to='/profile' className={classes.navLink}>
@@ -81,11 +81,6 @@ function Navbar() {
                 <NavLink to='/login' className={classes.navLink}>
                   <Button variant="contained" color="secondary">
                     Login
-                </Button>
-                </NavLink>
-                <NavLink to='/signUp' className={classes.navLink}>
-                  <Button variant="contained" color="secondary">
-                    Sign Up
                 </Button>
                 </NavLink>
               </React.Fragment>}

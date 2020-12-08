@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
@@ -7,7 +8,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Fab from '@material-ui/core/Fab';
-
+import { authen } from '../../utils/helper'
 import GameList from './gamelist';
 
 const games = [
@@ -51,11 +52,22 @@ const useStyles = makeStyles((theme) => ({
 
 function Games() {
   const classes = useStyles();
+  const history = useHistory();
+
+  useEffect(() => {
+    async function Authen() {
+      const status = await authen();
+      if (status === 401) {
+        history.push('/login')
+      }
+    }
+    Authen();
+  });
 
   const addGameButtonClicked = () => {
 
   }
-  
+
   return (
     <React.Fragment>
       <main>
@@ -73,7 +85,7 @@ function Games() {
             <Grid item xs={12} sm={6} md={4}>
               <Card className={classes.card}>
                 <CardMedia className={classes.cardMedia}>
-                  <Fab className={classes.fab} color="primary" aria-label="Add" 
+                  <Fab className={classes.fab} color="primary" aria-label="Add"
                     onClick={addGameButtonClicked}>
                     +
                   </Fab>

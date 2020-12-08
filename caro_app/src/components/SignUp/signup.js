@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
@@ -6,11 +6,11 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import { authen } from '../../utils/helper'
 
 function Copyright() {
   return (
@@ -53,7 +53,18 @@ function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    async function Authen() {
+      const status = await authen();
+      if (status === 200) {
+        history.push('/');
+      }
+    }
+    Authen();
+  });
+
+  const handleSubmit = async (e) => {
+
     e.preventDefault();
     const data = {
       name: name,
@@ -62,8 +73,27 @@ function SignUp() {
       password: password
     };
     console.log(data);
-  
+
     // call API here
+    const res = await fetch('http://localhost:8000/signup', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+        // Authorization: token
+      }
+    });
+    const result = await res.json();
+    console.log(result);
+    if (res.status === 200) {
+      window.localStorage.setItem('jwtToken', result.token);
+      window.localStorage.setItem('userID', result.id);
+      window.localStorage.setItem('name', result.name);
+      history.push("/games");
+    } else if (res.status === 400) {
+      alert(result.mesg);
+      //stay this site
+    }
   }
 
   const signInClicked = () => {
@@ -112,16 +142,16 @@ function SignUp() {
           </Button>
           <Grid container justify="flex-end">
             <Grid item>
-              <Link onClick={signInClicked} variant="body2" style={{ cursor: 'pointer '}}>
+              <Link onClick={signInClicked} variant="body2" style={{ cursor: 'pointer ' }}>
                 Already have an account? Sign in
               </Link>
             </Grid>
           </Grid>
         </form>
       </div>
-      <Box mt={5}>
+      {/* <Box mt={5}>
         <Copyright />
-      </Box>
+      </Box> */}
     </Container>
   );
 }
