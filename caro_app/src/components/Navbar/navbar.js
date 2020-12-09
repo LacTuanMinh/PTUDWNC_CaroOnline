@@ -32,13 +32,12 @@ export default function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
 
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   const logoutButtonClicked = async () => {
     const token = localStorage.getItem('jwtToken');
     const data = {
       userID: localStorage.getItem('userID')
     }
+    console.log(data);
     const res = await fetch(`http://localhost:8000/users/signout`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -46,7 +45,7 @@ export default function Navbar({ isLoggedIn, setIsLoggedIn }) {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       }
-    })
+    });
     const result = await res.json();
     if (res.status === 400) {
       alert(result.mesg);

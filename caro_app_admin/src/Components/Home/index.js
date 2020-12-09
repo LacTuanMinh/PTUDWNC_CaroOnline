@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from "react-router-dom";
 import Typography from '@material-ui/core/Typography';
-import { authen } from '../../Utils/helper';
+import { authen } from '../../utils/helper';
 
 function Home() {
   const history = useHistory();
@@ -10,7 +10,7 @@ function Home() {
     async function Authen() {
       const status = await authen();
       if (status === 401) {
-        history.push('/login')
+        history.push('/signIn');
       }
     }
     Authen();

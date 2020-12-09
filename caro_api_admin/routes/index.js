@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const config = require('../config/default.json')
 const router = express.Router();
 const userModel = require('../models/userModel');
@@ -10,7 +11,7 @@ router.get('/', (req, res) => {
 
 
 router.post('/signin', async (req, res) => {
-
+  console.log(req.body);
   const { username, password } = req.body;
   const users = await userModel.getUserByUserName(username);
   console.log(users);
@@ -18,20 +19,24 @@ router.post('/signin', async (req, res) => {
   if (users.length > 0) {
     const user = users[0];
 
-    if (user.Password === password) {
+    if (bcrypt.compareSync(password, user.Password)) {
+
       const token = jwt.sign({ id: user.ID }, config.passportKey);
-      console.log(token);
+      // await userModel.updateUserStatus(user.ID, 1);// set status to Online (== 1)
+
       return res.status(200).send({
         mesg: "Signed in",
         token: token,
         id: user.ID,
         name: user.Name
       });
-    } else {
+    }
+    else {
       return res.status(401).send({ mesg: "Wrong password! Check again" });
     }
-  } else {
-    return res.status(401).json({ mesg: 'No such user found' });
+  }
+  else {
+    return res.status(401).send({ mesg: 'No such user found' });
   }
 });
 

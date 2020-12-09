@@ -1,5 +1,4 @@
 async function authen() {
-
     const jwtToken = window.localStorage.getItem('jwtToken');
     const res = await fetch(`http://localhost:8000/users/authenticate`, {
         method: 'POST',

@@ -1,3 +1,5 @@
 {
-  "boardSize": 19
+  "boardSize": 19,
+  "API_URL_TEST": "http://localhost:8000/",
+  "API_URL_DEPLOY": ""
 }

@@ -145,7 +145,7 @@ export default function Profile() {
                   title={
                     <Badge color="secondary">
                       Achivement
-                                    </Badge>}
+                    </Badge>}
                   // action={
                   //   <div>
                   //     <CreateTagDialog
@@ -249,7 +249,7 @@ export default function Profile() {
                 // action
                 >
                   Save Change
-                        </Button>
+                </Button>
                 <Typography align="left" component="h2" style={{ marginTop: 10, marginBottom: 12 }}> Passowrd: </Typography>
                 <ChangePasswordDialog />
               </form>

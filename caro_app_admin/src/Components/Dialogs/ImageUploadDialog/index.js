@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { DropzoneDialog } from 'material-ui-dropzone'
+import React, { useState } from 'react';
+import { DropzoneDialog } from 'material-ui-dropzone';
 import Button from '@material-ui/core/Button';
 // import AddPhotoAlternateIcon from '@material-ui/icons/AddPhotoAlternate';
 import { makeStyles } from '@material-ui/core/styles';

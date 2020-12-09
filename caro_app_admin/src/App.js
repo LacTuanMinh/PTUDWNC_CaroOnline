@@ -1,19 +1,22 @@
+import {useState} from 'react';
 import {
   BrowserRouter as Router,
   Route,
   Switch
 } from 'react-router-dom';
-import Home from './Components/Home/index';
-import Login from './Components/Login/index';
-import Profile from './Components/Profile/index';
-import Navbar from './Components/Navbar/index';
-import Footer from './Components/Footer/index'
+import Home from './components/Home/index';
+import SignIn from './components/SignIn/index';
+import Profile from './components/Profile/index';
+import Navbar from './components/Navbar/index';
+import Footer from './components/Footer/index'
 import './App.css';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('userID') !== null);
+
   return (
     <Router>
-      <Navbar />
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>
       <br></br>
       <div className="App">
         <Switch>
@@ -23,8 +26,8 @@ function App() {
           <Route path='/profile'>
             <Profile />
           </Route>
-          <Route path='/login'>
-            <Login />
+          <Route path='/signIn'>
+            <SignIn isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>
           </Route>
           {/* <Route exact path='/games'>
             <Games />

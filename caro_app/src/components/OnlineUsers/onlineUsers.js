@@ -13,6 +13,7 @@ import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import Input from '@material-ui/core/Input';
 import CloseIcon from '@material-ui/icons/Close';
 import FaceIcon from '@material-ui/icons/Face';
+
 const drawerWidth = 300;
 
 const useStyles = makeStyles((theme) => ({
@@ -72,25 +73,25 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function OnlineUsers({ onlineUserList, setOnlineUserList }) {
+export default function OnlineUsers({socket}) {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
-
+  const [open, setOpen] = useState(false);
+  const [onlineUserList, setOnlineUserList] = useState([]);
+  
   const handleDrawerOpen = () => {
     setOpen(true);
-  };
+  }
 
   const handleDrawerClose = () => {
     setOpen(false);
-  };
+  }
 
-  // useEffect(() => {
-  //   socket.on(`server_RefreshList`, (list) => {
-  //     console.log(list);
-  //     setOnlineUserList(list);
-  //   });
-
-  // }, [socket]);
+  useEffect(() => {
+    socket.on("server_RefreshList", (list) => {
+      console.log(list);
+      setOnlineUserList(list);
+    });
+  }, [socket]);
 
   return (
     <div className={classes.root}>
@@ -126,7 +127,6 @@ export default function OnlineUsers({ onlineUserList, setOnlineUserList }) {
           paper: classes.drawerPaper,
         }}
         onClose={handleDrawerClose}
-
       >
         <div className={classes.drawerHeader}>
           <IconButton onClick={handleDrawerClose}>
