@@ -8,16 +8,15 @@ const userModel = require('../models/userModel');
 const v1options = {
   msecs: Date.now(),
 };
+
 uuidv1(v1options);
-
-
 
 router.get('/', (req, res) => {
   res.render('index', { title: 'Express' });
 });
 
 router.post('/signin', async (req, res) => {
-
+  console.log(req.body);
   const { username, password } = req.body;
   const users = await userModel.getUserByUserName(username);
   console.log(users);
@@ -36,11 +35,13 @@ router.post('/signin', async (req, res) => {
         id: user.ID,
         name: user.Name
       });
-    } else {
+    }
+    else {
       return res.status(401).send({ mesg: "Wrong password! Check again" });
     }
-  } else {
-    return res.status(401).json({ mesg: 'No such user found' });
+  }
+  else {
+    return res.status(401).send({ mesg: 'No such user found' });
   }
 });
 

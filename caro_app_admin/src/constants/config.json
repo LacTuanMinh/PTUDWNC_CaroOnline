@@ -1,0 +1,4 @@
+{
+  "API_URL_TEST": "http://localhost:8001/",
+  "API_URL_DEPLOY": ""
+}

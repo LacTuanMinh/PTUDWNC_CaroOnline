@@ -5,13 +5,12 @@ import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
-import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
-import { authen } from '../../Utils/helper';
+import { authen } from '../../utils/helper';
 
 function Copyright() {
   return (
@@ -46,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Login() {
+function SignIn({isLoggedIn, setIsLoggedIn}) {
   const classes = useStyles();
   const history = useHistory();
   const [username, setUsername] = useState("");
@@ -60,12 +59,12 @@ function Login() {
       }
     }
     Authen();
-  }, []);
+  }, [history]);
 
 
-  const signUpClicked = () => {
-    history.push('/signUp');
-  }
+  // const signUpClicked = () => {
+  //   history.push('/signUp');
+  // }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -89,6 +88,9 @@ function Login() {
         window.localStorage.setItem('jwtToken', result.token);
         window.localStorage.setItem('userID', result.id);
         window.localStorage.setItem('name', result.name);
+
+        setIsLoggedIn(true);
+
         history.push("/");
 
       } else {
@@ -121,13 +123,13 @@ function Login() {
           <Button className={classes.submit} type="submit" fullWidth variant="contained" color="primary">
             Sign In
           </Button>
-          <Grid container justify="flex-end">
+          {/* <Grid container justify="flex-end">
             <Grid item>
               <Link onClick={signUpClicked} variant="body2" style={{ cursor: 'pointer ' }}>
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>
-          </Grid>
+          </Grid> */}
         </form>
       </div>
       <Box mt={8}>
@@ -137,4 +139,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default SignIn;

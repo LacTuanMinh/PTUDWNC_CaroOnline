@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function signin({ socket, isLoggedIn, setIsLoggedIn }) {
+function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
   const [username, setUsername] = useState("");
@@ -60,7 +60,7 @@ function signin({ socket, isLoggedIn, setIsLoggedIn }) {
       }
     }
     Authen();
-  }, []);
+  }, [history]);
 
 
   const signUpClicked = () => {
@@ -141,4 +141,4 @@ function signin({ socket, isLoggedIn, setIsLoggedIn }) {
   );
 }
 
-export default signin;
+export default SignIn;

@@ -61,7 +61,7 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
       }
     }
     Authen();
-  }, []);
+  }, [history]);
 
   const handleSubmit = async (e) => {
 

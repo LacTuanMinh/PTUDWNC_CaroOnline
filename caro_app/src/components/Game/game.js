@@ -50,7 +50,6 @@ function Game({ socket }) {
   const [stepNumber, setStepNumber] = useState(0);
   const [xIsNext, setXIsNext] = useState(true);
   const [isAscending, setIsAscending] = useState(true);
-  const [onlineUserList, setOnlineUserList] = useState([]);
   const History = useHistory();
 
   useEffect(() => {
@@ -59,20 +58,9 @@ function Game({ socket }) {
       if (status === 401) {
         History.push('/signin')
       }
-
     }
     Authen();
-  }, []);
-
-  useEffect(() => {
-    socket.on(`server_RefreshList`, (list) => {
-      console.log(list);
-      // setOnlineUserList([]);
-
-      setOnlineUserList(list);
-    });
-
-  }, []);
+  }, [History]);
 
   const handleClick = (i) => {
     const newHistory = history.slice(0, stepNumber + 1);
@@ -155,7 +143,7 @@ function Game({ socket }) {
   let element = (
     <div style={{ position: 'relative' }}>
       <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
-        <OnlineUsers onlineUserList={onlineUserList} setOnlineUserList={setOnlineUserList} />
+        <OnlineUsers socket={socket} />
       </div>
       <div className="game" style={{ paddingTop: '40px' }}>
         <div className="player-info">

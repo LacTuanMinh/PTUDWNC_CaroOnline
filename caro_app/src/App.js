@@ -36,7 +36,7 @@ function App() {
             <SignIn socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
           </Route>
           <Route exact path='/games'>
-            <Games />
+            <Games socket={socket} />
           </Route>
           <Route path='/games/:gameID'>
             <Game socket={socket} />
