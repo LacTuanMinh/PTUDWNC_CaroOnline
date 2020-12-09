@@ -82,7 +82,7 @@ export default function Profile() {
     async function Authen() {
       const status = await authen();
       if (status === 401) {
-        history.push('/login')
+        history.push('/signin')
       }
     }
     Authen();
@@ -137,7 +137,7 @@ export default function Profile() {
           <div className={classes.floatLeft}>
             <div className={classes.paper} style={{ padding: '20px' }}>
               <img height={200} width={200} style={{ borderRadius: '8px' }}
-                src={logo} class="text-muted" alt="User avatar"
+                src={logo} alt="User avatar"
               />
               <ImageUploadDialog />
               <Card className={classes.paperLikeShadow} style={{ width: '80%' }}>
@@ -160,9 +160,10 @@ export default function Profile() {
                   className={classes.cardHeader}
                 />
                 <CardContent>
-                  <Typography>
+                  {/* <Typography> */}
 
-                    <table style={{ margin: '10px', width: '100%' }}>
+                  <table style={{ margin: '10px', width: '100%' }}>
+                    <tbody>
                       <tr>
                         <td style={{ textAlign: 'right', fontWeight: 'bold', width: '50%' }}>Username:</td>
                         <td style={{ textAlign: 'center', width: '50%' }}>ltminh</td>
@@ -179,9 +180,11 @@ export default function Profile() {
                         <td style={{ textAlign: 'right', fontWeight: 'bold' }}>Winned play(s):</td>
                         <td style={{ textAlign: 'center' }}>20</td>
                       </tr>
-                    </table>
+                    </tbody>
 
-                  </Typography>
+                  </table>
+
+                  {/* </Typography> */}
                 </CardContent>
               </Card>
 

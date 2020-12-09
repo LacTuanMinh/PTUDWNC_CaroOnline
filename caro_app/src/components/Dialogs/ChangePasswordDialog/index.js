@@ -13,7 +13,6 @@ export default function FormDialog() {
     const [open, setOpen] = useState(false);
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -23,7 +22,6 @@ export default function FormDialog() {
         setOpen(false);
         setCurrentPassword("");
         setNewPassword("");
-        setConfirmPassword("")
     };
 
     const handleChangePassword = (event) => {
@@ -100,16 +98,7 @@ export default function FormDialog() {
                             fullWidth
                             onChange={(event) => { setNewPassword(event.target.value); }}
                         />
-                        <TextField
 
-                            margin="dense"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            label="Confirm password"
-                            type="password"
-                            fullWidth
-                            onChange={(event) => { setConfirmPassword(event.target.value); }}
-                        />
                     </DialogContent>
                     <DialogActions>
                         <Button /*onClick={handleClose}*/ onClick={handleChangePassword} color="secondary">

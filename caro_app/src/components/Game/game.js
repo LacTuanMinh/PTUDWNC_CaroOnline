@@ -11,7 +11,7 @@ import Player from '../Player/player';
 import config from '../../constants/config.json';
 import defaultAvatar from '../../images/defaultAvatar.jpg'
 import calculateWinner from './gameServices';
-import OnlineUsers from '../OnlineUsers'
+import OnlineUsers from '../OnlineUsers/onlineUsers'
 import { authen } from '../../utils/helper';
 
 const chatMessages = [
@@ -35,7 +35,7 @@ const opponent = {
   name: "My opponent"
 }
 
-function Game() {
+function Game({ socket }) {
   const pathTokensArray = window.location.toString().split('/');
   const gameID = pathTokensArray[pathTokensArray.length - 1];
   const [hasWinner, setHasWinner] = useState(false);
@@ -50,16 +50,28 @@ function Game() {
   const [stepNumber, setStepNumber] = useState(0);
   const [xIsNext, setXIsNext] = useState(true);
   const [isAscending, setIsAscending] = useState(true);
-
+  const [onlineUserList, setOnlineUserList] = useState([]);
   const History = useHistory();
+
   useEffect(() => {
     async function Authen() {
       const status = await authen();
       if (status === 401) {
-        History.push('/login')
+        History.push('/signin')
       }
+
     }
     Authen();
+  }, []);
+
+  useEffect(() => {
+    socket.on(`server_RefreshList`, (list) => {
+      console.log(list);
+      // setOnlineUserList([]);
+
+      setOnlineUserList(list);
+    });
+
   }, []);
 
   const handleClick = (i) => {
@@ -143,7 +155,7 @@ function Game() {
   let element = (
     <div style={{ position: 'relative' }}>
       <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
-        <OnlineUsers />
+        <OnlineUsers onlineUserList={onlineUserList} setOnlineUserList={setOnlineUserList} />
       </div>
       <div className="game" style={{ paddingTop: '40px' }}>
         <div className="player-info">

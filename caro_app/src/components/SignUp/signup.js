@@ -12,18 +12,18 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { authen } from '../../utils/helper'
 
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
+// function Copyright() {
+//   return (
+//     <Typography variant="body2" color="textSecondary" align="center">
+//       {'Copyright © '}
+//       <Link color="inherit" href="https://material-ui.com/">
+//         Your Website
+//       </Link>{' '}
+//       {new Date().getFullYear()}
+//       {'.'}
+//     </Typography>
+//   );
+// }
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SignUp() {
+function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
   const history = useHistory();
   const classes = useStyles();
   const [name, setName] = useState("");
@@ -61,7 +61,7 @@ function SignUp() {
       }
     }
     Authen();
-  });
+  }, []);
 
   const handleSubmit = async (e) => {
 
@@ -86,11 +86,18 @@ function SignUp() {
     const result = await res.json();
     console.log(result);
     if (res.status === 200) {
+
       window.localStorage.setItem('jwtToken', result.token);
       window.localStorage.setItem('userID', result.id);
       window.localStorage.setItem('name', result.name);
+      socket.emit(`client_LoggedIn`, { userID: result.id });
+
+      setIsLoggedIn(true);
+
       history.push("/games");
+
     } else if (res.status === 400) {
+
       alert(result.mesg);
       //stay this site
     }

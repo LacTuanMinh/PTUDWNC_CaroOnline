@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Link, useHistory } from 'react-router-dom';
+import React from 'react';
+import { NavLink, useHistory } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-
 import logo from '../../images/caro.ico';
 
 const useStyles = makeStyles((theme) => ({
@@ -29,13 +27,33 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function Navbar() {
-  const classes = useStyles();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const logoutButtonClicked = () => {
+export default function Navbar({ isLoggedIn, setIsLoggedIn }) {
+  const classes = useStyles();
+  const history = useHistory();
+
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const logoutButtonClicked = async () => {
+    const token = localStorage.getItem('jwtToken');
+    const data = {
+      userID: localStorage.getItem('userID')
+    }
+    const res = await fetch(`http://localhost:8000/users/signout`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    })
+    const result = await res.json();
+    if (res.status === 400) {
+      alert(result.mesg);
+    }
     setIsLoggedIn(false);
     window.localStorage.clear();
+    history.push('/');
   }
 
   return (
@@ -64,6 +82,7 @@ function Navbar() {
                 Games
               </Button>
             </NavLink>
+
             {isLoggedIn ?
               <React.Fragment>
                 <NavLink to='/profile' className={classes.navLink}>
@@ -78,9 +97,9 @@ function Navbar() {
                 </NavLink>
               </React.Fragment> :
               <React.Fragment>
-                <NavLink to='/login' className={classes.navLink}>
+                <NavLink to='/signIn' className={classes.navLink}>
                   <Button variant="contained" color="secondary">
-                    Login
+                    Sign In
                 </Button>
                 </NavLink>
                 <NavLink to='/signUp' className={classes.navLink}>
@@ -89,6 +108,7 @@ function Navbar() {
                 </Button>
                 </NavLink>
               </React.Fragment>}
+
           </div>
         </Toolbar>
       </AppBar>
@@ -96,4 +116,3 @@ function Navbar() {
   );
 }
 
-export default Navbar;

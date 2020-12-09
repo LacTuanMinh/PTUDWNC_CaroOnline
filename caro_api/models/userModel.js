@@ -9,5 +9,7 @@ module.exports = {
 
     addUser: entity => db.add('Users', entity),
 
-    updateUserStatus: (id, status) => db.patch('Users', { Status: status }, { ID: id })
+    updateUserStatus: (id, status) => db.patch('Users', { Status: status }, { ID: id }),
+
+    getAllOnlineUsers: _ => db.load(`SELECT ID, Name FROM Users WHERE IsAdmin = 0 AND Status = 1`)
 }

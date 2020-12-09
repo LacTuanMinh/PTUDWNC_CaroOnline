@@ -58,7 +58,7 @@ function Games() {
     async function Authen() {
       const status = await authen();
       if (status === 401) {
-        history.push('/login')
+        history.push('/signin')
       }
     }
     Authen();

@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Button from '@material-ui/core/Button';
-
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
@@ -14,7 +13,6 @@ import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import Input from '@material-ui/core/Input';
 import CloseIcon from '@material-ui/icons/Close';
 import FaceIcon from '@material-ui/icons/Face';
-
 const drawerWidth = 300;
 
 const useStyles = makeStyles((theme) => ({
@@ -74,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function OnlineUsers() {
+export default function OnlineUsers({ onlineUserList, setOnlineUserList }) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
 
@@ -86,7 +84,13 @@ export default function OnlineUsers() {
     setOpen(false);
   };
 
-  const userList = ["Nguyen Van A", "Đỗ Thị Mai Chờ", "Phan La Nuong"];
+  // useEffect(() => {
+  //   socket.on(`server_RefreshList`, (list) => {
+  //     console.log(list);
+  //     setOnlineUserList(list);
+  //   });
+
+  // }, [socket]);
 
   return (
     <div className={classes.root}>
@@ -132,12 +136,12 @@ export default function OnlineUsers() {
         </div>
         <Divider />
         <List>
-          {userList.map((item) => (
-            <ListItem key={item}>
-              <ListItemIcon>
+          {onlineUserList.map((item) => (
+            <ListItem key={item.ID}>
+              <ListItemIcon fontSize='small'>
                 <FaceIcon />
               </ListItemIcon>
-              <ListItemText primary={item} style={{ fontSize: 'small' }} />
+              <ListItemText primary={item.Name} style={{ fontSize: 'small' }} />
               <Button variant="outlined" style={{ fontSize: '7px', borderRadius: '5px' }}>Invite</Button>
             </ListItem>
           ))}

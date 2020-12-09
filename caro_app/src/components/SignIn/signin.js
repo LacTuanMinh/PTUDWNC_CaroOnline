@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Login() {
+function signin({ socket, isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
   const [username, setUsername] = useState("");
@@ -75,7 +75,7 @@ function Login() {
         username: username,
         password: password
       };
-      console.log(data);
+      // console.log(data);
       const res = await fetch('http://localhost:8000/signin', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -89,6 +89,10 @@ function Login() {
         window.localStorage.setItem('jwtToken', result.token);
         window.localStorage.setItem('userID', result.id);
         window.localStorage.setItem('name', result.name);
+
+        socket.emit('client_LoggedIn', { userID: result.id });
+
+        setIsLoggedIn(true);
         history.push("/games");
 
       } else {
@@ -137,4 +141,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default signin;

@@ -5,16 +5,16 @@ const bcrypt = require('bcryptjs');
 const { v1: uuidv1 } = require('uuid');
 const router = express.Router();
 const userModel = require('../models/userModel');
-
 const v1options = {
   msecs: Date.now(),
 };
 uuidv1(v1options);
 
+
+
 router.get('/', (req, res) => {
   res.render('index', { title: 'Express' });
 });
-
 
 router.post('/signin', async (req, res) => {
 
@@ -28,7 +28,7 @@ router.post('/signin', async (req, res) => {
     if (bcrypt.compareSync(password, user.Password)) {
 
       const token = jwt.sign({ id: user.ID }, config.passportKey);
-      await userModel.updateUserStatus(user.ID, 1);// set status to Online (== 1)
+      // await userModel.updateUserStatus(user.ID, 1);// set status to Online (== 1)
 
       return res.status(200).send({
         mesg: "Signed in",
