@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function OnlineUsers({ onlineUserList, setOnlineUserList }) {
+export default function OnlineUsers({ onlineUserList }) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
 

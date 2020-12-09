@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function Navbar({ isLoggedIn, setIsLoggedIn }) {
+export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -53,6 +53,7 @@ export default function Navbar({ isLoggedIn, setIsLoggedIn }) {
     }
     setIsLoggedIn(false);
     window.localStorage.clear();
+    socket.emit('client_LoggedOut', { userID: data.userID });
     history.push('/');
   }
 

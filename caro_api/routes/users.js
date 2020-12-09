@@ -46,15 +46,23 @@ module.exports = function (io) { // catch here
     if (userID !== 'null') {
       await userModel.updateUserStatus(userID, 1);
       const list = await userModel.getAllOnlineUsers();
-      console.log("connection", list);
+      // console.log("connection", list);
       io.sockets.emit("server_RefreshList", list);
     }
 
     socket.on("client_LoggedIn", async (data) => {
-      console.log("client logged ", data.userID);
+      console.log("client logged in", data.userID);
       await userModel.updateUserStatus(data.userID, 1);// set status to Online (== 1)
       const list = await userModel.getAllOnlineUsers();
-      console.log("client_LoggedIn", list);
+      // console.log("client_LoggedIn", list);
+      io.sockets.emit("server_RefreshList", list);
+    });
+
+    socket.on("client_LoggedOut", async (data) => {
+      console.log("client logged out", data.userID);
+      await userModel.updateUserStatus(data.userID, 0);// set status to off line (== 0)
+      const list = await userModel.getAllOnlineUsers();
+      // console.log("client_LoggedIn", list);
       io.sockets.emit("server_RefreshList", list);
     });
 
@@ -62,6 +70,8 @@ module.exports = function (io) { // catch here
 
       console.log("Client disconnected: ", userID);
       await userModel.updateUserStatus(userID, 0);
+      const list = await userModel.getAllOnlineUsers();
+      socket.broadcast.emit("server_RefreshList", list)
       // socket.removeAllListeners('disconnect');
       // io.removeAllListeners('connection');
     });
