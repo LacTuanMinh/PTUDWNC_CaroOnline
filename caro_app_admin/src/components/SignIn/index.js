@@ -11,6 +11,8 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 import { authen } from '../../utils/helper';
+import config from '../../constants/config.json';
+const API_URL = config.API_URL_DEPLOY;
 
 function Copyright() {
   return (
@@ -45,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SignIn({isLoggedIn, setIsLoggedIn}) {
+function SignIn({ isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
   const [username, setUsername] = useState("");
@@ -75,7 +77,7 @@ function SignIn({isLoggedIn, setIsLoggedIn}) {
         password: password
       };
       console.log(data);
-      const res = await fetch('http://localhost:8001/signin', {
+      const res = await fetch(`${API_URL}signin`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {

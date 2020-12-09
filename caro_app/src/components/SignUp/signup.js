@@ -11,7 +11,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { authen } from '../../utils/helper'
-
+import config from '../../constants/config.json';
+const API_URL = config.API_URL_DEPLOY;
 // function Copyright() {
 //   return (
 //     <Typography variant="body2" color="textSecondary" align="center">
@@ -75,7 +76,7 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
     console.log(data);
 
     // call API here
-    const res = await fetch('http://localhost:8000/signup', {
+    const res = await fetch(`${API_URL}signup`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {

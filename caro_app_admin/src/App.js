@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -8,7 +8,7 @@ import Home from './components/Home/index';
 import SignIn from './components/SignIn/index';
 import Profile from './components/Profile/index';
 import Navbar from './components/Navbar/index';
-import Footer from './components/Footer/index'
+import Footer from './components/Footer/index';
 import './App.css';
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
 
   return (
     <Router>
-      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <br></br>
       <div className="App">
         <Switch>
@@ -27,7 +27,7 @@ function App() {
             <Profile />
           </Route>
           <Route path='/signIn'>
-            <SignIn isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>
+            <SignIn isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
           </Route>
           {/* <Route exact path='/games'>
             <Games />

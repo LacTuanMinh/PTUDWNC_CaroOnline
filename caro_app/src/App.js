@@ -14,8 +14,10 @@ import Navbar from './components/Navbar/navbar';
 import Footer from './components/Footer/footer';
 import './App.css';
 import socketIOClient from "socket.io-client";
+import config from './constants/config.json';
+const API_URL = config.API_URL_DEPLOY;
 
-const socket = socketIOClient("http://localhost:8000", { query: `userID=${window.localStorage.getItem('userID')}` });
+const socket = socketIOClient(API_URL, { query: `userID=${window.localStorage.getItem('userID')}` });
 
 function App() {
 

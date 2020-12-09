@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function OnlineUsers({ onlineUserList, socket }) {
+export default function OnlineUsers({ socket }) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [onlineUserList, setOnlineUserList] = useState([]);

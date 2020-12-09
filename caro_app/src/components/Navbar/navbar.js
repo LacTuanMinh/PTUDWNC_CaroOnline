@@ -7,6 +7,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import logo from '../../images/caro.ico';
+import config from '../../constants/config.json';
+const API_URL = config.API_URL_DEPLOY;
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -38,7 +40,7 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
       userID: localStorage.getItem('userID')
     }
     console.log(data);
-    const res = await fetch(`http://localhost:8000/users/signout`, {
+    const res = await fetch(`${API_URL}users/signout`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {
