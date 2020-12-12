@@ -13,7 +13,7 @@ import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
-const API_URL = config.API_URL_DEPLOY;
+const API_URL = config.API_URL_TEST;
 
 function Copyright() {
   return (
@@ -93,7 +93,6 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
         window.localStorage.setItem('name', result.name);
 
         socket.emit('client_LoggedIn', { userID: result.id });
-
         setIsLoggedIn(true);
         history.push("/games");
 

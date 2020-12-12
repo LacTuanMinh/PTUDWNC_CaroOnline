@@ -1,5 +1,5 @@
 import config from '../constants/config.json';
-const API_URL = config.API_URL_DEPLOY;
+const API_URL = config.API_URL_TEST;
 
 async function authen() {
     const jwtToken = window.localStorage.getItem('jwtToken');

@@ -12,7 +12,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { authen } from '../../utils/helper'
 import config from '../../constants/config.json';
-const API_URL = config.API_URL_DEPLOY;
+const API_URL = config.API_URL_TEST;
 // function Copyright() {
 //   return (
 //     <Typography variant="body2" color="textSecondary" align="center">

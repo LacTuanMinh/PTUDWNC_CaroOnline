@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
+
 import Drawer from '@material-ui/core/Drawer';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
@@ -13,9 +15,19 @@ import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import Input from '@material-ui/core/Input';
 import CloseIcon from '@material-ui/icons/Close';
 import FaceIcon from '@material-ui/icons/Face';
+import Badge from '@material-ui/core/Badge';
+
+const StyledBadge = withStyles((theme) => ({
+  badge: {
+    right: 5,
+    top: 30,
+    border: `1px solid ${theme.palette.background.paper}`,
+    padding: '0 4px',
+    background: ' green',
+  },
+}))(Badge);
 
 const drawerWidth = 300;
-
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
@@ -73,25 +85,37 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function OnlineUsers({ socket }) {
+export default function OnlineUsers({ socket, onlineUserList }) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
-  const [onlineUserList, setOnlineUserList] = useState([]);
+  const [searchString, setSearchString] = useState("");
+  const [onlineUserListCopy, setOnlineUserListCopy] = useState([]);
+
 
   const handleDrawerOpen = () => {
+    setSearchString("");
     setOpen(true);
   }
 
   const handleDrawerClose = () => {
     setOpen(false);
+
   }
+  useEffect(() => {
+    setOnlineUserListCopy(onlineUserList.slice());
+  }, [onlineUserList]);
 
   useEffect(() => {
-    socket.on("server_RefreshList", (list) => {
-      console.log(list);
-      setOnlineUserList(list);
-    });
-  }, [socket]);
+
+    if (searchString !== "")// có nội dung cần tìm
+    {
+      console.log("v");
+      setOnlineUserListCopy(onlineUserListCopy.slice().filter(user => user.Name.toLowerCase().includes(searchString.toLowerCase())))
+    } else {
+      setOnlineUserListCopy(onlineUserList);
+    }
+  }, [searchString, onlineUserList, setOnlineUserListCopy]); // 2nd dependency help make sure new client connects will not make filtered list wrong
+
 
   return (
     <div className={classes.root}>
@@ -132,17 +156,23 @@ export default function OnlineUsers({ socket }) {
           <IconButton onClick={handleDrawerClose}>
             <CloseIcon />
           </IconButton>
-          <Input placeholder="Username here" />
+          <Input
+            placeholder="Username here"
+            onChange={(event) => { setSearchString(event.target.value) }}
+          // value={searchString}
+          />
         </div>
         <Divider />
         <List>
-          {onlineUserList.map((item) => (
+          {onlineUserListCopy.map((item) => (
             <ListItem key={item.ID}>
-              <ListItemIcon fontSize='small'>
-                <FaceIcon />
+              <ListItemIcon >
+                <StyledBadge badgeContent={""} >
+                  <FaceIcon fontSize="large" />
+                </StyledBadge>
               </ListItemIcon>
-              <ListItemText primary={item.Name} style={{ fontSize: 'small' }} />
-              <Button variant="outlined" style={{ fontSize: '7px', borderRadius: '5px' }}>Invite</Button>
+              <ListItemText primary={item.Name} />
+              <Button variant="outlined" style={{ fontSize: '12px', borderRadius: '5px', padding: '2px' }}>Invite</Button>
             </ListItem>
           ))}
         </List>

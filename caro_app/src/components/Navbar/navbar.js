@@ -8,7 +8,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import logo from '../../images/caro.ico';
 import config from '../../constants/config.json';
-const API_URL = config.API_URL_DEPLOY;
+const API_URL = config.API_URL_TEST;
 
 const useStyles = makeStyles((theme) => ({
   icon: {

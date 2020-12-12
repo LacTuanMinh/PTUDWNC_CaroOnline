@@ -1,8 +1,16 @@
 import React from 'react';
+import OnlineUser from '../OnlineUsers/onlineUsers_Primary'
 
-function Home() {
+function Home({ onlineUserList, socket }) {
   return (
-    <div>HOME</div>
+    <>
+      <div>HOME</div>
+      <div>
+        <OnlineUser socket={socket} onlineUserList={onlineUserList} />
+      </div>
+
+    </>
+
   );
 }
 
