@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -8,21 +8,19 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Fab from '@material-ui/core/Fab';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Checkbox from '@material-ui/core/Checkbox';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import { authen } from '../../utils/helper'
 import GameList from './gamelist';
-
-const games = [
-  {
-    id: 1,
-    name: "Game 1",
-    password: "123456"
-  },
-  {
-    id: 2,
-    name: "Game 2",
-    password: null
-  }
-];
+import config from '../../constants/config.json';
+const API_URL = config.API_URL_TEST;
+const jwtToken = window.localStorage.getItem('jwtToken');
 
 const useStyles = makeStyles((theme) => ({
   heroContent: {
@@ -50,9 +48,15 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function Games() {
+function Games({ socket }) {
   const classes = useStyles();
   const history = useHistory();
+  const userID = localStorage.getItem('userID');
+  const [open, setOpen] = useState(false);
+  const [games, setGames] = useState([]);
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState(null);
+  const [isBlockedRule, setIsBlockedRule] = useState(false);
 
   useEffect(() => {
     async function Authen() {
@@ -62,10 +66,55 @@ function Games() {
       }
     }
     Authen();
-  });
+  }, []);
+
+  useEffect(() => {
+    async function getAllGames() {
+      const res = await fetch(`${API_URL}/games/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`
+        }
+      });
+      const result = await res.json();
+      console.log(result);
+      setGames(result.games);
+    }
+    getAllGames();
+  }, []);
 
   const addGameButtonClicked = () => {
+    setOpen(true);
+  }
 
+  const handleClose = () => {
+    setOpen(false);
+  }
+
+  const handleCreate = async () => {
+    const data = {
+      name: name,
+      password: password,
+      isBlockedRule: isBlockedRule,
+      userID: userID
+    }
+    console.log(data);
+    const res = await fetch(`${API_URL}/games/add`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`
+      }
+    });
+    const result = await res.json();
+    if (res.status === 200) {
+      console.log(result.msg);
+      history.push('/games/' + result.game.ID);
+    } else {
+      window.alert(result.msg);
+    }
   }
 
   return (
@@ -99,8 +148,35 @@ function Games() {
             </Grid>
             <GameList
               games={games}
+              socket={socket}
             />
           </Grid>
+          <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Game Information</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Please enter the information for the game
+              </DialogContentText>
+              <TextField id="name" label="Name" autoFocus margin="dense" required
+                fullWidth onChange={e => setName(e.target.value)}
+              />
+              <TextField id="password" label="Password" margin="dense"
+                fullWidth onChange={e => setPassword(e.target.value)}
+              />
+              <Typography style={{display: "inline-block"}}>
+                Is Blocked Rule
+              </Typography>
+              <Checkbox onChange={e => setIsBlockedRule(e.target.checked)} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleCreate} color="primary">
+                Create
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Container>
       </main>
     </React.Fragment>

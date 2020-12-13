@@ -83,6 +83,8 @@ ol, ul {
   display: flex;
   align-items: flex-start;
   margin-left: 5px;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .chat-box .form {

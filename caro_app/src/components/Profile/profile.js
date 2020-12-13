@@ -14,7 +14,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import ImageUploadDialog from '../Dialogs/ImageUploadDialog';
 import Badge from '@material-ui/core/Badge';
 import { useHistory } from "react-router-dom";
-import logo from '../../images/caro.ico';
+import defaultAvatar from '../../images/defaultAvatar.jpg';
 import { authen } from '../../utils/helper';
 
 const useStyles = makeStyles((theme) => ({
@@ -137,7 +137,7 @@ export default function Profile() {
           <div className={classes.floatLeft}>
             <div className={classes.paper} style={{ padding: '20px' }}>
               <img height={200} width={200} style={{ borderRadius: '8px' }}
-                src={logo} alt="User avatar"
+                src={defaultAvatar} alt="User avatar"
               />
               <ImageUploadDialog />
               <Card className={classes.paperLikeShadow} style={{ width: '80%' }}>
@@ -161,7 +161,6 @@ export default function Profile() {
                 />
                 <CardContent>
                   {/* <Typography> */}
-
                   <table style={{ margin: '10px', width: '100%' }}>
                     <tbody>
                       <tr>
@@ -187,7 +186,6 @@ export default function Profile() {
                   {/* </Typography> */}
                 </CardContent>
               </Card>
-
             </div>
           </div>
 
@@ -201,60 +199,35 @@ export default function Profile() {
               </Typography>
               <form className={classes.form} onSubmit={handleUserNameChange}>
                 <Typography align="left" component="h2"><b> Name:</b> </Typography>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="userName"
-                  name="userName"
-                  placeholder="User name"
-                  defaultValue={userName}
+                <TextField variant="outlined" margin="normal" required fullWidth autoFocus
+                  id="userName" name="userName" placeholder="Username" defaultValue={userName}
                   onChange={(event) => { setUserName(event.target.value); }}
-                  autoFocus
                 />
-                <Typography align="left" component="h2"> <b>Email:</b> </Typography>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  name="email"
-                  placeholder="Email"
-                  defaultValue={email}
+                <Typography align="left" component="h2"> 
+                  <b>Email:</b>
+                </Typography>
+                <TextField variant="outlined" margin="normal" required fullWidth
+                  id="email" name="email" placeholder="Email" defaultValue={email}
                   onChange={(event) => { setEmail(event.target.value); }}
-                  autoFocus
                 />
-                <Typography align="left" component="h2"> <b>Date of Birth:</b> </Typography>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="dob"
-                  name="dob"
-                  placeholder="Date Of Birth"
-                  defaultValue={dateOfBirth}
+                <Typography align="left" component="h2">
+                  <b>Date of Birth:</b>
+                </Typography>
+                <TextField variant="outlined" margin="normal" required fullWidth
+                  id="dob" name="dob" placeholder="Date Of Birth" defaultValue={dateOfBirth}
                   onChange={(event) => { setDateOfBirth(event.target.value); }}
-                  autoFocus
                 />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="outlined"
-                  color="primary"
-                  className={classes.submit}
-                  startIcon={<SaveIcon />}
-                // action
+                <Button type="submit" fullWidth variant="outlined" color="primary"
+                  className={classes.submit} startIcon={<SaveIcon />}
                 >
                   Save Change
                 </Button>
-                <Typography align="left" component="h2" style={{ marginTop: 10, marginBottom: 12 }}> Passowrd: </Typography>
+                <Typography align="left" component="h2" style={{ marginTop: 10, marginBottom: 12 }}>
+                  Passowrd: 
+                </Typography>
                 <ChangePasswordDialog />
               </form>
             </div>
-
           </div>
         </div>
       </Container>

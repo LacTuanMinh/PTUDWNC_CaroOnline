@@ -1,5 +1,5 @@
 {
   "boardSize": 19,
-  "API_URL_TEST": "http://localhost:8000/",
-  "API_URL_DEPLOY": "https://api-caro-online.herokuapp.com/"
+  "API_URL_TEST": "http://localhost:8000",
+  "API_URL_DEPLOY": "https://api-caro-online.herokuapp.com"
 }

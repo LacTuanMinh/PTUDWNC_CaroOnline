@@ -76,7 +76,7 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
     console.log(data);
 
     // call API here
-    const res = await fetch(`${API_URL}signup`, {
+    const res = await fetch(`${API_URL}/signup`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {

@@ -1,19 +1,3 @@
-// const express = require('express');
-// const router = express.Router();
-
-
-// /* GET users listing. */
-// router.post('/authenticate', (req, res) => {
-//   console.log("authenticated");
-//   return res.status(200).end();
-// });
-
-// router.get('/games', function (req, res) {
-
-// });
-// module.exports = router;
-
-
 module.exports = function (io) { // catch here
 
   const express = require('express');
@@ -26,6 +10,30 @@ module.exports = function (io) { // catch here
     return res.status(200).send({ mesg: "ok" });
   });
 
+  router.get('/get/:ID', async (req, res) => {
+    const userID = req.params.ID;
+    const user = await userModel.getUserByID(userID);
+    console.log(user[0]);
+    if (user) {
+      res.status(200).send({user: user[0]});
+    }
+    //else res.status(404).send()
+  });
+
+  router.post('/update', async (req, res) => {
+    const { player, win, elo } = req.body;
+
+    const entity = {
+      ...player,
+      Elo: player.Elo + (win ? elo : -elo),
+      WinCount: player.WinCount + (win ? 1 : 0),
+      PlayCount: player.PlayCount + 1
+    }
+    
+    await userModel.updateUserInfo(player.ID, entity);
+    return res.status(200).send({ msg: "Players updated", player: entity });
+  });
+
   router.post('/signout', async (req, res) => {
 
     const { userID } = req.body;
@@ -35,11 +43,7 @@ module.exports = function (io) { // catch here
       res.status(400).send({ mesg: 'Failed to sign out' });
     } else res.status(200).send({ mesg: 'Successful' });
 
-  })
-
-  // router.get('/games', function (req, res) {
-  // 
-  // });
+  });
 
   const userSocketIdMap = new Map(); //a map of online usernames and their clients
   io.on("connection", async (socket) => {

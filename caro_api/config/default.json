@@ -8,6 +8,15 @@
     "database": "VBstmQITNU",
     "insecureAuth": true
   },
+  "mysql_test": {
+    "connectionLimit": 500,
+    "host": "sql12.freemysqlhosting.net",
+    "port": 3306,
+    "user": "sql12380178",
+    "password": "km5jZudNKi",
+    "database": "sql12380178",
+    "insecureAuth": true
+  },
   "serverPort": 8000,
   "passportKey": "whatdoyoumean",
   "hashRound": 10
