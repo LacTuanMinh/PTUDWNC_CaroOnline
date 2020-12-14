@@ -10,7 +10,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { authen } from '../../utils/helper'
+import { authen, isBlankString, containsBlank, isEmailPattern } from '../../utils/helper'
 import config from '../../constants/config.json';
 const API_URL = config.API_URL_TEST;
 // function Copyright() {
@@ -73,7 +73,23 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
       email: email,
       password: password
     };
-    console.log(data);
+    // console.log(data);
+    if (isBlankString(data.username) || isBlankString(data.password) || isBlankString(data.name) || isBlankString(data.email)) {
+      alert('Some input fields are an empty string');
+      return;
+    }
+
+    if (containsBlank(data.username)) {
+      alert('Username can not contain blank space');
+      return;
+    }
+
+    if (!isEmailPattern(data.email)) {
+      alert('Email is not valid');
+      return;
+    }
+
+
 
     // call API here
     const res = await fetch(`${API_URL}signup`, {

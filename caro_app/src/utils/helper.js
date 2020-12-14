@@ -14,4 +14,17 @@ async function authen() {
     return res.status;
 }
 
-export { authen };
+function isBlankString(token) {
+    return token.trim().length === 0;
+}
+
+function containsBlank(token) {
+    return token.includes(' ');
+}
+
+function isEmailPattern(token) {
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(token)
+}
+
+export { authen, isBlankString, containsBlank, isEmailPattern };

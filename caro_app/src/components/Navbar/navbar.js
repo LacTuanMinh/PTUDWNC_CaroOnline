@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useHistory } from 'react-router-dom';
+import { NavLink, useHistory, Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
@@ -74,11 +74,11 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
           </Typography>
 
           <div>
-            <NavLink to='/' className={classes.navLink}>
+            <Link to='/' className={classes.navLink}>
               <Button variant="contained" color="secondary">
                 Home
               </Button>
-            </NavLink>
+            </Link>
             <NavLink to='/games' className={classes.navLink}>
               <Button variant="contained" color="secondary">
                 Games

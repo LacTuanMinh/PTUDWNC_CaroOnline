@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useHistory } from "react-router-dom";
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
@@ -13,9 +14,10 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import ImageUploadDialog from '../Dialogs/ImageUploadDialog';
 import Badge from '@material-ui/core/Badge';
-import { useHistory } from "react-router-dom";
 import logo from '../../images/caro.ico';
 import { authen } from '../../utils/helper';
+import config from '../../constants/config.json';
+const API_URL = config.API_URL_TEST;
 
 const useStyles = makeStyles((theme) => ({
   cardGrid: {
@@ -79,16 +81,26 @@ export default function Profile() {
   const history = useHistory();
 
   useEffect(() => {
-    async function Authen() {
-      const status = await authen();
-      if (status === 401) {
-        history.push('/signin')
-      }
-    }
-    Authen();
-  });
+    async function ComponentWillMount() {
+      const token = window.localStorage.getItem('jwtToken');
+      const userID = localStorage.getItem('userID');
+      const res = await fetch(`${API_URL}users/profile/${userID}`, {
+        method: 'POST',
+        // body: JSON.stringify({ newUserName }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-  const handleUserNameChange = (event) => {
+      const result = await res.json();
+
+    }
+    ComponentWillMount();
+  }, []);
+
+
+  const handleUserNameChange = async (event) => {
     event.preventDefault();
     // if (isBlankString(newUserName)) {
     //   alert('User name is a blank string')
@@ -98,15 +110,7 @@ export default function Profile() {
     //   return;
     // }
     // const userID = localStorage.getItem('userID');
-    // const token = window.localStorage.getItem('jwtToken')
-    // fetch(`https://my-retro-api.herokuapp.com/profile/username/${userID}`, {
-    //   method: 'POST',
-    //   body: JSON.stringify({ newUserName }),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     Authorization: `Bearer ${token}`
-    //   }
-    // })
+
     //   .then(res => {
     //     if (res.status === 200) {
     //       res.json().then(result => {
@@ -250,7 +254,7 @@ export default function Profile() {
                 >
                   Save Change
                 </Button>
-                <Typography align="left" component="h2" style={{ marginTop: 10, marginBottom: 12 }}> Passowrd: </Typography>
+                <Typography align="left" component="h2" style={{ marginTop: 10, marginBottom: 12, fontWeight: 'bold' }}> Passowrd: </Typography>
                 <ChangePasswordDialog />
               </form>
             </div>

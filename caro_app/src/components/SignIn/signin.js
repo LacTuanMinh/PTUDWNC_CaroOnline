@@ -11,7 +11,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
-import { authen } from '../../utils/helper';
+import { authen, isBlankString } from '../../utils/helper';
 import config from '../../constants/config.json';
 const API_URL = config.API_URL_TEST;
 
@@ -77,6 +77,12 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
         username: username,
         password: password
       };
+
+      if (isBlankString(data.username) || isBlankString(data.password)) {
+        alert('Either Username or Password is empty string');
+        return;
+      }
+
       // console.log(data);
       const res = await fetch(`${API_URL}signin`, {
         method: 'POST',
@@ -86,6 +92,7 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
         }
       });
       const result = await res.json();
+
       if (res.status === 200) {
 
         window.localStorage.setItem('jwtToken', result.token);

@@ -25,7 +25,7 @@ const StyledBadge = withStyles((theme) => ({
 
 const drawerWidth = 300;
 const useStyles = makeStyles((theme) => ({
-  root: {
+  list: {
     position: "fixed",
     right: 30,
     bottom: 0,
@@ -35,9 +35,8 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: '8px 8px 0 0',
     maxHeight: '80%',
     // overflowY: 'scroll',
-    overflow: 'auto'
-
-    // background: 'lightGrey'
+    overflow: 'auto',
+    background: '#f2f2f2'
   },
   card: {
     position: "fixed",
@@ -52,7 +51,11 @@ const useStyles = makeStyles((theme) => ({
     display: 'inline-block',
     color: 'white',
     padding: '15px',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+  },
+
+  paperShadow: {
+    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)'
   },
 
   drawer: {
@@ -114,7 +117,7 @@ export default function OnlineUsers({ socket, onlineUserList }) {
   return (
     <>
       {open ?
-        <div className={classes.root}>
+        <div className={`${classes.list} ${classes.paperShadow}`}>
           <div className={classes.drawerHeader}>
             <Input
               placeholder="Username here"
@@ -128,8 +131,9 @@ export default function OnlineUsers({ socket, onlineUserList }) {
           </div>
           <List >
             {onlineUserListCopy.length === 0 ?
-              <div>No user found</div>
-              : onlineUserListCopy.map((item) => (
+              <div >No user found</div>
+              :
+              onlineUserListCopy.map((item) => (
                 <ListItem key={item.ID}>
                   <ListItemIcon >
                     <StyledBadge badgeContent={""} >
@@ -143,7 +147,7 @@ export default function OnlineUsers({ socket, onlineUserList }) {
           </List>
         </div>
         :
-        <div className={classes.card} onClick={() => handleDrawerOpen()}>
+        <div className={`${classes.card} ${classes.paperShadow}`} onClick={() => handleDrawerOpen()}>
           <div className={classes.floatLeft}>
             Online Users
           </div>
