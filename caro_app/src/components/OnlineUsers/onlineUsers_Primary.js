@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import { withStyles } from '@material-ui/core/styles';
 import MinimizeIcon from '@material-ui/icons/Minimize';
 import List from '@material-ui/core/List';
-import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -82,12 +80,11 @@ const useStyles = makeStyles((theme) => ({
 
 }));
 
-export default function OnlineUsers({ socket, onlineUserList }) {
+export default function OnlineUsers({ onlineUserList }) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [searchString, setSearchString] = useState("");
   const [onlineUserListCopy, setOnlineUserListCopy] = useState([]);
-
 
   const handleDrawerOpen = () => {
     setSearchString("");
@@ -103,15 +100,16 @@ export default function OnlineUsers({ socket, onlineUserList }) {
   }, [onlineUserList]);
 
   useEffect(() => {
-
     if (searchString !== "")// có nội dung cần tìm
     {
       // console.log("v");
-      setOnlineUserListCopy(onlineUserListCopy.slice().filter(user => user.Name.toLowerCase().includes(searchString.toLowerCase())))
-    } else {
+      setOnlineUserListCopy(onlineUserListCopy.slice()
+        .filter(user => user.Name.toLowerCase().includes(searchString.toLowerCase())))
+    }
+    else {
       setOnlineUserListCopy(onlineUserList);
     }
-  }, [searchString, onlineUserList, setOnlineUserListCopy]); // 2nd dependency help make sure new client connects will not make filtered list wrong
+  }, [searchString, onlineUserList, onlineUserListCopy]); // 2nd dependency help make sure new client connects will not make filtered list wrong
 
 
   return (

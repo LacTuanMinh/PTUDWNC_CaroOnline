@@ -23,7 +23,7 @@ function Home({ onlineUserList, socket }) {
     <div style={{ position: 'relative' }}>
       <img src={background} style={homeBackground} />
       <div>
-        <OnlineUser socket={socket} onlineUserList={onlineUserList} />
+        <OnlineUsers onlineUserList={onlineUserList} />
       </div>
       <div style={{ position: 'absolute', left: '10%', bottom: '15%' }}>
         <Button variant="outlined" color="secondary" onClick={handleGetStarted}>

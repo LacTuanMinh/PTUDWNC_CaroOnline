@@ -11,5 +11,7 @@ module.exports = {
 
     updateUserStatus: (id, status) => db.patch('Users', { Status: status }, { ID: id }),
 
+    updateUserInfo: (id, entity) => db.patch('Users', entity, { ID: id }),
+
     getAllOnlineUsers: _ => db.load(`SELECT ID, Name FROM Users WHERE IsAdmin = 0 AND Status = 1`)
 }

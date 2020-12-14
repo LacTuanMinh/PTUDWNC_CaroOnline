@@ -85,12 +85,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function OnlineUsers({ socket, onlineUserList }) {
+export default function OnlineUsers({ onlineUserList }) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [searchString, setSearchString] = useState("");
   const [onlineUserListCopy, setOnlineUserListCopy] = useState([]);
-
 
   const handleDrawerOpen = () => {
     setSearchString("");
@@ -110,21 +109,18 @@ export default function OnlineUsers({ socket, onlineUserList }) {
     if (searchString !== "")// có nội dung cần tìm
     {
       console.log("v");
-      setOnlineUserListCopy(onlineUserListCopy.slice().filter(user => user.Name.toLowerCase().includes(searchString.toLowerCase())))
+      setOnlineUserListCopy(onlineUserListCopy.slice()
+        .filter(user => user.Name.toLowerCase().includes(searchString.toLowerCase())))
     } else {
       setOnlineUserListCopy(onlineUserList);
     }
-  }, [searchString, onlineUserList, setOnlineUserListCopy]); // 2nd dependency help make sure new client connects will not make filtered list wrong
+  }, [searchString, onlineUserList, onlineUserListCopy]); // 2nd dependency help make sure new client connects will not make filtered list wrong
 
 
   return (
     <div className={classes.root}>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        edge="end"
-        onClick={handleDrawerOpen}
-        className={clsx(open && classes.hide)}
+      <IconButton color="inherit" aria-label="open drawer" edge="end"
+        onClick={handleDrawerOpen} className={clsx(open && classes.hide)}
         style={{
           position: 'absolute',
           top: -10,
@@ -142,24 +138,15 @@ export default function OnlineUsers({ socket, onlineUserList }) {
       >
         <GroupAddIcon />
       </IconButton>
-      <Drawer
-        className={classes.drawer}
-        variant="temporary"
-        anchor="right"
-        open={open}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
-        onClose={handleDrawerClose}
+      <Drawer className={classes.drawer} variant="temporary" anchor="right"
+        open={open} classes={{ paper: classes.drawerPaper }} onClose={handleDrawerClose}
       >
         <div className={classes.drawerHeader}>
           <IconButton onClick={handleDrawerClose}>
             <CloseIcon />
           </IconButton>
-          <Input
-            placeholder="Username here"
+          <Input placeholder="Username here"
             onChange={(event) => { setSearchString(event.target.value) }}
-          // value={searchString}
           />
         </div>
         <Divider />

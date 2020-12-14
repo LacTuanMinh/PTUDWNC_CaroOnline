@@ -29,7 +29,6 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-
 export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
@@ -40,7 +39,7 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
       userID: localStorage.getItem('userID')
     }
     console.log(data);
-    const res = await fetch(`${API_URL}users/signout`, {
+    const res = await fetch(`${API_URL}/users/signout`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {
@@ -117,4 +116,3 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
     </React.Fragment>
   );
 }
-

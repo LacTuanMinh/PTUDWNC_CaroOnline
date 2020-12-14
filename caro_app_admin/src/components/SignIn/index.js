@@ -77,7 +77,7 @@ function SignIn({ isLoggedIn, setIsLoggedIn }) {
         password: password
       };
       console.log(data);
-      const res = await fetch(`${API_URL}signin`, {
+      const res = await fetch(`${API_URL}/signin`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {

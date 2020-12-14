@@ -1,6 +1,6 @@
 import config from '../../constants/config.json';
 
-function calculateWinner(squares, pos) {
+function calculateWinner(squares, pos, isBlockedRule) {
   const position = parseInt(pos, 10);
   if (position === -1) {
     return {
@@ -42,7 +42,32 @@ function calculateWinner(squares, pos) {
       winLine = [];
     }
     if (winLine.length === N) {
-      return {
+      // check for the blocked rule
+      if (isBlockedRule) {
+        const temp1 = winLine[0] - jumpStep;
+        const temp2 = winLine[N - 1] + jumpStep;
+        if (temp1 >= 0 && temp2 <= nCol * nRow) {
+          if (squares[temp1] != null && squares[temp2] != null &&
+            squares[temp1] !== squares[position] && squares[temp2] !== squares[position]) {
+            return {
+              winner : null,
+              winLine: null,
+              isDraw: false
+            } 
+          }
+          else return {
+            winner: squares[position],
+            winLine: winLine,
+            isDraw: false
+          }
+        }
+        else return {
+          winner: squares[position],
+          winLine: winLine,
+          isDraw: false
+        }
+      }
+      else return {
         winner: squares[position],
         winLine: winLine,
         isDraw: false
@@ -77,7 +102,32 @@ function calculateWinner(squares, pos) {
       winLine = [];
     }
     if (winLine.length === N) {
-      return {
+      // check for the blocked rule
+      if (isBlockedRule) {
+        const temp1 = winLine[0] - jumpStep;
+        const temp2 = winLine[N - 1] + jumpStep;
+        if (temp1 >= 0 && temp2 <= nCol * nRow) {
+          if (squares[temp1] != null && squares[temp2] != null &&
+            squares[temp1] !== squares[position] && squares[temp2] !== squares[position]) {
+            return {
+              winner : null,
+              winLine: null,
+              isDraw: false
+            } 
+          }
+          else return {
+            winner: squares[position],
+            winLine: winLine,
+            isDraw: false
+          }
+        }
+        else return {
+          winner: squares[position],
+          winLine: winLine,
+          isDraw: false
+        }
+      }
+      else return {
         winner: squares[position],
         winLine: winLine,
         isDraw: false
@@ -117,7 +167,32 @@ function calculateWinner(squares, pos) {
       winLine = [];
     }
     if (winLine.length === N) {
-      return {
+      // check for the blocked rule
+      if (isBlockedRule) {
+        const temp1 = winLine[0] - jumpStep;
+        const temp2 = winLine[N - 1] + jumpStep;
+        if (temp1 >= 0 && temp2 <= nCol * nRow) {
+          if (squares[temp1] != null && squares[temp2] != null &&
+            squares[temp1] !== squares[position] && squares[temp2] !== squares[position]) {
+            return {
+              winner : null,
+              winLine: null,
+              isDraw: false
+            } 
+          }
+          else return {
+            winner: squares[position],
+            winLine: winLine,
+            isDraw: false
+          }
+        }
+        else return {
+          winner: squares[position],
+          winLine: winLine,
+          isDraw: false
+        }
+      }
+      else return {
         winner: squares[position],
         winLine: winLine,
         isDraw: false
@@ -157,7 +232,32 @@ function calculateWinner(squares, pos) {
       winLine = [];
     }
     if (winLine.length === N) {
-      return {
+      // check for the blocked rule
+      if (isBlockedRule) {
+        const temp1 = winLine[0] - jumpStep;
+        const temp2 = winLine[N - 1] + jumpStep;
+        if (temp1 >= 0 && temp2 <= nCol * nRow) {
+          if (squares[temp1] != null && squares[temp2] != null &&
+            squares[temp1] !== squares[position] && squares[temp2] !== squares[position]) {
+            return {
+              winner : null,
+              winLine: null,
+              isDraw: false
+            } 
+          }
+          else return {
+            winner: squares[position],
+            winLine: winLine,
+            isDraw: false
+          }
+        }
+        else return {
+          winner: squares[position],
+          winLine: winLine,
+          isDraw: false
+        }
+      }
+      else return {
         winner: squares[position],
         winLine: winLine,
         isDraw: false
@@ -192,4 +292,19 @@ function calculateWinner(squares, pos) {
   }
 }
 
-export default calculateWinner;
+// calculate the elo the winner get
+function calculateElo(elo1, elo2) {
+  const diff = Math.abs(elo1 - elo2);
+  if (diff < 100)
+    return 20;
+  if (diff < 200)
+    return 15;
+  if (diff < 300)
+    return 10;
+  if (diff < 400)
+    return 5;
+  if (diff < 500)
+    return 1;
+}
+
+export { calculateWinner, calculateElo };

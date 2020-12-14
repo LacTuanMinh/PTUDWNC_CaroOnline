@@ -1,8 +1,8 @@
 import React from 'react';
 
-function Player({data}) {
+function Player({player}) {
   return (
-    <div>{"Player: " + data.name}</div>
+    <div>{"Player: " + player.Name}</div>
   );
 }
 

@@ -20,17 +20,15 @@ const API_URL = config.API_URL_TEST;
 const socket = socketIOClient(API_URL, { query: `userID=${window.localStorage.getItem('userID')}` });
 
 function App() {
-
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('userID') !== null);
   const [onlineUserList, setOnlineUserList] = useState([]);
 
   useEffect(() => {
     socket.on("server_RefreshList", list => {
-      console.log(list);
+      //console.log(list);
       setOnlineUserList(list);
     });
   }, [setOnlineUserList]);
-
 
   return (
     <Router>
