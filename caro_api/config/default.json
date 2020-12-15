@@ -1,6 +1,6 @@
 {
   "mysql": {
-    "connectionLimit": 500,
+    "connectionLimit": 600,
     "host": "remotemysql.com",
     "port": 3306,
     "user": "VBstmQITNU",

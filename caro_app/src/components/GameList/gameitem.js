@@ -68,7 +68,7 @@ function GameItem({ game, socket }) {
             title="Image title"
           />
           <CardContent className={classes.cardContent}>
-            <Typography noWrap gutterBottom variant="h5" component="h2">
+            <Typography gutterBottom variant="h5" component="h2">
               {game.Name}
             </Typography>
           </CardContent>
@@ -77,10 +77,10 @@ function GameItem({ game, socket }) {
               Join
             </Button>
             {game.Password !== null ?
-            <LockIcon size="small" color="primary"></LockIcon>
-            : <React.Fragment></React.Fragment>}
+              <LockIcon size="small" color="primary"></LockIcon>
+              : <React.Fragment></React.Fragment>}
             {game.IsBlockedRule ? <Typography style={{ fontWeight: "bold" }}>Blocked Rule</Typography>
-            : <React.Fragment></React.Fragment>}
+              : <React.Fragment></React.Fragment>}
           </CardActions>
         </Card>
       </Grid>
@@ -93,11 +93,11 @@ function GameItem({ game, socket }) {
           <TextField id="password" label="Password" autoFocus margin="dense" required
             fullWidth onChange={e => setPassword(e.target.value)}
           />
-          {wrongPasswordAlert ? 
-          <Typography style={{ color: "red" }}>
-            Wrong Password
+          {wrongPasswordAlert ?
+            <Typography style={{ color: "red" }}>
+              Wrong Password
           </Typography> :
-          <React.Fragment></React.Fragment>}
+            <React.Fragment></React.Fragment>}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
@@ -106,7 +106,7 @@ function GameItem({ game, socket }) {
           <Button onClick={handleJoin} color="primary">
             Join
           </Button>
-         </DialogActions>
+        </DialogActions>
       </Dialog>
     </React.Fragment>
   );

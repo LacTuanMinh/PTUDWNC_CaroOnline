@@ -21,7 +21,7 @@ module.exports = function (io) { // catch here
   });
 
   router.post('/update', async (req, res) => {
-    const { player, win, elo } = req.body;
+    const { player, win, elo, opponentID } = req.body;
 
     const entity = {
       ...player,
@@ -29,9 +29,11 @@ module.exports = function (io) { // catch here
       WinCount: player.WinCount + (win ? 1 : 0),
       PlayCount: player.PlayCount + 1
     }
+    console.log('entity', entity);
 
-    await userModel.updateUserInfo(player.ID, entity);
-    return res.status(200).send({ msg: "Players updated", player: entity });
+    await userModel.updateUserInfo(player.ID, { Elo: entity.Elo, WinCount: entity.WinCount, PlayCount: entity.PlayCount });
+    const opponent = await userModel.getUserByID(opponentID);
+    return res.status(200).send({ msg: "Players updated", player: entity, opponent });
   });
 
   router.post('/signout', async (req, res) => {
@@ -48,7 +50,7 @@ module.exports = function (io) { // catch here
   router.post('/profile/:userID', async (req, res) => {
     const userID = req.params.userID;
 
-    const results = await userModel.getUserByID(userID + " cc");
+    const results = await userModel.getUserByID(userID);
     if (results.length === 1) {
       const result = results[0];
       console.log((results));

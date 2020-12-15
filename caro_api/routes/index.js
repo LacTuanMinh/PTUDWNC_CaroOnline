@@ -19,7 +19,7 @@ router.post('/signin', async (req, res) => {
   console.log(req.body);
   const { username, password } = req.body;
   const users = await userModel.getUserByUserName(username);
-  console.log(users);
+  // console.log(users);
 
   if (users.length > 0) {
     const user = users[0];

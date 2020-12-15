@@ -109,7 +109,7 @@ export default function OnlineUsers({ onlineUserList }) {
     else {
       setOnlineUserListCopy(onlineUserList);
     }
-  }, [searchString, onlineUserList, onlineUserListCopy]); // 2nd dependency help make sure new client connects will not make filtered list wrong
+  }, [searchString, onlineUserList]); // 2nd dependency help make sure new client connects will not make filtered list wrong
 
 
   return (

@@ -15,7 +15,6 @@ import CardHeader from '@material-ui/core/CardHeader';
 import ImageUploadDialog from '../Dialogs/ImageUploadDialog';
 import Badge from '@material-ui/core/Badge';
 import logo from '../../images/caro.ico';
-import { useHistory } from "react-router-dom";
 import defaultAvatar from '../../images/defaultAvatar.jpg';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
@@ -86,16 +85,15 @@ export default function Profile() {
     async function ComponentWillMount() {
       const token = window.localStorage.getItem('jwtToken');
       const userID = localStorage.getItem('userID');
-      const res = await fetch(`${API_URL}users/profile/${userID}`, {
+      const res = await fetch(`${API_URL}/users/profile/${userID}`, {
         method: 'POST',
-        // body: JSON.stringify({ newUserName }),
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         }
       });
 
-      const result = await res.json();
+      // const result = await res.json();
 
     }
     ComponentWillMount();

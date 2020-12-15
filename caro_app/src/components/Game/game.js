@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
+
 import { useHistory } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -7,7 +8,7 @@ import TextField from '@material-ui/core/TextField';
 import SendMessageIcon from '@material-ui/icons/Send';
 import Typography from '@material-ui/core/Typography';
 import CardMedia from '@material-ui/core/CardMedia';
-
+import Button from '@material-ui/core/Button';
 import Board from './board';
 import Player from '../Player/player';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
@@ -22,10 +23,12 @@ function Game({ socket, onlineUserList }) {
   const pathTokensArray = window.location.toString().split('/');
   const gameID = pathTokensArray[pathTokensArray.length - 1];
   const userID = localStorage.getItem('userID');
+  const History = useHistory();
+
+  const [start, setStart] = useState(false);
   const [hasWinner, setHasWinner] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [chatItemMessage, setChatItemMessage] = useState("");
-
   const [history, setHistory] = useState([
     {
       squares: Array(0).fill(null),
@@ -39,8 +42,11 @@ function Game({ socket, onlineUserList }) {
   const [user, setUser] = useState({});
   const [opponent, setOpponent] = useState({});
   const [isYourTurn, setIsYourTurn] = useState(true);
-  const History = useHistory();
+  const [player, setPlayer] = useState("");// X || O
+  const [opponentReady, setOpponentReady] = useState(false);
+  const [youreReady, setYoureReady] = useState(false);
 
+  // authen
   useEffect(() => {
     async function Authen() {
       const status = await authen();
@@ -51,6 +57,7 @@ function Game({ socket, onlineUserList }) {
     Authen();
   }, []);
 
+  // player
   useEffect(() => {
     async function getPlayer(id) {
       const res = await fetch(`${API_URL}/users/get/${id}`, {
@@ -68,7 +75,7 @@ function Game({ socket, onlineUserList }) {
       getPlayer(userID);
     }
   }, []);
-  
+
   useEffect(() => {
     async function getGame(gameID) {
       const res = await fetch(`${API_URL}/games/get/${gameID}`, {
@@ -86,25 +93,21 @@ function Game({ socket, onlineUserList }) {
       getGame(gameID);
     }
   }, []);
-  
+
   useEffect(() => {
     socket.on(`load_moves_${gameID}`, data => {
-      //if (data.playerID !== userID) {
-        console.log("load_moves");
-        setHistory(data.history);
-        setStepNumber(data.history.length - 1);
-        setXIsNext(!xIsNext);
-        setIsYourTurn(!isYourTurn);
-      //}
+      console.log("load_moves");
+      setHistory(data.history);
+      setStepNumber(data.history.length - 1);
+      setXIsNext(player === "X");
+      setIsYourTurn(data.isYourTurn);
     });
-  }, [xIsNext, isYourTurn, gameID]);
+  }, [gameID, player]);
 
   useEffect(() => {
     socket.on(`load_chat_${gameID}`, data => {
-      //if (data.playerID !== userID) {
-        console.log("load_chat");
-        setChatHistory(chatHistory.concat(data.message));
-      //}
+      console.log("load_chat");
+      setChatHistory(chatHistory.slice().concat(data.message));
     });
   }, [gameID, chatHistory]);
 
@@ -112,7 +115,7 @@ function Game({ socket, onlineUserList }) {
     socket.on(`notify_gameID_${gameID}`, async data => {
       console.log(`notify_gameID_${gameID}`);
       console.log(data);
-      setChatHistory(chatHistory.concat([
+      setChatHistory(chatHistory.slice().concat([
         {
           ownerID: null,
           message: data.player2.Name + " has joined the game"
@@ -120,9 +123,10 @@ function Game({ socket, onlineUserList }) {
       ]));
       // player1 (who creates the game) moves first
       setIsYourTurn(userID === data.player1.ID ? true : false);
+      setPlayer(userID === data.player1.ID ? "X" : "O");
       setOpponent(userID === data.player1.ID ? data.player2 : data.player1);
     });
-  }, [chatHistory, gameID]);
+  }, [chatHistory, gameID, userID]);
 
   const handleClick = (i) => {
     const newHistory = history.slice(0, stepNumber + 1);
@@ -144,7 +148,7 @@ function Game({ socket, onlineUserList }) {
     setXIsNext(!xIsNext);
     setIsYourTurn(!isYourTurn);
 
-    socket.emit("move", { 
+    socket.emit("move", {
       history: history.concat([
         {
           squares: squares,
@@ -152,7 +156,8 @@ function Game({ socket, onlineUserList }) {
         }
       ]),
       playerID: userID,
-      gameID
+      gameID,
+      isYourTurn
     });
   }
 
@@ -165,13 +170,14 @@ function Game({ socket, onlineUserList }) {
     setIsAscending(!isAscending);
   };
 
-  const current = history[stepNumber];
+  const current = history.slice(stepNumber, stepNumber + 1)[0];
+  // const current = history[stepNumber];
   const winInfo = calculateWinner(current.squares, current.position, game.IsBlockedRule);
   const winner = winInfo.winner; // X or O
 
   // prevent from playing when there's a winner
   useEffect(() => {
-    setHasWinner(winner != null);
+    setHasWinner(winner !== null);
   }, [winner]);
 
   useEffect(() => {
@@ -190,31 +196,64 @@ function Game({ socket, onlineUserList }) {
       if (res.status === 200) {
         console.log(result.msg);
         setUser(result.player);
-      } else {
+        setOpponent(result.opponent);
+      }
+      else {
         window.alert(result.msg);
       }
     }
 
+    async function updateGameInfo(data) {
+      const res = await fetch(`${API_URL}/games/update`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`
+        }
+      });
+      const result = await res.json();
+      console.log(result);
+      if (res.status === 200) {
+        console.log(result.msg);
+        setUser(result.player);
+        // setHasWinner(false);
+      }
+      //  else {
+      //   window.alert(result.msg);
+      // }
+    }
+
     if (hasWinner) {
       const elo = calculateElo(user.Elo, opponent.Elo);
-      const win = !isYourTurn;
+      const win = player === winner;
       const msg = (win ? "You win\n+" : "You lost\n-") + elo + " elo";
       const data = {
         player: user,
         win: win,
-        elo: elo
+        elo: elo,
+        opponentID: opponent.ID
       }
       updatePlayersInfo(data);
+
+      // some code to update game result here
+      const gameData = {
+        // result: 
+      }
+      updateGameInfo()
+
+      // emit tới server để xóa game này khỏi game layout của những người chơi khác
+
       console.log("HAHA");
-      window.alert(msg);
+      alert(msg);
     }
-  }, [hasWinner, isYourTurn]);
+  }, [winner, hasWinner]);
 
   const moves = history.map((step, move) => {
     const boardSize = config.boardSize;
     const rowIndex = Math.floor(step.position / boardSize);
     const colIndex = step.position % boardSize;
-    const desc = move ? 'Go to move #' + move + 
+    const desc = move ? 'Go to move #' + move +
       ' (' + colIndex + ', ' + rowIndex + ')' : 'Go to game start';
     const buttonClassName = (move === stepNumber) ? "selected-move" : "";
     return (
@@ -251,7 +290,7 @@ function Game({ socket, onlineUserList }) {
       }
     ]));
 
-    socket.emit("chat", { 
+    socket.emit("chat", {
       message: [
         {
           ownerID: user.ID,
@@ -264,89 +303,130 @@ function Game({ socket, onlineUserList }) {
     setChatItemMessage("");
   }
 
+  // useEffect(() => {
+  //   window.addEventListener('beforeunload', alertUser)
+  //   window.addEventListener('unload', handleEndConcert)
+  //   return () => {
+  //     window.removeEventListener('beforeunload', alertUser)
+  //     window.removeEventListener('unload', handleEndConcert)
+  //     handleEndConcert()
+  //   }
+  // }, [])
+  // const alertUser = e => {
+  //   // e.preventDefault()
+  //   // e.returnValue = ''
+  //   alert('cmm');
+  // }
+  // const handleEndConcert = async () => {
+  //   // await fetcher({
+  //   //   url: endConcert(concert.id),
+  //   //   method: 'PUT'
+  //   // })
+  //   alert('cmnr');
+  // }
+
+  const player2 = player === "X" ? "O" : "X";
   let element = (
-    <div style={{ position: 'relative' }}>
-      <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
-        <OnlineUsers onlineUserList={onlineUserList} />
-      </div>
-      <div className="game" style={{ paddingTop: '40px' }}>
-        <div className="player-info">
-          <div style={{ border: '3px solid red' }}>
-            <CardHeader title="OPPONENT"></CardHeader>
-            <CardMedia image={opponent.Avatar == null ? defaultAvatar : opponent.Avatar}
-              style={{ height: '200px', width: '200px' }}
-            >
-            </CardMedia>
-            <Player
-              player={opponent}
-            >
-            </Player>
-          </div>
-          <br></br>
-          <div style={{ border: '3px solid blue' }}>
-            <CardHeader title="YOU"></CardHeader>
-            <CardMedia image={user.Avatar == null ? defaultAvatar : user.Avatar}
-              style={{ height: '200px', width: '200px' }}
-            >
-            </CardMedia>
-            <Player
-              player={user}
-            >
-            </Player>
-          </div>
+    <>
+      {/* <Prompt
+        when={isPrompt()}
+        message={() => 'Are you sure you want to leave this page?'}
+      /> */}
+      <div style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
+          <OnlineUsers onlineUserList={onlineUserList} />
         </div>
-        <div className="game-board">
-          <CardHeader title={"GAME " + game.Name}></CardHeader>
-          <Board
-            key={stepNumber}
-            squares={current.squares}
-            onClick={i => handleClick(i)}
-            winLine={winInfo.winLine}
-          />
-        </div>
-        <div className="game-info">
-          <CardHeader title="GAME INFO"></CardHeader>
-          {game.IsBlockedRule ? <Typography>Blocked Rule</Typography> : <React.Fragment></React.Fragment>}
-          <div>{status}</div>
-          <div>
-            <button onClick={() => sortButtonClicked()}>
-              {isAscending ? "Descending" : "Ascending"}
-            </button>
-          </div>
-          <ol style={{ maxHeight: '275px', overflowY: 'scroll' }}>{moves}</ol>
-          <div className="chat-box">
-            <CardHeader title="CHAT BOX"></CardHeader>
-            <Card style={{ width: '100%', minHeight: '100px', maxHeight: '175px', overflowY: 'scroll' }}>
-              {chatHistory.map((item, i) => {
-                return (
-                  <div key={i} className="chat-item"
-                    style={{ color: item.ownerID === null ? 'gray' : 
-                      (item.ownerID === userID ? 'orange' : 'green') }}
-                  >
-                    {item.ownerID === null ? item.message : 
-                      ((item.ownerID === userID ? user.Name : opponent.Name) + ": " + item.message)}
-                  </div>
-                );
-              })}
-            </Card>
-            <form className="form" onSubmit={handleSubmit}>
-              <TextField id="message" name="message" label="Message" variant="outlined" size="small"
-                margin="normal" required fullWidth autoFocus value={chatItemMessage}
-                onChange={e => setChatItemMessage(e.target.value)}
+        <div className="game" style={{ paddingTop: '40px' }}>
+          <div className="player-info">
+            <div style={{ border: `3px solid ${player2 === "X" ? "blue" : "red"}` }}>
+              <CardHeader title="OPPONENT"></CardHeader>
+              <CardMedia image={opponent.Avatar == null ? defaultAvatar : opponent.Avatar}
+                style={{ height: '120px', width: '200px' }}
               />
-              <IconButton className="submit-button" size="small" type="submit" color="primary">
-                <SendMessageIcon />
-              </IconButton>
-            </form>
+              <Player player={opponent} />
+            </div>
+            <Typography style={{ margin: "10px" }}>{opponentReady ? 'Ready' : 'Not Ready'}</Typography>
+            <br></br>
+            <div style={{ border: `3px solid ${player === "X" ? "blue" : "red"}` }}>
+              <CardHeader title="YOU"></CardHeader>
+              <CardMedia image={user.Avatar == null ? defaultAvatar : user.Avatar}
+                style={{ height: '120px', width: '200px' }}
+              />
+
+              <Player player={user} />
+            </div>
+            <div >
+              {
+                youreReady ?
+                  <Button style={{ margin: "10px" }} variant="contained" color="primary">Cancel</Button> :
+                  <Button style={{ margin: "10px" }} variant="contained" color="secondary">Ready</Button>
+              }
+            </div>
+          </div>
+
+          <div className="game-board">
+            <CardHeader title={"GAME " + game.Name}></CardHeader>
+            <CardHeader title={"GAME " + game.ID}></CardHeader>
+            {start ?
+              <Board
+                key={stepNumber}
+                squares={current.squares}
+                onClick={i => handleClick(i)}
+                winLine={winInfo.winLine}
+              /> : <React.Fragment></React.Fragment>}
+          </div>
+          <div className="game-info">
+            <CardHeader title="GAME INFO"></CardHeader>
+            {game.IsBlockedRule ? <Typography>Blocked Rule</Typography> : <React.Fragment></React.Fragment>}
+            {start ?
+              <React.Fragment>
+                <div>{status}</div>
+                <div>
+                  <button onClick={() => sortButtonClicked()}>
+                    {isAscending ? "Descending" : "Ascending"}
+                  </button>
+                </div>
+                <ol style={{ maxHeight: '275px', overflowY: 'scroll' }}>{moves}</ol>
+              </React.Fragment> :
+              <React.Fragment></React.Fragment>}
+            <div className="chat-box">
+              <CardHeader title="CHAT BOX"></CardHeader>
+              <Card style={{ width: '100%', minHeight: '100px', maxHeight: '175px', overflowY: 'scroll' }}>
+                {chatHistory.map((item, i) => {
+                  return (
+                    <div key={i} className="chat-item"
+                      style={{
+                        color: item.ownerID === null ? 'gray' :
+                          (item.ownerID === userID ? 'orange' : 'green')
+                      }}
+                    >
+                      {item.ownerID === null ? item.message :
+                        ((item.ownerID === userID ? user.Name : opponent.Name) + ": " + item.message)}
+                    </div>
+                  );
+                })}
+              </Card>
+              <form className="form" onSubmit={handleSubmit}>
+                <TextField id="message" name="message" label="Message" variant="outlined" size="small"
+                  margin="normal" required fullWidth autoFocus value={chatItemMessage}
+                  onChange={e => setChatItemMessage(e.target.value)}
+                />
+                <IconButton className="submit-button" size="small" type="submit" color="primary">
+                  <SendMessageIcon />
+                </IconButton>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+    </>
+
   );
 
   return (
-    element    
-  );  
+    element
+  );
 }
 
 export default Game;

@@ -16,7 +16,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { authen } from '../../utils/helper'
+import { authen, isBlankString } from '../../utils/helper'
 import GameList from './gamelist';
 import config from '../../constants/config.json';
 const API_URL = config.API_URL_TEST;
@@ -78,10 +78,29 @@ function Games({ socket }) {
         }
       });
       const result = await res.json();
-      console.log(result);
+      // console.log(result);
       setGames(result.games);
     }
     getAllGames();
+  }, []);
+
+  useEffect(() => {
+
+    socket.on(`newGameFail${userID}`, (data) => {
+      alert(data.msg);// game name is empty
+    });
+
+    socket.on("server_NewGame", data => {
+      setGames(games => {
+        const gamesCopy = games.slice();
+        return [data.game].concat(gamesCopy);
+        // games.slice().concat([data.game])});
+
+      });
+      if (data.game.Player1ID === userID) {
+        history.push(`/games/${data.game.ID}`);
+      }
+    })
   }, []);
 
   const addGameButtonClicked = () => {
@@ -99,22 +118,27 @@ function Games({ socket }) {
       isBlockedRule: isBlockedRule,
       userID: userID
     }
-    console.log(data);
-    const res = await fetch(`${API_URL}/games/add`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`
-      }
-    });
-    const result = await res.json();
-    if (res.status === 200) {
-      console.log(result.msg);
-      history.push('/games/' + result.game.ID);
-    } else {
-      window.alert(result.msg);
+    // console.log(data);
+    if (isBlankString(data.name)) {
+      alert('Game name can not be empty');
+      return;
     }
+    socket.emit('client_NewGame', data);
+    // const res = await fetch(`${API_URL}/games/add`, {
+    //   method: 'POST',
+    //   body: JSON.stringify(data),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     Authorization: `Bearer ${jwtToken}`
+    //   }
+    // });
+    // const result = await res.json();
+    // if (res.status === 200) {
+    //   console.log(result.msg);
+    //   history.push('/games/' + result.game.ID);
+    // } else {
+    //   window.alert(result.msg);
+    // }
   }
 
   return (
@@ -163,7 +187,7 @@ function Games({ socket }) {
               <TextField id="password" label="Password" margin="dense"
                 fullWidth onChange={e => setPassword(e.target.value)}
               />
-              <Typography style={{display: "inline-block"}}>
+              <Typography style={{ display: "inline-block" }}>
                 Is Blocked Rule
               </Typography>
               <Checkbox onChange={e => setIsBlockedRule(e.target.checked)} />
@@ -172,7 +196,7 @@ function Games({ socket }) {
               <Button onClick={handleClose} color="primary">
                 Cancel
               </Button>
-              <Button onClick={handleCreate} color="primary">
+              <Button onClick={handleCreate} color="secondary">
                 Create
               </Button>
             </DialogActions>
