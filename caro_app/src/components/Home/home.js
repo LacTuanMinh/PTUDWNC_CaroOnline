@@ -88,18 +88,10 @@ function Home({ onlineUserList, socket }) {
             <DialogTitle id="form-dialog-title">Provide Game ID to join</DialogTitle>
             <DialogContent>
 
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Game ID"
-                fullWidth
+              <TextField autoFocus margin="dense" label="Game ID" fullWidth
                 onChange={(event) => { setGameId(event.target.value); }}
               />
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Password (if has)"
-                fullWidth
+              <TextField margin="dense" label="Password (if needed)" fullWidth
                 onChange={(event) => { setGamePassword(event.target.value); }}
               />
             </DialogContent>

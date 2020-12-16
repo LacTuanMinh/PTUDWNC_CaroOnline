@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { Prompt } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -7,15 +7,16 @@ import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
 import SendMessageIcon from '@material-ui/icons/Send';
 import Typography from '@material-ui/core/Typography';
-import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
+
 import Board from './board';
 import Player from '../Player/player';
-import defaultAvatar from '../../images/defaultAvatar.jpg';
+import Timer from '../Timer/timer';
 import { calculateWinner, calculateElo } from './gameServices';
 import OnlineUsers from '../OnlineUsers/onlineUsers_Secondary';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
+
 const API_URL = config.API_URL_TEST;
 const jwtToken = window.localStorage.getItem('jwtToken');
 
@@ -40,11 +41,82 @@ function Game({ socket, onlineUserList }) {
   const [isAscending, setIsAscending] = useState(true);
   const [game, setGame] = useState({});
   const [user, setUser] = useState({});
-  const [opponent, setOpponent] = useState({});
+  const [opponent, setOpponent] = useState({
+    Name: "Waiting for opponent",
+    Elo: 0
+  });
   const [isYourTurn, setIsYourTurn] = useState(true);
-  const [player, setPlayer] = useState("");// X || O
+  const [player, setPlayer] = useState("X");// X || O
   const [opponentReady, setOpponentReady] = useState(false);
   const [youreReady, setYoureReady] = useState(false);
+
+  async function getPlayer(id) {
+    const res = await fetch(`${API_URL}/users/get/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`
+      }
+    });
+    const result = await res.json();
+    console.log(result);
+    setUser(result.user);
+  }
+
+  async function getGame(gameID) {
+    const res = await fetch(`${API_URL}/games/get/${gameID}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`
+      }
+    });
+    const result = await res.json();
+    console.log(result);
+    setGame(result.game);
+  }
+
+  // update user info
+  async function updatePlayersInfo(data) {
+    const res = await fetch(`${API_URL}/users/update`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`
+      }
+    });
+    const result = await res.json();
+    console.log(result);
+    if (res.status === 200) {
+      console.log(result.msg);
+      setUser(result.player);
+      setOpponent(result.opponent);
+    }
+    else {
+      window.alert(result.msg);
+    }
+  }
+  
+  async function updateGameInfo(data) {
+    const res = await fetch(`${API_URL}/games/update`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`
+      }
+    });
+    const result = await res.json();
+    console.log(result);
+    if (res.status === 200) {
+      console.log(result.msg);
+      setGame(result.game);
+    }
+    else {
+     window.alert(result.msg);
+    }
+  }
 
   // authen
   useEffect(() => {
@@ -57,43 +129,27 @@ function Game({ socket, onlineUserList }) {
     Authen();
   }, []);
 
-  // player
+  // set game status
   useEffect(() => {
-    async function getPlayer(id) {
-      const res = await fetch(`${API_URL}/users/get/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`
-        }
-      });
-      const result = await res.json();
-      console.log(result);
-      setUser(result.user);
-    }
+    setStart(youreReady && opponentReady);
+  }, [youreReady, opponentReady]);
+
+  // get player
+  useEffect(() => {
     if (user) {
       getPlayer(userID);
     }
   }, []);
 
+  // get game
   useEffect(() => {
-    async function getGame(gameID) {
-      const res = await fetch(`${API_URL}/games/get/${gameID}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`
-        }
-      });
-      const result = await res.json();
-      console.log(result);
-      setGame(result.game);
-    }
     if (game) {
+      console.log("Game setup");
       getGame(gameID);
     }
   }, []);
 
+  // load moves
   useEffect(() => {
     socket.on(`load_moves_${gameID}`, data => {
       console.log("load_moves");
@@ -104,15 +160,17 @@ function Game({ socket, onlineUserList }) {
     });
   }, [gameID, player]);
 
+  // load chat
   useEffect(() => {
     socket.on(`load_chat_${gameID}`, data => {
       console.log("load_chat");
-      setChatHistory(chatHistory.slice().concat(data.message));
+      setChatHistory(data.chatHistory);
     });
-  }, [gameID, chatHistory]);
+  }, [gameID]);
 
+  // notify when someone enter the room
   useEffect(() => {
-    socket.on(`notify_gameID_${gameID}`, async data => {
+    socket.on(`notify_gameID_${gameID}`, data => {
       console.log(`notify_gameID_${gameID}`);
       console.log(data);
       setChatHistory(chatHistory.slice().concat([
@@ -126,7 +184,66 @@ function Game({ socket, onlineUserList }) {
       setPlayer(userID === data.player1.ID ? "X" : "O");
       setOpponent(userID === data.player1.ID ? data.player2 : data.player1);
     });
-  }, [chatHistory, gameID, userID]);
+  }, [gameID, userID]);
+
+  // opponent ready
+  useEffect(() => {
+    socket.on(`opponent_ready_${gameID}`, data => {
+      console.log("opponent_ready");
+      setOpponentReady(data.value);
+    });
+  }, [gameID]);
+
+  // opponent leave
+  useEffect(() => {
+    socket.on(`opponent_leave_game_${gameID}`, data => {
+      console.log("opponent_leave_game");
+      setUser(data.user);
+    });
+  }, [gameID]);
+
+  // owner of the game leaves game
+  useEffect(() => {
+    socket.on(`owner_leave_game_${gameID}`, data => {
+      console.log("owner_leave_game");
+      console.log(data);
+      setPlayer("X");
+      setOpponentReady(false);
+      setYoureReady(false);
+      setOpponent({
+        Name: "Waiting for opponent",
+        Elo: 0
+      });
+      setGame(data.game);
+    });
+  }, [gameID]);
+
+  // time up
+  useEffect(() => {
+    socket.on(`timeup_${gameID}`, data => {
+      console.log("time up");
+      // reset opponent
+      setOpponent(data.opponent);
+      // reset user
+      getPlayer(data.userID);
+
+      const gameData = {
+        game,
+        player2ID: data.opponent.ID,
+        result: data.winnerID === game.Player1ID ? 1 : 2,
+        status: 0,
+        moves: JSON.stringify(history),
+        chatHistory: JSON.stringify(chatHistory)
+      }
+      if (game.Result === null) {
+        updateGameInfo(gameData);
+      }
+      
+      setYoureReady(false);
+      setOpponentReady(false);
+      setHasWinner(false);
+    });
+  }, [gameID, game]);
 
   const handleClick = (i) => {
     const newHistory = history.slice(0, stepNumber + 1);
@@ -181,53 +298,10 @@ function Game({ socket, onlineUserList }) {
   }, [winner]);
 
   useEffect(() => {
-    // update user info
-    async function updatePlayersInfo(data) {
-      const res = await fetch(`${API_URL}/users/update`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`
-        }
-      });
-      const result = await res.json();
-      console.log(result);
-      if (res.status === 200) {
-        console.log(result.msg);
-        setUser(result.player);
-        setOpponent(result.opponent);
-      }
-      else {
-        window.alert(result.msg);
-      }
-    }
-
-    async function updateGameInfo(data) {
-      const res = await fetch(`${API_URL}/games/update`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`
-        }
-      });
-      const result = await res.json();
-      console.log(result);
-      if (res.status === 200) {
-        console.log(result.msg);
-        setUser(result.player);
-        // setHasWinner(false);
-      }
-      //  else {
-      //   window.alert(result.msg);
-      // }
-    }
-
     if (hasWinner) {
       const elo = calculateElo(user.Elo, opponent.Elo);
       const win = player === winner;
-      const msg = (win ? "You win\n+" : "You lost\n-") + elo + " elo";
+      const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
       const data = {
         player: user,
         win: win,
@@ -238,14 +312,25 @@ function Game({ socket, onlineUserList }) {
 
       // some code to update game result here
       const gameData = {
-        // result: 
+        game,
+        player2ID: opponent.ID,
+        result: win ? 1 : 2,
+        status: 0,
+        moves: JSON.stringify(history),
+        chatHistory: JSON.stringify(chatHistory)
       }
-      updateGameInfo()
+      console.log(gameData);
+      if (game.Player1ID === userID) {
+        updateGameInfo(gameData);
+      }
 
       // emit tới server để xóa game này khỏi game layout của những người chơi khác
+      
 
-      console.log("HAHA");
       alert(msg);
+      setOpponentReady(false);
+      setYoureReady(false);
+      setHasWinner(false);
     }
   }, [winner, hasWinner]);
 
@@ -291,77 +376,113 @@ function Game({ socket, onlineUserList }) {
     ]));
 
     socket.emit("chat", {
-      message: [
+      chatHistory: chatHistory.concat([
         {
           ownerID: user.ID,
           message: chatItemMessage
         }
-      ],
+      ]),
       gameID
     });
 
     setChatItemMessage("");
   }
 
-  // useEffect(() => {
-  //   window.addEventListener('beforeunload', alertUser)
-  //   window.addEventListener('unload', handleEndConcert)
-  //   return () => {
-  //     window.removeEventListener('beforeunload', alertUser)
-  //     window.removeEventListener('unload', handleEndConcert)
-  //     handleEndConcert()
-  //   }
-  // }, [])
-  // const alertUser = e => {
-  //   // e.preventDefault()
-  //   // e.returnValue = ''
-  //   alert('cmm');
-  // }
-  // const handleEndConcert = async () => {
-  //   // await fetcher({
-  //   //   url: endConcert(concert.id),
-  //   //   method: 'PUT'
-  //   // })
-  //   alert('cmnr');
-  // }
+  const handleReady = () => {
+    setYoureReady(!youreReady);
+    socket.emit("ready", { gameID, value: !youreReady });
+  }
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', alertUser);
+    window.addEventListener('unload', handleEndConcert);
+    return () => {
+      window.removeEventListener('beforeunload', alertUser);
+      window.removeEventListener('unload', handleEndConcert);
+      handleEndConcert(game, opponent);
+    }
+  }, [game, opponent]);
+
+  const alertUser = e => {
+    e.preventDefault();
+    // e.returnValue = 'HAHA';
+    window.alert('You are reload the page!!!');
+  }
+
+  const handleEndConcert = (game, opponent) => {
+    if (start) {
+      const elo = calculateElo(user.Elo, opponent.Elo);
+      const win = !isYourTurn;
+      const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
+      //socket.emit("leave_game", { user, opponent, gameID, elo });
+      window.alert(msg);
+    }
+    else {
+      // leave game when the game is not starting yet
+      // reset owner of the game if the owner leaves
+      if (userID === game.Player1ID && opponent.ID && !game.Result) {
+        console.log("emit owner leave game");
+        console.log(game);
+        console.log(opponent.ID);
+        socket.emit("owner_leave_game", { game, userID, opponentID: opponent.ID });
+      }
+    }
+  }
 
   const player2 = player === "X" ? "O" : "X";
   let element = (
-    <>
-      {/* <Prompt
-        when={isPrompt()}
-        message={() => 'Are you sure you want to leave this page?'}
-      /> */}
+    <React.Fragment>
+      <Prompt
+        when={start}
+        message={() => 'Are you sure you want to leave the game?'}
+      />
       <div style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
           <OnlineUsers onlineUserList={onlineUserList} />
         </div>
         <div className="game" style={{ paddingTop: '40px' }}>
           <div className="player-info">
-            <div style={{ border: `3px solid ${player2 === "X" ? "blue" : "red"}` }}>
-              <CardHeader title="OPPONENT"></CardHeader>
-              <CardMedia image={opponent.Avatar == null ? defaultAvatar : opponent.Avatar}
-                style={{ height: '120px', width: '200px' }}
-              />
-              <Player player={opponent} />
-            </div>
-            <Typography style={{ margin: "10px" }}>{opponentReady ? 'Ready' : 'Not Ready'}</Typography>
-            <br></br>
-            <div style={{ border: `3px solid ${player === "X" ? "blue" : "red"}` }}>
-              <CardHeader title="YOU"></CardHeader>
-              <CardMedia image={user.Avatar == null ? defaultAvatar : user.Avatar}
-                style={{ height: '120px', width: '200px' }}
-              />
+            <CardHeader title="PLAYER INFO"></CardHeader>
+            <Player player={opponent} xOrO={player2} />
 
-              <Player player={user} />
-            </div>
-            <div >
-              {
-                youreReady ?
-                  <Button style={{ margin: "10px" }} variant="contained" color="primary">Cancel</Button> :
-                  <Button style={{ margin: "10px" }} variant="contained" color="secondary">Ready</Button>
-              }
-            </div>
+            {/* game not started */}
+            {!start ? 
+              <Typography style={{ margin: "10px", color: "darkgreen" }}>
+                {opponentReady ? 'Ready' : 'Not Ready'}
+              </Typography> :
+              <Timer
+                socket={socket}
+                gameID={gameID}
+                value={game.TimeThinkingEachTurn}
+                isYourTurn={!isYourTurn}
+                opponent={opponent}
+                user={user}
+                isOpponent={true}
+                elo={calculateElo(opponent.Elo, user.Elo)}
+              />}
+
+            <br></br>
+            <Player player={user} xOrO={player} />
+
+            {/* game not started */}
+            {!start ? 
+              // waiting for opponent, hide the Ready Button
+              (opponent.ID ? 
+              <Button style={{ margin: "10px" }} variant="contained" color="primary"
+                onClick={handleReady}
+              >
+                {youreReady ? "Cancel" : "Ready"}
+              </Button> : <React.Fragment></React.Fragment>) : 
+              <Timer
+                socket={socket}
+                gameID={gameID}
+                value={game.TimeThinkingEachTurn}
+                isYourTurn={isYourTurn}
+                opponent={user}
+                user={opponent}
+                isOpponent={false}
+                elo={calculateElo(opponent.Elo, user.Elo)}
+              />}
           </div>
 
           <div className="game-board">
@@ -419,9 +540,7 @@ function Game({ socket, onlineUserList }) {
           </div>
         </div>
       </div>
-
-    </>
-
+    </React.Fragment>
   );
 
   return (

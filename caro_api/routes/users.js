@@ -33,7 +33,7 @@ module.exports = function (io) { // catch here
 
     await userModel.updateUserInfo(player.ID, { Elo: entity.Elo, WinCount: entity.WinCount, PlayCount: entity.PlayCount });
     const opponent = await userModel.getUserByID(opponentID);
-    return res.status(200).send({ msg: "Players updated", player: entity, opponent });
+    return res.status(200).send({ msg: "Players updated", player: entity, opponent: opponent[0] });
   });
 
   router.post('/signout', async (req, res) => {

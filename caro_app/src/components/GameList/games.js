@@ -11,6 +11,8 @@ import Fab from '@material-ui/core/Fab';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Checkbox from '@material-ui/core/Checkbox';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -57,6 +59,7 @@ function Games({ socket }) {
   const [name, setName] = useState("");
   const [password, setPassword] = useState(null);
   const [isBlockedRule, setIsBlockedRule] = useState(false);
+  const [timeThinkingEachTurn, setTimeThinkingEachTurn] = useState(60);
 
   useEffect(() => {
     async function Authen() {
@@ -113,10 +116,11 @@ function Games({ socket }) {
 
   const handleCreate = async () => {
     const data = {
-      name: name,
-      password: password,
-      isBlockedRule: isBlockedRule,
-      userID: userID
+      name,
+      password,
+      isBlockedRule,
+      timeThinkingEachTurn,
+      userID
     }
     // console.log(data);
     if (isBlankString(data.name)) {
@@ -187,10 +191,26 @@ function Games({ socket }) {
               <TextField id="password" label="Password" margin="dense"
                 fullWidth onChange={e => setPassword(e.target.value)}
               />
-              <Typography style={{ display: "inline-block" }}>
-                Is Blocked Rule
-              </Typography>
-              <Checkbox onChange={e => setIsBlockedRule(e.target.checked)} />
+              <div style={{ display: "inline-flex", alignItems: "center" }}>
+                <Typography>
+                  Is Blocked Rule
+                </Typography>
+                <Checkbox onChange={e => setIsBlockedRule(e.target.checked)} />
+              </div>
+              
+              <div>
+                <Typography style={{ display: "inline-flex", alignItems: "center" }}>
+                  Time to think each turn (seconds)
+                </Typography>
+                <Select labelId="demo-customized-select-label" id="time" value={timeThinkingEachTurn}
+                  style={{marginLeft: "10px" }} onChange={e => setTimeThinkingEachTurn(e.target.value)}
+                >
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={30}>30</MenuItem>
+                  <MenuItem value={60}>60</MenuItem>
+                  <MenuItem value={90}>90</MenuItem>
+                </Select>   
+              </div>        
             </DialogContent>
             <DialogActions>
               <Button onClick={handleClose} color="primary">

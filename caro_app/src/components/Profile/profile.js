@@ -14,7 +14,6 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import ImageUploadDialog from '../Dialogs/ImageUploadDialog';
 import Badge from '@material-ui/core/Badge';
-import logo from '../../images/caro.ico';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';

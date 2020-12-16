@@ -3,6 +3,7 @@ module.exports = io => { // catch here
   const router = express.Router();
   const { v1: uuidv1 } = require('uuid');
   const gameModel = require('../models/gameModel');
+  const userModel = require('../models/userModel');
   const v1options = {
     msecs: Date.now(),
   };
@@ -26,7 +27,6 @@ module.exports = io => { // catch here
   });
 
   router.post('/joinbyid', async (req, res) => {
-
     const { gameID, password } = req.body;
     const game = await gameModel.checkGameExistByID(gameID);
 
@@ -43,9 +43,19 @@ module.exports = io => { // catch here
   });
 
   router.post('/update', async (req, res) => {
-
-
+    const { game, player2ID, result, status, moves, chatHistory } = req.body;
+    const updatedGame = {
+      ...game,
+      Player2ID: player2ID,
+      Result: result,
+      Status: status,
+      Moves: moves,
+      ChatHistory: chatHistory
+    }
+    await gameModel.updateGameAfterPlaying(game.ID, updatedGame.Result, updatedGame.Status, updatedGame.Moves, updatedGame.ChatHistory);
+    return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });
+
   // router.post('/add', async (req, res) => {
   // const { name, password, isBlockedRule, userID } = req.body;
 
@@ -77,7 +87,7 @@ module.exports = io => { // catch here
 
     socket.on("chat", data => {
       console.log(data);
-      socket.broadcast.emit(`load_chat_${data.gameID}`, { message: data.message });
+      socket.broadcast.emit(`load_chat_${data.gameID}`, { chatHistory: data.chatHistory });
     });
 
     socket.on("join_game", async data => {
@@ -93,10 +103,59 @@ module.exports = io => { // catch here
       });
     });
 
+    socket.on("ready", data => {
+      console.log(data);
+      socket.broadcast.emit(`opponent_ready_${data.gameID}`, { value: data.value });
+    });
 
+    socket.on("run_out_of_time", async data => {
+      console.log("run_out");
+      console.log(data);
+      const newPlayer = {
+        ...data.player,
+        Elo: data.player.Elo + (data.win ? data.elo : -data.elo),
+        WinCount: data.player.WinCount + (data.win ? 1 : 0),
+        PlayCount: data.player.PlayCount + 1
+      }
+      await userModel.updateUserInfo(data.player.ID, 
+        { Elo: newPlayer.Elo, WinCount: newPlayer.WinCount, PlayCount: newPlayer.PlayCount });
+      socket.broadcast.emit(`timeup_${data.gameID}`, 
+        { opponent: newPlayer, userID: data.opponentID, winnerID: data.win ? data.player.ID : data.opponentID });
+    });
+
+    socket.on("leave_game", async data => {
+      console.log(data);
+      const newUser = {
+        ...data.user,
+        Elo: data.user.Elo - data.elo,
+        PlayCount: data.user.PlayCount + 1
+      }
+      const newOpponent = {
+        ...data.opponent,
+        Elo: data.opponent.Elo + data.elo,
+        WinCount: data.opponent.WinCount + 1,
+        PlayCount: data.opponent.PlayCount + 1
+      }
+      await userModel.updateUserInfo(data.user.ID, { Elo: newUser.Elo, PlayCount: newUser.PlayCount });
+      await userModel.updateUserInfo(data.opponent.ID, 
+        { Elo: newOpponent.Elo, WinCount: newOpponent.WinCount, PlayCount: newOpponent.PlayCount });
+      socket.broadcast.emit(`opponent_leave_game_${data.gameID}`, { user: newOpponent });
+    });
+
+    socket.on("owner_leave_game", async data => {
+      console.log("owner leaves game");
+      console.log(data);
+      const newGame = {
+        ...data.game,
+        Player1ID: data.opponentID,
+        Player2ID: null
+      }
+      await gameModel.updateGameOwner(data.game.ID, newGame.Player1ID, newGame.Player2ID);
+      socket.broadcast.emit(`owner_leave_game_${data.game.ID}`, { game: newGame });
+    });
 
     socket.on("client_NewGame", async data => {
-      const { name, password, isBlockedRule, userID } = data;
+      const { name, password, isBlockedRule, timeThinkingEachTurn, userID } = data;
 
       if (isBlankString(name)) {
         console.log('fail');
@@ -109,6 +168,7 @@ module.exports = io => { // catch here
         Name: name,
         Password: password,
         IsBlockedRule: isBlockedRule,
+        TimeThinkingEachTurn: timeThinkingEachTurn,
         Moves: null,
         Status: 1,  // waiting
         Player1ID: userID,
@@ -123,15 +183,7 @@ module.exports = io => { // catch here
       }
       // console.log('thành công', result);
       io.sockets.emit("server_NewGame", { msg: "Game created", game: newGame });
-    })
-
-    // socket.on("client_LoggedIn", async (data) => {
-    //   console.log("client logged in", data.userID);
-    //   await userModel.updateUserStatus(data.userID, 1);// set status to Online (== 1)
-    //   const list = await userModel.getAllOnlineUsers();
-    //   // console.log("client_LoggedIn", list);
-    //   io.sockets.emit("server_RefreshList", list);
-    // });
+    });
   });
 
   return router;
