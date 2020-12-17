@@ -10,6 +10,7 @@ module.exports = io => { // catch here
   uuidv1(v1options);
   const { isBlankString } = require('../utils/helper');
 
+  const observerOfAGame = new Map()
   router.get('/', async (req, res) => {
     const games = await gameModel.getAllGames();
     // console.log(games);
@@ -44,6 +45,7 @@ module.exports = io => { // catch here
 
   router.post('/update', async (req, res) => {
     const { game, player2ID, result, status, moves, chatHistory } = req.body;
+    console.log('update ', player2ID);
     const updatedGame = {
       ...game,
       Player2ID: player2ID,
@@ -52,7 +54,7 @@ module.exports = io => { // catch here
       Moves: moves,
       ChatHistory: chatHistory
     }
-    await gameModel.updateGameAfterPlaying(game.ID, updatedGame.Result, updatedGame.Status, updatedGame.Moves, updatedGame.ChatHistory);
+    await gameModel.updateGameAfterPlaying(game.ID, updatedGame.Player2ID, updatedGame.Result, updatedGame.Status, updatedGame.Moves, updatedGame.ChatHistory);
     return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });
 
@@ -87,14 +89,44 @@ module.exports = io => { // catch here
 
     socket.on("chat", data => {
       console.log(data);
-      socket.broadcast.emit(`load_chat_${data.gameID}`, { chatHistory: data.chatHistory });
+      socket.broadcast.emit(`load_chat_${data.gameID}`, { message: data.message });
     });
 
     socket.on("join_game", async data => {
+
+
+      const originPlayers = await gameModel.getPlayers(data.gameID);
+
+      // get game data
+
+      // game status === 2 means playing
+
+      if (originPlayers.length === 2) {  // there is already opponent 
+        console.log('khán giả');
+        const observer = await userModel.getUserByID(data.userID);
+        io.sockets.emit(`notify_gameID_${data.gameID}`, {
+          isMainPlayer: false,
+          player1: originPlayers[0],
+          player2: originPlayers[1],
+          observer: observer[0],
+          userID: data.userID
+        });
+
+        if (observerOfAGame.has(data.gameID) === false)
+          observerOfAGame.set(data.gameID, new Set([userID]));
+        else observerOfAGame.get(data.gameID).add(userID);
+
+        //đọc database
+        return;
+      }
+
+      //else game is waiting this opponent 
+
       await gameModel.updateGame(data.gameID, data.userID);
       const players = await gameModel.getPlayers(data.gameID);
       io.sockets.emit(`notify_gameID_${data.gameID}`, {
         gameID: data.gameID,
+        isMainPlayer: true,
         // do ko biết được thứ tự player1 hay player2 là dòng nào,
         // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
         player1: data.userID === players[0].ID ? players[1] : players[0],
@@ -105,7 +137,7 @@ module.exports = io => { // catch here
 
     socket.on("ready", data => {
       console.log(data);
-      socket.broadcast.emit(`opponent_ready_${data.gameID}`, { value: data.value });
+      socket.broadcast.emit(`player2_ready_${data.gameID}`, { value: data.value });
     });
 
     socket.on("run_out_of_time", async data => {
@@ -117,30 +149,30 @@ module.exports = io => { // catch here
         WinCount: data.player.WinCount + (data.win ? 1 : 0),
         PlayCount: data.player.PlayCount + 1
       }
-      await userModel.updateUserInfo(data.player.ID, 
+      await userModel.updateUserInfo(data.player.ID,
         { Elo: newPlayer.Elo, WinCount: newPlayer.WinCount, PlayCount: newPlayer.PlayCount });
-      socket.broadcast.emit(`timeup_${data.gameID}`, 
-        { opponent: newPlayer, userID: data.opponentID, winnerID: data.win ? data.player.ID : data.opponentID });
+      socket.broadcast.emit(`timeup_${data.gameID}`,
+        { player2: newPlayer, player1ID: data.player2ID, winnerID: data.win ? data.player.ID : data.player2ID });
     });
 
-    socket.on("leave_game", async data => {
-      console.log(data);
-      const newUser = {
-        ...data.user,
-        Elo: data.user.Elo - data.elo,
-        PlayCount: data.user.PlayCount + 1
-      }
-      const newOpponent = {
-        ...data.opponent,
-        Elo: data.opponent.Elo + data.elo,
-        WinCount: data.opponent.WinCount + 1,
-        PlayCount: data.opponent.PlayCount + 1
-      }
-      await userModel.updateUserInfo(data.user.ID, { Elo: newUser.Elo, PlayCount: newUser.PlayCount });
-      await userModel.updateUserInfo(data.opponent.ID, 
-        { Elo: newOpponent.Elo, WinCount: newOpponent.WinCount, PlayCount: newOpponent.PlayCount });
-      socket.broadcast.emit(`opponent_leave_game_${data.gameID}`, { user: newOpponent });
-    });
+    // socket.on("leave_game", async data => {
+    //   console.log(data);
+    //   const newUser = {
+    //     ...data.user,
+    //     Elo: data.user.Elo - data.elo,
+    //     PlayCount: data.user.PlayCount + 1
+    //   }
+    //   const newOpponent = {
+    //     ...data.opponent,
+    //     Elo: data.opponent.Elo + data.elo,
+    //     WinCount: data.opponent.WinCount + 1,
+    //     PlayCount: data.opponent.PlayCount + 1
+    //   }
+    //   await userModel.updateUserInfo(data.user.ID, { Elo: newUser.Elo, PlayCount: newUser.PlayCount });
+    //   await userModel.updateUserInfo(data.opponent.ID,
+    //     { Elo: newOpponent.Elo, WinCount: newOpponent.WinCount, PlayCount: newOpponent.PlayCount });
+    //   socket.broadcast.emit(`opponent_leave_game_${data.gameID}`, { user: newOpponent });
+    // });
 
     socket.on("owner_leave_game", async data => {
       console.log("owner leaves game");

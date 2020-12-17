@@ -197,20 +197,20 @@ function Games({ socket }) {
                 </Typography>
                 <Checkbox onChange={e => setIsBlockedRule(e.target.checked)} />
               </div>
-              
+
               <div>
                 <Typography style={{ display: "inline-flex", alignItems: "center" }}>
                   Time to think each turn (seconds)
                 </Typography>
                 <Select labelId="demo-customized-select-label" id="time" value={timeThinkingEachTurn}
-                  style={{marginLeft: "10px" }} onChange={e => setTimeThinkingEachTurn(e.target.value)}
+                  style={{ marginLeft: "10px" }} onChange={e => setTimeThinkingEachTurn(e.target.value)}
                 >
                   <MenuItem value={10}>10</MenuItem>
                   <MenuItem value={30}>30</MenuItem>
                   <MenuItem value={60}>60</MenuItem>
                   <MenuItem value={90}>90</MenuItem>
-                </Select>   
-              </div>        
+                </Select>
+              </div>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleClose} color="primary">
