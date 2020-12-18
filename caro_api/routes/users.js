@@ -31,7 +31,7 @@ module.exports = function (io) { // catch here
     }
     console.log('entity', entity);
 
-    await userModel.updateUserInfo(player.ID, { Elo: entity.Elo, WinCount: entity.WinCount, PlayCount: entity.PlayCount });
+    await userModel.updateUserInfo(player1.ID, { Elo: entity.Elo, WinCount: entity.WinCount, PlayCount: entity.PlayCount });
     const player2 = await userModel.getUserByID(player2ID);
     return res.status(200).send({ msg: "Players updated", player1: entity, player2: player2[0] });
   });

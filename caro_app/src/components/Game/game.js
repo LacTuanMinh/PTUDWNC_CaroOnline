@@ -113,7 +113,7 @@ function Game({ socket, onlineUserList }) {
     const result = await res.json();
     console.log(result);
     if (res.status === 200) {
-      console.log(result.msg);
+      // console.log(result.msg);
       setGame(result.game);
     }
     else {
@@ -147,16 +147,18 @@ function Game({ socket, onlineUserList }) {
 
   // get player info when component mount
   useEffect(() => {
-    if (game.Player1ID === userID || game.Player2ID === userID) { // if (player === {})
-      if (game.Player1ID === userID) {
-        console.log("IM THE 1ST");
+    if (!game.Result) { // if (game.Result == null)
+      if (game.Player1ID === userID || game.Player2ID === userID) { // if (player === {})
+        if (game.Player1ID === userID) {
+          console.log("IM THE 1ST");
+        }
+        if (game.Player2ID === userID) {
+          console.log("IM THE 2ND");
+        }
+        getPlayer(userID);
       }
-      if (game.Player2ID === userID) {
-        console.log("IM THE 2ND");
-      }
-      getPlayer(userID);
     }
-  }, [game.Player1ID, game.Player2ID]);
+  }, [game]);
 
   // load moves
   useEffect(() => {
@@ -255,17 +257,17 @@ function Game({ socket, onlineUserList }) {
       // reset player2
       setPlayer2(data.player2);
       // reset player1
-      getPlayer(data.Player1ID);
+      getPlayer(data.player1ID);
 
       const gameData = {
         game,
-        player2ID: data.player2.ID,
+        player2ID: userID === game.Player1ID ? player2.ID : userID,
         result: data.winnerID === game.Player1ID ? 1 : 2,
         status: 0,
         moves: JSON.stringify(history),
         chatHistory: JSON.stringify(chatHistory)
       }
-      if (game.Result === null) {
+      if (!game.Result) {
         updateGameInfo(gameData);
       }
 
@@ -273,17 +275,15 @@ function Game({ socket, onlineUserList }) {
       setPlayer2Ready(false);
       setHasWinner(false);
     });
-  }, [gameID, game]);
+  }, [gameID, history, chatHistory, game]);
 
   const handleClick = (i) => {
-
     if (!isMainPlayer)// chỉ là khán giả thì ko click được
       return;
 
     const newHistory = history.slice(0, stepNumber + 1);
     const current = newHistory[newHistory.length - 1];
     const squares = current.squares.slice();
-
 
     if (hasWinner || squares[i] || !isYourTurn) {
       return;
@@ -333,7 +333,6 @@ function Game({ socket, onlineUserList }) {
   }, [winner]);
 
   useEffect(() => {
-
     if (isMainPlayer && hasWinner) {
       const elo = calculateElo(player1.Elo, player2.Elo);
       const win = player === winner;
@@ -347,30 +346,26 @@ function Game({ socket, onlineUserList }) {
       updatePlayersInfo(data);
 
       // some code to update game result here
-      console.log(game);
-      console.log(player2.ID);
       const gameData = {
         game,
-        player2ID: player2.ID,
-        result: win ? 1 : 2,
+        player2ID: userID === game.Player1ID ? player2.ID : userID,
+        result: (win && userID === game.Player1ID) || (!win && userID === game.Player2ID) ? 1 : 2,
         status: 0,
         moves: JSON.stringify(history),
         chatHistory: JSON.stringify(chatHistory)
       }
-      console.log(gameData);
-      if (game.Player1ID === userID) {
+      if (!game.Result) {
         updateGameInfo(gameData);
       }
 
       // emit tới server để xóa game này khỏi game layout của những người chơi khác
-
 
       alert(msg);
       setPlayer2Ready(false);
       setPlayer1Ready(false);
       setHasWinner(false);
     }
-  }, [winner, hasWinner, isMainPlayer]);
+  }, [winner, hasWinner, isMainPlayer, history, chatHistory, game]);
 
   const moves = history.map((step, move) => {
     const boardSize = config.boardSize;
@@ -531,7 +526,6 @@ function Game({ socket, onlineUserList }) {
                 }
               </>
               // waiting for opponent, hide the Ready Button
-
               :
               <Timer
                 socket={socket}

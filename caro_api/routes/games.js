@@ -45,7 +45,6 @@ module.exports = io => { // catch here
 
   router.post('/update', async (req, res) => {
     const { game, player2ID, result, status, moves, chatHistory } = req.body;
-    console.log('update ', player2ID);
     const updatedGame = {
       ...game,
       Player2ID: player2ID,
@@ -54,7 +53,13 @@ module.exports = io => { // catch here
       Moves: moves,
       ChatHistory: chatHistory
     }
-    await gameModel.updateGameAfterPlaying(game.ID, updatedGame.Player2ID, updatedGame.Result, updatedGame.Status, updatedGame.Moves, updatedGame.ChatHistory);
+    await gameModel.updateGame(game.ID, {
+      Player2ID: updatedGame.Player2ID,
+      Result: updatedGame.Result,
+      Status: updatedGame.Status,
+      Moves: updatedGame.Moves,
+      ChatHistory: updatedGame.ChatHistory
+    });
     return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });
 
@@ -93,12 +98,7 @@ module.exports = io => { // catch here
     });
 
     socket.on("join_game", async data => {
-
-
       const originPlayers = await gameModel.getPlayers(data.gameID);
-
-      // get game data
-
       // game status === 2 means playing
 
       if (originPlayers.length === 2) {  // there is already opponent 
@@ -122,10 +122,9 @@ module.exports = io => { // catch here
 
       //else game is waiting this opponent 
 
-      await gameModel.updateGame(data.gameID, data.userID);
+      await gameModel.updateGame(data.gameID, { Player2ID: data.userID });
       const players = await gameModel.getPlayers(data.gameID);
       io.sockets.emit(`notify_gameID_${data.gameID}`, {
-        gameID: data.gameID,
         isMainPlayer: true,
         // do ko biết được thứ tự player1 hay player2 là dòng nào,
         // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
@@ -182,7 +181,10 @@ module.exports = io => { // catch here
         Player1ID: data.opponentID,
         Player2ID: null
       }
-      await gameModel.updateGameOwner(data.game.ID, newGame.Player1ID, newGame.Player2ID);
+      await gameModel.updateGame(data.game.ID, {
+        Player1ID: newGame.Player1ID,
+        Player2ID: newGame.Player2ID
+      });
       socket.broadcast.emit(`owner_leave_game_${data.game.ID}`, { game: newGame });
     });
 

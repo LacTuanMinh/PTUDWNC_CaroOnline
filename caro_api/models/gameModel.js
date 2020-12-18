@@ -16,13 +16,5 @@ module.exports = {
 
     addGame: entity => db.add('Games', entity),
 
-    updateGameOwner: (id, player1ID, player2ID) => db.patch('Games',
-        { Player1ID: player1ID, Player2ID: player2ID }, { ID: id }),
-
-    updateGameAfterPlaying: (id, Player2ID, Result, Status, Moves, ChatHistory) => db.patch('Games',
-        { Player2ID, Result, Status, Moves, ChatHistory }, { ID: id }),
-
-    updateGame: (id, player2ID) => db.patch('Games', { Player2ID: player2ID }, { ID: id }),
-
-
+    updateGame: (id, entity) => db.patch('Games', entity, { ID: id }),
 }

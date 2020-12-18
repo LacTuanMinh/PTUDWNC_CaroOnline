@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function Timer({ socket, gameID, value, isYourTurn, player2, player1, isPlayer2, elo }) {
+function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2, elo }) {
   const [seconds, setSeconds] = useState(value);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ function Timer({ socket, gameID, value, isYourTurn, player2, player1, isPlayer2,
 
       // check when player runs out of time (you lose)
       // isPlayer2 means the opponent's timer counts down
-      if (seconds === 0) {
+      if (seconds === 0 && isYourTurn) {
         console.log("Game over");
         clearInterval(myInterval);
         const msg = "You " + (isPlayer2 ? "win\n+" : "lose\n-") + elo + " elo";
@@ -28,7 +28,8 @@ function Timer({ socket, gameID, value, isYourTurn, player2, player1, isPlayer2,
             win: isPlayer2,
             elo,
             player2ID: !isPlayer2 ? player1.ID : player2.ID
-          });
+          }
+        );
       }
     }, 1000);
     return () => {
