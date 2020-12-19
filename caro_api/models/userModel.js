@@ -1,7 +1,11 @@
 const db = require('../utils/db');
 
 module.exports = {
-    getAllUsername: _ => db.load('SELECT Username FROM Users'),
+    getAllUsername: _ => db.load('SELECT Username FROM Users WHERE IsAdmin = 0'),
+
+
+
+    getUsersByIDsLite: IDs => db.load(`SELECT ID, Name FROM Users WHERE ID IN (${IDs})`),
 
     getUserByID: id => db.load(`SELECT * FROM Users WHERE ID = '${id}' AND IsAdmin = 0`),
 

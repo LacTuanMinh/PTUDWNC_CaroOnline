@@ -8,9 +8,11 @@ module.exports = io => { // catch here
     msecs: Date.now(),
   };
   uuidv1(v1options);
+  const trackGameObservers = require('../utils/trackGameObservers');
   const { isBlankString } = require('../utils/helper');
 
-  const observerOfAGame = new Map()
+  const observerOfAGame = new Map();
+
   router.get('/', async (req, res) => {
     const games = await gameModel.getAllGames();
     // console.log(games);
@@ -63,29 +65,6 @@ module.exports = io => { // catch here
     return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });
 
-  // router.post('/add', async (req, res) => {
-  // const { name, password, isBlockedRule, userID } = req.body;
-
-  // if (name === null || isBlockedRule === null) {
-  //   return res.status(400).send({ msg: "Field(s) is empty!!!" });
-  // }
-
-  // const newGame = {
-  //   ID: uuidv1(),
-  //   Name: name,
-  //   Password: password,
-  //   IsBlockedRule: isBlockedRule,
-  //   Moves: null,
-  //   Status: 1,  // waiting
-  //   Player1ID: userID,
-  //   Player2ID: null,
-  //   Result: null
-  // }
-  // const result = await gameModel.addGame(newGame);
-  // console.log(result);
-  // return res.status(200).send({ msg: "Game created", game: newGame });
-  // });
-
   io.on("connection", async (socket) => {
     socket.on("move", data => {
       console.log(data);
@@ -103,31 +82,38 @@ module.exports = io => { // catch here
 
       if (originPlayers.length === 2) {  // there is already opponent 
         console.log('khán giả');
-        const observer = await userModel.getUserByID(data.userID);
-        io.sockets.emit(`notify_gameID_${data.gameID}`, {
-          isMainPlayer: false,
-          player1: originPlayers[0],
-          player2: originPlayers[1],
-          observer: observer[0],
-          userID: data.userID
-        });
 
-        if (observerOfAGame.has(data.gameID) === false)
-          observerOfAGame.set(data.gameID, new Set([userID]));
-        else observerOfAGame.get(data.gameID).add(userID);
+        const addResult = trackGameObservers.addObserverToMap(observerOfAGame, data.gameID, data.userID);
 
-        //đọc database
+        if (addResult === 1) {
+          const observerIDsIterator = observerOfAGame.get(data.gameID).keys();
+          const observerIDs = Array.from(observerIDsIterator)
+          const result = observerIDs.map(id => {
+            return "'" + id.replace("'", "''") + "'";
+          }).join();
+
+          console.log(result);
+          const observers = await userModel.getUsersByIDsLite(result);
+
+          io.sockets.emit(`notify_join_game_${data.gameID}`, {
+            isMainPlayer: false,
+            player1: originPlayers[0],
+            player2: originPlayers[1],
+            observers,
+            userID: data.userID
+          });
+        }
         return;
       }
 
-      //else game is waiting this opponent 
-
+      //else : là người chơi thứ 2
       await gameModel.updateGame(data.gameID, { Player2ID: data.userID });
       const players = await gameModel.getPlayers(data.gameID);
-      io.sockets.emit(`notify_gameID_${data.gameID}`, {
+      io.sockets.emit(`notify_join_game_${data.gameID}`, {
         isMainPlayer: true,
         // do ko biết được thứ tự player1 hay player2 là dòng nào,
         // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
+        observers: [],
         player1: data.userID === players[0].ID ? players[1] : players[0],
         player2: data.userID === players[0].ID ? players[0] : players[1],
         userID: data.userID
@@ -136,7 +122,7 @@ module.exports = io => { // catch here
 
     socket.on("ready", data => {
       console.log(data);
-      socket.broadcast.emit(`player2_ready_${data.gameID}`, { value: data.value });
+      socket.broadcast.emit(`ready_${data.gameID}`, data);
     });
 
     socket.on("run_out_of_time", async data => {

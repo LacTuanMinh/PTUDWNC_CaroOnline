@@ -6,9 +6,13 @@ import CardHeader from '@material-ui/core/CardHeader';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
 import SendMessageIcon from '@material-ui/icons/Send';
-import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import Typography from '@material-ui/core/Typography';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Divider from '@material-ui/core/Divider';
 import Board from './board';
 import Player from '../Player/player';
 import Timer from '../Timer/timer';
@@ -23,6 +27,7 @@ const jwtToken = window.localStorage.getItem('jwtToken');
 function Game({ socket, onlineUserList }) {
   const pathTokensArray = window.location.toString().split('/');
   const gameID = pathTokensArray[pathTokensArray.length - 1];
+  const name = localStorage.getItem('name');
   const userID = localStorage.getItem('userID');
   const History = useHistory();
 
@@ -45,8 +50,8 @@ function Game({ socket, onlineUserList }) {
     Name: "Waiting for opponent",
     Elo: 0
   });
-  const [observer, setObserver] = useState({});
-  const [isMainPlayer, setIsMainPlayer] = useState(true);
+  const [observers, setObservers] = useState([]);
+  const [isMainPlayer, setIsMainPlayer] = useState(false);
   const [isYourTurn, setIsYourTurn] = useState(true);
   const [player, setPlayer] = useState("X");// X || O
   const [player1Ready, setPlayer1Ready] = useState(false);
@@ -175,35 +180,41 @@ function Game({ socket, onlineUserList }) {
   useEffect(() => {
     socket.on(`load_chat_${gameID}`, data => {
       console.log("load_chat");
-      setChatHistory(chatHistory.slice().concat(data.message));
+      setChatHistory(chatHistory => [...chatHistory, data.message]);
     });
-  }, [gameID, chatHistory]);
+  }, [gameID]);
 
   //get notified when someone enter the room
   useEffect(() => {
-    socket.on(`notify_gameID_${gameID}`, data => {
-      console.log(`notify_gameID_${gameID}`);
-      console.log(data);
-      setChatHistory(chatHistory.slice().concat([
-        {
-          ownerID: null,
-          message: (data.isMainPlayer ? data.player2.Name : data.observer.Name) + " has joined the game"
-        }
-      ]));
+    socket.on(`notify_join_game_${gameID}`, data => {
+      console.log(`notify_join_game_${gameID}`);
 
-      setIsMainPlayer(data.isMainPlayer);
+      setObservers(data.observers);
 
       if (data.isMainPlayer) {
         // player1 (who creates the game) moves first
         setIsYourTurn(userID === data.player1.ID ? true : false);
         setPlayer(userID === data.player1.ID ? "X" : "O");
         setPlayer2(userID === data.player1.ID ? data.player2 : data.player1);
+        setIsMainPlayer(data.isMainPlayer);// default is false, now set to true
+        const message = {
+          ownerID: null,
+          message: data.player2.Name + " has joined the game"
+        }
+        setChatHistory(chatHistory => [...chatHistory, message]);
+      } else { // is not main players
+        console.log("IM A VIEWER");
+        // if we dont use [0] then joiner is an array
+        const joiner = data.observers.filter(observer => observer.ID === data.userID)[0];
 
-      } else {
-        if (data.userID === userID) {
-          console.log("IM A VIEWER");
-          console.log(data);
-          setObserver(data.observer);
+        const message = {
+          ownerID: null,
+          message: joiner.Name + " has joined the game"
+        }
+        setChatHistory(chatHistory => [...chatHistory, message]);
+
+        if (userID !== data.player1.ID && userID !== data.player2.ID) {
+          // chặn 2 màn hình người choi8 chính cập nhật màn hình khi khán giả vào phòng
           if (data.player1.ID === game.Player1ID) {
             setPlayer1(data.player1);
             setPlayer2(data.player2);
@@ -214,17 +225,24 @@ function Game({ socket, onlineUserList }) {
           }
         }
       }
-
     });
-  }, [gameID, userID, chatHistory]);
+  }, [gameID, userID]);
 
-  // player2 ready
   useEffect(() => {
-    socket.on(`player2_ready_${gameID}`, data => {
+    socket.on(`ready_${gameID}`, data => {
       console.log("player2_ready");
-      setPlayer2Ready(data.value);
+
+      if (data.player1.ID === player1.ID) {
+        setPlayer1Ready(data.player1.player1Ready);
+        setPlayer2Ready(data.player2.player2Ready);
+      } else {
+        setPlayer1Ready(data.player2.player2Ready);
+        setPlayer2Ready(data.player1.player1Ready);
+      }
+
+      // setPlayer2Ready(data.value);
     });
-  }, [gameID]);
+  }, [gameID, player1.ID]);
 
   // opponent leave
   // useEffect(() => {
@@ -401,29 +419,31 @@ function Game({ socket, onlineUserList }) {
 
   const handleChat = (e) => {
     e.preventDefault();
+
     setChatHistory(chatHistory => chatHistory.slice().concat([
       {
         ownerID: userID,
-        message: chatItemMessage
+        message: name + ': ' + chatItemMessage
       }
     ]));
 
     socket.emit("chat", {
-      message: [
-        {
-          ownerID: userID,
-          message: chatItemMessage
-        }
-      ],
+      message: {
+        ownerID: userID,
+        message: name + ': ' + chatItemMessage
+      },
       gameID
     });
-
     setChatItemMessage("");
   }
 
   const handleReady = () => {
     setPlayer1Ready(!player1Ready);
-    socket.emit("ready", { gameID, value: !player1Ready });
+    socket.emit("ready", {
+      gameID,
+      player1: { ID: player1.ID, player1Ready: !player1Ready },
+      player2: { ID: player2.ID, player2Ready: player2Ready }
+    });
   }
 
   // useEffect(() => {
@@ -469,7 +489,7 @@ function Game({ socket, onlineUserList }) {
     // }
   }
 
-  const reyalp = player === "X" ? "O" : "X";
+  const opponent = player === "X" ? "O" : "X";
   let element = (
     <React.Fragment>
       <Prompt
@@ -480,10 +500,10 @@ function Game({ socket, onlineUserList }) {
         <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
           <OnlineUsers onlineUserList={onlineUserList} />
         </div>
-        <div className="game" style={{ paddingTop: '40px' }}>
+        <div className="game" style={{ marginTop: '25px' }}>
           <div className="player-info">
-            <CardHeader title="PLAYER INFO"></CardHeader>
-            <Player player={player2} xOrO={reyalp} />
+            <CardHeader title="Player Info"></CardHeader>
+            <Player player={player2} xOrO={opponent} />
 
             {/* game not started */}
             {!start ?
@@ -541,8 +561,8 @@ function Game({ socket, onlineUserList }) {
           </div>
 
           <div className="game-board">
-            <CardHeader title={"GAME " + game.Name}></CardHeader>
-            <CardHeader title={"GAME " + game.ID}></CardHeader>
+            <CardHeader style={{ padding: '5px' }} title={"Game name: " + game.Name}></CardHeader>
+            <CardHeader style={{ padding: '5px' }} title={"Game ID: " + game.ID}></CardHeader>
             {start ?
               <Board
                 key={stepNumber}
@@ -552,22 +572,10 @@ function Game({ socket, onlineUserList }) {
               /> : <React.Fragment></React.Fragment>}
           </div>
           <div className="game-info">
-            <CardHeader title="GAME INFO"></CardHeader>
-            {game.IsBlockedRule ? <Typography>Blocked Rule</Typography> : <React.Fragment></React.Fragment>}
-            {start ?
-              <React.Fragment>
-                <div>{status}</div>
-                <div>
-                  <button onClick={() => sortButtonClicked()}>
-                    {isAscending ? "Descending" : "Ascending"}
-                  </button>
-                </div>
-                <ol style={{ maxHeight: '275px', overflowY: 'scroll' }}>{moves}</ol>
-              </React.Fragment> :
-              <React.Fragment></React.Fragment>}
-            <div className="chat-box">
-              <CardHeader title="CHAT BOX"></CardHeader>
-              <Card style={{ width: '100%', minHeight: '100px', maxHeight: '175px', overflowY: 'scroll' }}>
+
+            <div className="chat-box" >
+              <CardHeader title="Chat Box"></CardHeader>
+              <Card style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', width: '100%', minHeight: '200px', maxHeight: '200px', overflowY: 'scroll' }}>
                 {chatHistory.map((item, i) => {
                   return (
                     <div key={i} className="chat-item"
@@ -576,9 +584,7 @@ function Game({ socket, onlineUserList }) {
                           (item.ownerID === userID ? 'orange' : 'green')
                       }}
                     >
-                      {item.ownerID === null ? item.message :
-                        ((item.ownerID === game.Player1ID ? player1.Name :
-                          (item.ownerID === game.Player2ID ? player2.Name : observer.Name)) + ": " + item.message)}
+                      {item.message}
                     </div>
                   );
                 })}
@@ -593,12 +599,63 @@ function Game({ socket, onlineUserList }) {
                 </IconButton>
               </form>
             </div>
+
+            <div className="paper-like-shadow" style={{
+              marginTop: '20px',
+              marginLeft: '20px',
+              minWidth: '320px',
+            }}
+            >
+              <Accordion>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography><b>Gameplay Info</b></Typography>
+                </AccordionSummary>
+                <AccordionDetails style={{ display: 'flex', flexDirection: 'column' }}>
+                  {game.IsBlockedRule ? <Typography>Blocked Rule</Typography> : <React.Fragment></React.Fragment>}
+                  {start ?
+                    <React.Fragment>
+                      <div>{status}</div>
+                      <div>
+                        <button onClick={() => sortButtonClicked()}>
+                          {isAscending ? "Descending" : "Ascending"}
+                        </button>
+                      </div>
+                      <ol style={{ maxHeight: '200px', overflowY: 'scroll' }}>{moves}</ol>
+                    </React.Fragment> :
+                    <React.Fragment></React.Fragment>
+                  }
+                </AccordionDetails>
+              </Accordion>
+              <Accordion>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel2a-content"
+                  id="panel2a-header"
+                >
+                  <Typography><b>Observer List</b></Typography>
+                </AccordionSummary>
+                <AccordionDetails style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                  {observers.map((observer, i) =>
+                    <div key={i}>
+                      <Typography>
+                        {observer.Name}
+                      </Typography>
+                      <Divider />
+                    </div>
+
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            </div>
           </div>
         </div>
       </div>
     </React.Fragment>
   );
-
   return (
     element
   );

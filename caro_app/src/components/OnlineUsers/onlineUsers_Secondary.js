@@ -90,6 +90,7 @@ export default function OnlineUsers({ onlineUserList }) {
   const [open, setOpen] = useState(false);
   const [searchString, setSearchString] = useState("");
   const [onlineUserListCopy, setOnlineUserListCopy] = useState([]);
+  const userID = localStorage.getItem("userID");
 
   const handleDrawerOpen = () => {
     setSearchString("");
@@ -124,7 +125,7 @@ export default function OnlineUsers({ onlineUserList }) {
         style={{
           position: 'absolute',
           top: -10,
-          right: 50,
+          right: 25,
           zIndex: 1,
           alignContent: 'center',
           fontSize: '4',
@@ -159,7 +160,11 @@ export default function OnlineUsers({ onlineUserList }) {
                 </StyledBadge>
               </ListItemIcon>
               <ListItemText primary={item.Name} />
-              <Button variant="outlined" style={{ fontSize: '12px', borderRadius: '5px', padding: '2px' }}>Invite</Button>
+              {item.ID !== userID ?
+                <Button variant="outlined" style={{ fontSize: '12px', borderRadius: '5px', padding: '2px' }}>Invite</Button>
+                :
+                <></>
+              }
             </ListItem>
           ))}
         </List>

@@ -1,8 +1,7 @@
-const games = require('../routes/games');
 const db = require('../utils/db');
 
 module.exports = {
-    getAllGames: _ => db.load('SELECT * FROM Games WHERE Status = 1'),
+    getAllGames: _ => db.load('SELECT * FROM Games WHERE Status = 1 OR Status = 2'),
 
     checkGameExistByID: id => db.load(`SELECT ID,Password FROM Games WHERE ID = '${id}' AND Status = 1`),
 

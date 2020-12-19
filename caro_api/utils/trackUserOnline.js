@@ -15,22 +15,21 @@ module.exports = {
         }
     },
 
-    removeClientFromMap: (userSocketIdMap, userID, socketId) => {
-        if (userSocketIdMap.has(userID)) {
-            let userSocketIdSet = userSocketIdMap.get(userID);
-            userSocketIdSet.delete(socketId);
-            console.log(userSocketIdMap);
-            return 0;
-        }
-        //if there are no clients for a user, remove that user from online
-        //list (map)
-        if (userSocketIdSet.size === 0) {
-            userSocketIdMap.delete(userID);
-            console.log(userSocketIdMap);
-            return 1;
-        }
-
-    },
+    // removeClientFromMap: (userSocketIdMap, userID, socketId) => {
+    //     if (userSocketIdMap.has(userID)) {
+    //         let userSocketIdSet = userSocketIdMap.get(userID);
+    //         userSocketIdSet.delete(socketId);
+    //         console.log(userSocketIdMap);
+    //         return 0;
+    //     }
+    //     //if there are no clients for a user, remove that user from online
+    //     //list (map)
+    //     if (userSocketIdSet.size === 0) {
+    //         userSocketIdMap.delete(userID);
+    //         console.log(userSocketIdMap);
+    //         return 1;
+    //     }
+    // },
 
     removeClientFromMap: (userSocketIdMap, userID, socketId) => {
         if (userSocketIdMap.has(userID)) {

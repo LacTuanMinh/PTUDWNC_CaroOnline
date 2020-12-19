@@ -90,6 +90,10 @@ module.exports = function (io) { // catch here
       const list = await userModel.getAllOnlineUsers();
       // console.log(list);
       io.sockets.emit("server_RefreshList", list);
+    } else {
+      const list = await userModel.getAllOnlineUsers();
+      // console.log(list);
+      io.sockets.emit("server_RefreshList", list);
     }
 
     socket.on("client_LoggedIn", async (data) => {
