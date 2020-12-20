@@ -22,13 +22,13 @@ import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
 
 const API_URL = config.API_URL_TEST;
-const jwtToken = window.localStorage.getItem('jwtToken');
 
 function Game({ socket, onlineUserList }) {
   const pathTokensArray = window.location.toString().split('/');
   const gameID = pathTokensArray[pathTokensArray.length - 1];
   const name = localStorage.getItem('name');
   const userID = localStorage.getItem('userID');
+  const jwtToken = window.localStorage.getItem('jwtToken');
   const History = useHistory();
 
   const [start, setStart] = useState(false);
@@ -172,9 +172,13 @@ function Game({ socket, onlineUserList }) {
       setHistory(data.history);
       setStepNumber(data.history.length - 1);
       setXIsNext(player === "X");
-      setIsYourTurn(data.isYourTurn);
+
+      if (isMainPlayer) {
+        setIsYourTurn(data.isYourTurn);
+      }
+      else setIsYourTurn(!data.isYourTurn);
     });
-  }, [gameID, player]);
+  }, [gameID, isMainPlayer]);
 
   // load chat
   useEffect(() => {
@@ -228,9 +232,10 @@ function Game({ socket, onlineUserList }) {
     });
   }, [gameID, userID]);
 
+  //player ready
   useEffect(() => {
     socket.on(`ready_${gameID}`, data => {
-      console.log("player2_ready");
+      console.log("player_ready");
 
       if (data.player1.ID === player1.ID) {
         setPlayer1Ready(data.player1.player1Ready);
@@ -242,7 +247,7 @@ function Game({ socket, onlineUserList }) {
 
       // setPlayer2Ready(data.value);
     });
-  }, [gameID, player1.ID]);
+  }, [gameID]);
 
   // opponent leave
   // useEffect(() => {
@@ -519,6 +524,7 @@ function Game({ socket, onlineUserList }) {
                 player1={player1}
                 isPlayer2={true}
                 elo={calculateElo(player2.Elo, player1.Elo)}
+                isMainPlayer={isMainPlayer}
               />}
 
             <br></br>
@@ -556,6 +562,7 @@ function Game({ socket, onlineUserList }) {
                 player1={player2}
                 isPlayer2={false}
                 elo={calculateElo(player2.Elo, player1.Elo)}
+                isMainPlayer={isMainPlayer}
               />
             }
           </div>

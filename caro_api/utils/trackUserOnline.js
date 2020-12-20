@@ -37,13 +37,15 @@ module.exports = {
             userSocketIdSet.delete(socketId);
 
             //if there are no clients for a user, remove that user from online list(map)
-            if (userSocketIdSet.size == 0) {
+            if (userSocketIdSet.size === 0) {
                 userSocketIdMap.delete(userID);// log out and no other devices
                 console.log(userSocketIdMap);
                 return 1;
             }
             console.log(userSocketIdMap);
             return 0; // log out and other devices still online
+        } else {
+            return 0;
         }
     }
 }

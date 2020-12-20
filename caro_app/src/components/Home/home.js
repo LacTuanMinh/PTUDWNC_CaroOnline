@@ -46,8 +46,6 @@ function Home({ onlineUserList, socket }) {
 
   const handleQuickJoin = async () => {
 
-    // history.push("/games");
-
 
     const jwtToken = window.localStorage.getItem('jwtToken');
     const data = {
@@ -115,34 +113,6 @@ function Home({ onlineUserList, socket }) {
           </form>
         </Dialog>
       </div>
-
-      {/* <div style={{ position: 'absolute', left: '15%', bottom: '20%' }}> */}
-      {/* <Button fullWidth variant="contained" color="primary"  >
-          Quick join
-        </Button> */}
-      {/* <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-          <form >
-            <DialogTitle id="form-dialog-title">Provide Game ID to join</DialogTitle>
-            <DialogContent>
-
-              <TextField autoFocus margin="dense" label="Game ID" fullWidth
-                onChange={(event) => { setGameId(event.target.value); }}
-              />
-              <TextField margin="dense" label="Password (if needed)" fullWidth
-                onChange={(event) => { setGamePassword(event.target.value); }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleQuickJoin} color="secondary">
-                Go
-              </Button>
-              <Button onClick={handleClose} color="primary">
-                Cancel
-              </Button>
-            </DialogActions>
-          </form>
-        </Dialog> */}
-      {/* </div> */}
     </div >
   );
 }

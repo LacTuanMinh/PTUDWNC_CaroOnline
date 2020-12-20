@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2, elo }) {
+function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2, elo, isMainPlayer }) {
   const [seconds, setSeconds] = useState(value);
 
   useEffect(() => {
     let myInterval = setInterval(() => {
       // count down if it's your turn
+      console.log(isYourTurn);
       if (seconds > 0 && isYourTurn) {
         setSeconds(seconds - 1);
       }
@@ -19,17 +20,19 @@ function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2,
       if (seconds === 0 && isYourTurn) {
         console.log("Game over");
         clearInterval(myInterval);
-        const msg = "You " + (isPlayer2 ? "win\n+" : "lose\n-") + elo + " elo";
-        window.alert(msg);
-        socket.emit("run_out_of_time",
-          {
-            gameID,
-            player: isPlayer2 ? player1 : player2,
-            win: isPlayer2,
-            elo,
-            player2ID: !isPlayer2 ? player1.ID : player2.ID
-          }
-        );
+        if (isMainPlayer) {
+          const msg = "You " + (isPlayer2 ? "win\n+" : "lose\n-") + elo + " elo";
+          window.alert(msg);
+          socket.emit("run_out_of_time",
+            {
+              gameID,
+              player: isPlayer2 ? player1 : player2,
+              win: isPlayer2,
+              elo,
+              player2ID: !isPlayer2 ? player1.ID : player2.ID
+            }
+          );
+        }
       }
     }, 1000);
     return () => {
@@ -38,7 +41,7 @@ function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2,
   }, [seconds, isYourTurn]);
 
   return (
-    <div>
+    <div style={{ margin: '10px' }}>
       Time: {seconds}
     </div>
   );

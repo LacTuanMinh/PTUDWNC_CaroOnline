@@ -22,7 +22,6 @@ import { authen, isBlankString } from '../../utils/helper'
 import GameList from './gamelist';
 import config from '../../constants/config.json';
 const API_URL = config.API_URL_TEST;
-const jwtToken = window.localStorage.getItem('jwtToken');
 
 const useStyles = makeStyles((theme) => ({
   heroContent: {
@@ -54,6 +53,7 @@ function Games({ socket }) {
   const classes = useStyles();
   const history = useHistory();
   const userID = localStorage.getItem('userID');
+  const jwtToken = window.localStorage.getItem('jwtToken');
   const [open, setOpen] = useState(false);
   const [games, setGames] = useState([]);
   const [name, setName] = useState("");
@@ -73,7 +73,7 @@ function Games({ socket }) {
 
   useEffect(() => {
     async function getAllGames() {
-      const res = await fetch(`${API_URL}/games/`, {
+      const res = await fetch(`${API_URL}/games`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -128,21 +128,6 @@ function Games({ socket }) {
       return;
     }
     socket.emit('client_NewGame', data);
-    // const res = await fetch(`${API_URL}/games/add`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(data),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     Authorization: `Bearer ${jwtToken}`
-    //   }
-    // });
-    // const result = await res.json();
-    // if (res.status === 200) {
-    //   console.log(result.msg);
-    //   history.push('/games/' + result.game.ID);
-    // } else {
-    //   window.alert(result.msg);
-    // }
   }
 
   return (
@@ -156,10 +141,10 @@ function Games({ socket }) {
             </Typography>
           </Container>
         </div>
-        <Container className={classes.cardGrid} maxWidth="md">
+        <Container className={classes.cardGrid} maxWidth="lg">
           {/* End hero unit */}
           <Grid container spacing={4}>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <Card className={classes.card}>
                 <CardMedia className={classes.cardMedia}>
                   <Fab className={classes.fab} color="primary" aria-label="Add"

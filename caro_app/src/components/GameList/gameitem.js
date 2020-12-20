@@ -60,7 +60,7 @@ function GameItem({ game, socket }) {
 
   return (
     <React.Fragment>
-      <Grid item key={game.ID} xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={3}>
         <Card className={classes.card}>
           <CardMedia
             className={classes.cardMedia}

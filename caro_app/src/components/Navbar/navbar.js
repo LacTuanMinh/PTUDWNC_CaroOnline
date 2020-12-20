@@ -32,9 +32,9 @@ const useStyles = makeStyles((theme) => ({
 export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
+  const token = localStorage.getItem('jwtToken');
 
   const logoutButtonClicked = async () => {
-    const token = localStorage.getItem('jwtToken');
     const data = {
       userID: localStorage.getItem('userID')
     }
@@ -50,7 +50,14 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
     const result = await res.json();
     if (res.status === 400) {
       alert(result.mesg);
+
     }
+    // else if (res.status === 401) {
+
+    //   localStorage.clear();
+    //   history.push('/');
+
+    // }
     setIsLoggedIn(false);
     window.localStorage.clear();
     socket.emit('client_LoggedOut', { userID: data.userID });
