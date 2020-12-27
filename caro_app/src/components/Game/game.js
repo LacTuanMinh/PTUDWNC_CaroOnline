@@ -171,14 +171,21 @@ function Game({ socket, onlineUserList }) {
       console.log("load_moves");
       setHistory(data.history);
       setStepNumber(data.history.length - 1);
-      setXIsNext(player === "X");
-
-      if (isMainPlayer) {
+      setXIsNext(data.player === "X");
+      //setIsYourTurn(data.isYourTurn);
+      if (data.opponentID === userID) {
         setIsYourTurn(data.isYourTurn);
       }
-      else setIsYourTurn(!data.isYourTurn);
+      else {
+        if (data.player === "X") {
+          setIsYourTurn(data.isYourTurn);
+        }
+        else {
+          setIsYourTurn(!data.isYourTurn);
+        }
+      }
     });
-  }, [gameID, isMainPlayer]);
+  }, [gameID, userID]);
 
   // load chat
   useEffect(() => {
@@ -192,6 +199,7 @@ function Game({ socket, onlineUserList }) {
   useEffect(() => {
     socket.on(`notify_join_game_${gameID}`, data => {
       console.log(`notify_join_game_${gameID}`);
+      console.log(data);
 
       setObservers(data.observers);
 
@@ -219,7 +227,7 @@ function Game({ socket, onlineUserList }) {
 
         if (userID !== data.player1.ID && userID !== data.player2.ID) {
           // chặn 2 màn hình người choi8 chính cập nhật màn hình khi khán giả vào phòng
-          if (data.player1.ID === game.Player1ID) {
+          if (data.player1.ID === data.game.Player1ID && data.player2.ID === data.game.Player2ID) {
             setPlayer1(data.player1);
             setPlayer2(data.player2);
           }
@@ -235,14 +243,19 @@ function Game({ socket, onlineUserList }) {
   //player ready
   useEffect(() => {
     socket.on(`ready_${gameID}`, data => {
-      console.log("player_ready");
-
-      if (data.player1.ID === player1.ID) {
-        setPlayer1Ready(data.player1.player1Ready);
-        setPlayer2Ready(data.player2.player2Ready);
-      } else {
-        setPlayer1Ready(data.player2.player2Ready);
+      if (data.player2.ID === userID) {
+        console.log("player2 ready");
         setPlayer2Ready(data.player1.player1Ready);
+      }
+      else {
+        if (data.player1.ID === data.game.Player1ID) {
+          console.log("player1 ready");
+          setPlayer1Ready(data.player1.player1Ready);
+        }
+        else {
+          console.log("player2 ready");
+          setPlayer2Ready(data.player1.player1Ready);
+        }
       }
 
       // setPlayer2Ready(data.value);
@@ -331,8 +344,11 @@ function Game({ socket, onlineUserList }) {
           position: i
         }
       ]),
+      player: xIsNext ? "O" : "X",
       playerID: userID,
+      opponentID: player2.ID,
       gameID,
+      game,
       isYourTurn
     });
   }
@@ -380,6 +396,9 @@ function Game({ socket, onlineUserList }) {
       if (!game.Result) {
         updateGameInfo(gameData);
       }
+
+      // emit to update players info for observers
+      
 
       // emit tới server để xóa game này khỏi game layout của những người chơi khác
 
@@ -446,6 +465,8 @@ function Game({ socket, onlineUserList }) {
     setPlayer1Ready(!player1Ready);
     socket.emit("ready", {
       gameID,
+      userID,
+      game,
       player1: { ID: player1.ID, player1Ready: !player1Ready },
       player2: { ID: player2.ID, player2Ready: player2Ready }
     });
@@ -520,6 +541,7 @@ function Game({ socket, onlineUserList }) {
                 gameID={gameID}
                 value={game.TimeThinkingEachTurn}
                 isYourTurn={!isYourTurn}
+                setIsYourTurn={setIsYourTurn}
                 player2={player2}
                 player1={player1}
                 isPlayer2={true}
@@ -558,6 +580,7 @@ function Game({ socket, onlineUserList }) {
                 gameID={gameID}
                 value={game.TimeThinkingEachTurn}
                 isYourTurn={isYourTurn}
+                setIsYourTurn={setIsYourTurn}
                 player2={player1}
                 player1={player2}
                 isPlayer2={false}

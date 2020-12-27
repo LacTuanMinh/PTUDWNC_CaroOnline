@@ -68,7 +68,15 @@ module.exports = io => { // catch here
   io.on("connection", async (socket) => {
     socket.on("move", data => {
       console.log(data);
-      socket.broadcast.emit(`load_moves_${data.gameID}`, { history: data.history, playerID: data.playerID, isYourTurn: data.isYourTurn });
+      socket.broadcast.emit(`load_moves_${data.gameID}`, 
+        { 
+          history: data.history,
+          player: data.player,
+          playerID: data.playerID,
+          opponentID: data.opponentID,
+          isYourTurn: data.isYourTurn,
+          game: data.game
+        });
     });
 
     socket.on("chat", data => {
@@ -94,13 +102,15 @@ module.exports = io => { // catch here
 
           console.log(result);
           const observers = await userModel.getUsersByIDsLite(result);
+          const game = await gameModel.getGameByID(data.gameID);
 
           io.sockets.emit(`notify_join_game_${data.gameID}`, {
             isMainPlayer: false,
             player1: originPlayers[0],
             player2: originPlayers[1],
             observers,
-            userID: data.userID
+            userID: data.userID,
+            game: game[0]
           });
         }
         return;
@@ -109,6 +119,7 @@ module.exports = io => { // catch here
       //else : là người chơi thứ 2
       await gameModel.updateGame(data.gameID, { Player2ID: data.userID });
       const players = await gameModel.getPlayers(data.gameID);
+      const game = await gameModel.getGameByID(data.gameID);
       io.sockets.emit(`notify_join_game_${data.gameID}`, {
         isMainPlayer: true,
         // do ko biết được thứ tự player1 hay player2 là dòng nào,
@@ -116,7 +127,8 @@ module.exports = io => { // catch here
         observers: [],
         player1: data.userID === players[0].ID ? players[1] : players[0],
         player2: data.userID === players[0].ID ? players[0] : players[1],
-        userID: data.userID
+        userID: data.userID,
+        game: game[0]
       });
     });
 
