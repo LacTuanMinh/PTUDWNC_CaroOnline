@@ -6,11 +6,12 @@ function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2,
   useEffect(() => {
     let myInterval = setInterval(() => {
       // count down if it's your turn
-      console.log(isYourTurn);
-      if (seconds > 0 && isYourTurn) {
-        setSeconds(seconds - 1);
+      if (seconds > 0) {
+        if (isYourTurn) {
+          setSeconds(seconds - 1);
+        }
       }
-      // reset timer when it's your opponent's turn
+      // reset timer when it's your opponent's turn (you finished your turn)
       if (!isYourTurn) {
         setSeconds(value);
       }
@@ -19,8 +20,9 @@ function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2,
       // isPlayer2 means the opponent's timer counts down
       if (seconds === 0 && isYourTurn) {
         console.log("Game over");
-        clearInterval(myInterval);
+        
         if (isMainPlayer) {
+          clearInterval(myInterval);
           const msg = "You " + (isPlayer2 ? "win\n+" : "lose\n-") + elo + " elo";
           window.alert(msg);
           socket.emit("run_out_of_time",
@@ -38,7 +40,7 @@ function Timer({ socket, gameID, value, isYourTurn, player1, player2, isPlayer2,
     return () => {
       clearInterval(myInterval);
     };
-  }, [seconds, isYourTurn]);
+  }, [seconds, isYourTurn, isMainPlayer]);
 
   return (
     <div style={{ margin: '10px' }}>
