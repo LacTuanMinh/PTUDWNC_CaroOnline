@@ -73,7 +73,7 @@ function Home({ onlineUserList, socket }) {
 
   return (
     <div style={{ position: 'relative' }}>
-      <img src={background} style={homeBackground} alt="Home background Image" />
+      <img src={background} style={homeBackground} alt="Home background" />
       <div>
         <OnlineUsers onlineUserList={onlineUserList} />
       </div>

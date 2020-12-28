@@ -19,5 +19,7 @@
   },
   "serverPort": 8000,
   "passportKey": "whatdoyoumean",
-  "hashRound": 10
+  "hashRound": 10,
+  "APP_URL_TEST": "http://localhost:3000",
+  "APP_URL_DEPLOY": "https://online-caro.web.app"
 }

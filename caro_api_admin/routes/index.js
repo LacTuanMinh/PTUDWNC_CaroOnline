@@ -11,10 +11,8 @@ router.get('/', (req, res) => {
 
 
 router.post('/signin', async (req, res) => {
-  console.log(req.body);
   const { username, password } = req.body;
   const users = await userModel.getUserByUserName(username);
-  console.log(users);
 
   if (users.length > 0) {
     const user = users[0];
@@ -22,7 +20,6 @@ router.post('/signin', async (req, res) => {
     if (bcrypt.compareSync(password, user.Password)) {
 
       const token = jwt.sign({ id: user.ID }, config.passportKey);
-      // await userModel.updateUserStatus(user.ID, 1);// set status to Online (== 1)
 
       return res.status(200).send({
         mesg: "Signed in",

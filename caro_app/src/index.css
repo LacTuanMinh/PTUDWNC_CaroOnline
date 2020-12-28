@@ -17,6 +17,10 @@ ol, ul {
   padding-left: 30px;
 }
 
+/* #root {
+  padding-bottom:60px;
+} */
+
 .board-row:after {
   clear: both;
   content: "";

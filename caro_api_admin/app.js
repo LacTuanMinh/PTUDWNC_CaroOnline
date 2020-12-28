@@ -5,11 +5,9 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const config = require('./config/default.json');
-const bcrypt = require('bcryptjs');
 const passport = require('passport');
 require('./utils/passport')(passport);
 const app = express();
-
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 
@@ -22,7 +20,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 app.use('/', indexRouter);
 app.use('/users', passport.authenticate("jwt", { session: false }), usersRouter);
@@ -34,10 +32,8 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
   res.status(err.status || 500);
   res.render('error');
 });

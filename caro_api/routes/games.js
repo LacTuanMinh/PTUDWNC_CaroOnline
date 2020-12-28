@@ -134,7 +134,7 @@ module.exports = io => { // catch here
         WinCount: data.player.WinCount + (data.win ? 1 : 0),
         PlayCount: data.player.PlayCount + 1
       }
-      await userModel.updateUserInfo(data.player.ID,
+      await userModel.updateUserScore(data.player.ID,
         { Elo: newPlayer.Elo, WinCount: newPlayer.WinCount, PlayCount: newPlayer.PlayCount });
       socket.broadcast.emit(`timeup_${data.gameID}`,
         { player2: newPlayer, player1ID: data.player2ID, winnerID: data.win ? data.player.ID : data.player2ID });

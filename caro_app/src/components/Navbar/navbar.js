@@ -38,7 +38,6 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
     const data = {
       userID: localStorage.getItem('userID')
     }
-    console.log(data);
     const res = await fetch(`${API_URL}/users/signout`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -47,22 +46,23 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
         'Content-Type': 'application/json',
       }
     });
-    const result = await res.json();
     if (res.status === 400) {
+      const result = await res.json();
       alert(result.mesg);
 
     }
-    // else if (res.status === 401) {
+    else { // other status: 200, 401, ...
 
-    //   localStorage.clear();
-    //   history.push('/');
+      localStorage.clear();
+      setIsLoggedIn(false);
+      history.push('/');
 
-    // }
-    setIsLoggedIn(false);
-    window.localStorage.clear();
-    socket.emit('client_LoggedOut', { userID: data.userID });
-    history.push('/');
-  }
+      if (res.status === 200) // only status 200
+      {
+        socket.emit('client_LoggedOut', { userID: data.userID });
+      }
+    }
+  };
 
   return (
     <React.Fragment>

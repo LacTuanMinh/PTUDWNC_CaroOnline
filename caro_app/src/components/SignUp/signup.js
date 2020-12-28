@@ -12,6 +12,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { authen, isBlankString, containsBlank, isEmailPattern } from '../../utils/helper'
 import config from '../../constants/config.json';
+import { InformationSnackbar } from '../SnackBar/snackbar';
+
 const API_URL = config.API_URL_TEST;
 // function Copyright() {
 //   return (
@@ -53,6 +55,8 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showSnackbar, setShowSnackBar] = useState(false);
+  const [content, setContent] = useState("");
 
   useEffect(() => {
     async function Authen() {
@@ -64,6 +68,11 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
     Authen();
   }, [history]);
 
+  // useEffect(() => {
+
+  //   setShowSnackBar(true);
+  // }, [setContent])
+
   const handleSubmit = async (e) => {
 
     e.preventDefault();
@@ -73,23 +82,30 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
       email: email,
       password: password
     };
-    // console.log(data);
     if (isBlankString(data.username) || isBlankString(data.password) || isBlankString(data.name) || isBlankString(data.email)) {
-      alert('Some input fields are an empty string');
+      setContent('Some input fields are an empty string.');
+      setShowSnackBar(true);
       return;
     }
 
     if (containsBlank(data.username)) {
-      alert('Username can not contain blank space');
+      setContent('Username can not contain blank space.');
+      setShowSnackBar(true);
+
+      return;
+    }
+
+    if (data.password.length < 6) {
+      setContent('Password must be 6 characters at least.');
+      setShowSnackBar(true);
       return;
     }
 
     if (!isEmailPattern(data.email)) {
-      alert('Email is not valid');
+      setContent('Email is not valid.');
+      setShowSnackBar(true);
       return;
     }
-
-
 
     // call API here
     const res = await fetch(`${API_URL}/signup`, {
@@ -97,26 +113,13 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
       body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json'
-        // Authorization: token
       }
     });
     const result = await res.json();
-    console.log(result);
-    if (res.status === 200) {
-
-      window.localStorage.setItem('jwtToken', result.token);
-      window.localStorage.setItem('userID', result.id);
-      window.localStorage.setItem('name', result.name);
-      socket.emit(`client_LoggedIn`, { userID: result.id });
-
-      setIsLoggedIn(true);
-
-      history.push("/games");
-
-    } else if (res.status === 400) {
-
-      alert(result.mesg);
-      //stay this site
+    // console.log(result);
+    if (res.status === 200 || res.status === 500 || res.status === 400) {
+      setContent(result.msg);
+      setShowSnackBar(true);
     }
   }
 
@@ -126,6 +129,7 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
 
   return (
     <Container component="main" maxWidth="xs">
+      <InformationSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} content={content} />
       <CssBaseline />
       <div className={classes.paper}>
         <Avatar className={classes.avatar}>

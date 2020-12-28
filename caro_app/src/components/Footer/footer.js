@@ -20,6 +20,10 @@ const useStyles = makeStyles((theme) => ({
   footer: {
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(6),
+    // position: 'fixed',
+    // left: 0,
+    // bottom: 0,
+    // right: 0
   }
 }));
 
@@ -33,7 +37,7 @@ function Footer() {
         <Typography variant="h6" align="center" gutterBottom>
           Footer
         </Typography>
-          <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
+        <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
           Something here to give the footer a purpose!
         </Typography>
         <Copyright />

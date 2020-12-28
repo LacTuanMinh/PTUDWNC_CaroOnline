@@ -12,6 +12,7 @@ import Profile from './components/Profile/profile';
 import SignUp from './components/SignUp/signup';
 import Navbar from './components/Navbar/navbar';
 import Footer from './components/Footer/footer';
+import ActiveDestination from './components/ActiveDestination/index'
 import './App.css';
 import socketIOClient from "socket.io-client";
 import config from './constants/config.json';
@@ -53,6 +54,9 @@ function App() {
           </Route>
           <Route path='/signup'>
             <SignUp socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+          </Route>
+          <Route path='/active/:id'>
+            <ActiveDestination socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
           </Route>
         </Switch>
       </div>

@@ -1,117 +1,185 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-// import DialogContentText from '@material-ui/core/DialogContentText';
+import SimpleSnackbar from '../../SnackBar/snackbar';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import SaveIcon from '@material-ui/icons/Save';
-// import { isBlankString } from '../../../utils/index'; //'../../../utils/index'
+import { isBlankString } from '../../../utils/helper'; //'../../../utils/index'
+import config from '../../../constants/config.json';
+const API_URL = config.API_URL_TEST;
 
-export default function FormDialog() {
-    const [open, setOpen] = useState(false);
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
+const useStyles = makeStyles((theme) => ({
 
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
+	container: {
+		display: 'inline-block',
+		width: '100%'
+	},
+	floatRight: {
+		float: "right",
+		width: '60%'
+	},
+	floatLeft: {
+		float: "left",
+		width: '40%'
+	},
+	paperLikeShadow: {
+		boxShadow: '0 4px 8px 5px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
+	},
+	hidden: {
+		display: 'none'
+	}
+}));
 
-    const handleClose = () => {
-        setOpen(false);
-        setCurrentPassword("");
-        setNewPassword("");
-    };
+export default function FormDialog(/*{ setShowSnackBar, contents, setContents }*/) {
+	const classes = useStyles();
+	const userID = localStorage.getItem('userID');
+	const token = window.localStorage.getItem('jwtToken');
+	const [open, setOpen] = useState(false);
+	const [currentPassword, setCurrentPassword] = useState("");
+	const [newPassword, setNewPassword] = useState("");
+	const [validCurentPassword, setValidCurentPassword] = useState(false);
+	const [validNewPassword, setValidNewPassword] = useState(false);
+	const [showSnackbar, setShowSnackBar] = useState(false);
+	const [contents, setContents] = useState([
+		{ id: 4, msg: "Password can't be empty!!!" },
+		{ id: 5, msg: "New password can't be empty!!!" },
+	]);
 
-    const handleChangePassword = (event) => {
-        event.preventDefault();
-        // console.log(currentPassword)
-        // if (currentPassword === "" || newPassword === "" || confirmPassword === "") {
-        //     alert('Please fill out all these fields')
-        //     return;
-        // } else if (isBlankString(currentPassword) || isBlankString(newPassword) || isBlankString(confirmPassword)) {
-        //     alert('Some fields are a blank string')
-        //     return;
-        // } else if (newPassword !== confirmPassword) {
-        //     alert('Confirm password does not match')
-        //     return;
-        // }
+	const handleCurrentPasswordChange = (currentPassword) => {
+		setCurrentPassword(currentPassword);
+		if (isBlankString(currentPassword)) {
+			setContents(contents => [...contents.filter(content => content.id != 4), { id: 4, msg: "Password can't be empty!!!" }]);
+			setValidCurentPassword(false);
+		} else if (currentPassword.length < 6) {
+			setContents(contents => [...contents.filter(content => content.id != 4), { id: 4, msg: "Password must have at least 6 characters!!!" }]);
+			setValidCurentPassword(false);
+		} else {
+			setContents(contents.filter(content => content.id !== 4));
+			setValidCurentPassword(true);
+		}
+	}
 
-        // const userID = localStorage.getItem('userID');
-        // const token = window.localStorage.getItem('jwtToken')
-        // fetch(`https://my-retro-api.herokuapp.com/profile/password/${userID}`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         Authorization: `Bearer ${token}`
-        //     }
-        // }).then(res => {
-        //     if (res.status === 200 || res.status === 400) {
-        //         res.json().then(result => {
-        //             alert(result.mesg);
-        //             // console.log(result.token);
-        //             // console.log(result.id)
-        //             // console.log(result.name)
+	const handleNewPasswordChange = (newPassword) => {
+		setNewPassword(newPassword);
+		if (isBlankString(newPassword)) {
+			setContents(contents => [...contents.filter(content => content.id != 5), { id: 5, msg: "New password can't be empty!!!" }]);
+			setValidNewPassword(false);
+		} else if (newPassword.length < 6) {
+			setContents(contents => [...contents.filter(content => content.id != 5), { id: 5, msg: "New password must have at least 6 characters!!!" }]);
+			setValidNewPassword(false);
+		} else {
+			setContents(contents.filter(content => content.id !== 5));
+			setValidNewPassword(true);
+		}
+	}
 
-        //             // window.localStorage.setItem('jwtToken', result.token);
-        //             // window.localStorage.setItem('userID', result.id);
-        //             // window.localStorage.setItem('userName', result.name);
-        //             // history.push("/dashboard");
-        //         });
-        //     } else if (res.status === 401) {// authenticate thất bại tự trả 401
-        //         alert("You have to log in")
-        //     }
-        // }).catch(err => {
-        //     console.error(err);
-        //     alert('Error change password please try again');
-        // });
-    };
+	const handleClickOpen = () => {
+		setOpen(true);
+		setContents([
+			{ id: 4, msg: "Password can't be empty!!!" },
+			{ id: 5, msg: "New password can't be empty!!!" },
+		]);
+	}
 
-    return (
-        <div>
-            <Button fullWidth variant="outlined" color="secondary" onClick={handleClickOpen} startIcon={<SaveIcon />}>
-                Change password
+	const handleClose = () => {
+		setOpen(false);
+		setCurrentPassword("");
+		setNewPassword("");
+		setShowSnackBar(false);
+	}
+
+	const handleChangePassword = async (event) => {
+		event.preventDefault();
+		if (!validCurentPassword || !validNewPassword) {
+			// if (!validCurentPassword) {
+			// 	if (!contents.includes({ id: 4, msg: "Password can't be empty!!!" })) {
+			// 		setContents(contents => [...contents, { id: 4, msg: "Password can't be empty!!!" }]);
+			// 	}
+			// 	else setContents(contents.filter(content => content.id !== 4));
+			// }
+			// if (!validNewPassword) {
+			// 	if (!contents.includes({ id: 5, msg: "New password can't be empty!!!" })) {
+			// 		setContents(contents => [...contents, { id: 5, msg: "New password can't be empty!!!" }]);
+			// 	}
+			// 	else setContents(contents.filter(content => content.id !== 5));
+			// }
+			setShowSnackBar(true);
+		}
+		else {
+			const data = {
+				CurrentPassword: currentPassword,
+				NewPassword: newPassword
+			}
+			const res = await fetch(`${API_URL}/users/profile/updatepassword/${userID}`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`
+				},
+				body: JSON.stringify(data),
+			});
+
+			// const result = await res.json();
+			if (res.status === 200) {
+				setShowSnackBar(true);
+			} else {
+				setShowSnackBar(true);
+			}
+		}
+	};
+
+	return (
+		<div>
+			<SimpleSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} contents={contents} />
+
+			<Button fullWidth variant="outlined" color="secondary" onClick={handleClickOpen} startIcon={<SaveIcon />}>
+				Change password
+      </Button>
+			<Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+				<form >
+					<DialogTitle id="form-dialog-title">Change password</DialogTitle>
+					<DialogContent>
+						<div className={classes.container}>
+							<Typography className={classes.floatLeft} align="left" component="h2"><b> Current password:</b> </Typography>
+							{validCurentPassword ?
+								<></>
+								:
+								<Typography className={classes.floatRight} align="right" style={{ color: "red" }}>Invalid</Typography>
+							}
+						</div>
+						<TextField variant="outlined" autoFocus margin="normal" type="password" fullWidth
+							onChange={(event) => { handleCurrentPasswordChange(event.target.value); }}
+						/>
+
+						<div className={classes.container}>
+							<Typography className={classes.floatLeft} align="left" component="h2"><b> New password:</b> </Typography>
+							{validNewPassword ?
+								<></>
+								:
+								<Typography className={classes.floatRight} align="right" style={{ color: "red" }}>Invalid</Typography>
+							}
+						</div>
+						<TextField variant="outlined" margin="normal" type="password" fullWidth
+							onChange={(event) => { handleNewPasswordChange(event.target.value); }}
+						/>
+						<Typography>Password must have at least 6 characters</Typography>
+
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={handleChangePassword} color="secondary">
+							Update
             </Button>
-            <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-                <form >
-                    <DialogTitle id="form-dialog-title">Change password</DialogTitle>
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="currentPassword"
-                            name="currentPassword"
-                            label="Current password"
-                            type="password"
-                            fullWidth
-                            onChange={(event) => { setCurrentPassword(event.target.value); }}
-                        />
-                        <TextField
-
-                            margin="dense"
-                            id="newPassword"
-                            name="newPassword"
-                            label="New password"
-                            type="password"
-                            fullWidth
-                            onChange={(event) => { setNewPassword(event.target.value); }}
-                        />
-
-                    </DialogContent>
-                    <DialogActions>
-                        <Button /*onClick={handleClose}*/ onClick={handleChangePassword} color="secondary">
-                            Update
-                        </Button>
-                        <Button onClick={handleClose} color="primary">
-                            Cancel
-                        </Button>
-
-                    </DialogActions>
-                </form>
-
-            </Dialog>
-        </div>
-    );
+						<Button onClick={handleClose} color="primary">
+							Cancel
+           </Button>
+					</DialogActions>
+				</form>
+			</Dialog>
+		</div>
+	);
 }
