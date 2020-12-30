@@ -1,4 +1,4 @@
-module.exports = io => { // catch here
+module.exports = io => {
   const express = require('express');
   const router = express.Router();
   const { v1: uuidv1 } = require('uuid');
@@ -15,14 +15,13 @@ module.exports = io => { // catch here
 
   router.get('/', async (req, res) => {
     const games = await gameModel.getAllGames();
-    // console.log(games);
     res.status(200).send({ games });
   });
 
   router.get('/get/:ID', async (req, res) => {
     const gameID = req.params.ID;
     const game = await gameModel.getGameByID(gameID);
-    // console.log(game[0]);
+
     if (game) {
       res.status(200).send({ game: game[0] });
     }
@@ -65,11 +64,13 @@ module.exports = io => { // catch here
     return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });
 
+  // const m
   io.on("connection", async (socket) => {
+
     socket.on("move", data => {
       console.log(data);
-      socket.broadcast.emit(`load_moves_${data.gameID}`, 
-        { 
+      socket.broadcast.emit(`load_moves_${data.gameID}`,
+        {
           history: data.history,
           player: data.player,
           playerID: data.playerID,
@@ -100,7 +101,6 @@ module.exports = io => { // catch here
             return "'" + id.replace("'", "''") + "'";
           }).join();
 
-          console.log(result);
           const observers = await userModel.getUsersByIDsLite(result);
           const game = await gameModel.getGameByID(data.gameID);
 
@@ -111,6 +111,10 @@ module.exports = io => { // catch here
             observers,
             userID: data.userID,
             game: game[0]
+          });
+
+          io.sockets.emit(`I_need_game_info_${data.gameID}_${game[0].Player1ID}`, {
+            userID: data.userID
           });
         }
         return;
@@ -130,6 +134,17 @@ module.exports = io => { // catch here
         userID: data.userID,
         game: game[0]
       });
+
+      io.sockets.emit(`I_need_game_info_${data.gameID}_${game[0].Player1ID}`, {
+        userID: data.userID
+      });
+    });
+
+    socket.on(`I_provide_game_info`, (data) => {
+      io.sockets.emit(`receive_your_data_${data.gameID}_${data.userID}`, {
+        chatHistory: data.chatHistory,
+        moves: data.moves
+      });
     });
 
     socket.on("ready", data => {
@@ -148,8 +163,8 @@ module.exports = io => { // catch here
       }
       await userModel.updateUserScore(data.player.ID,
         { Elo: newPlayer.Elo, WinCount: newPlayer.WinCount, PlayCount: newPlayer.PlayCount });
-      socket.broadcast.emit(`timeup_${data.gameID}`,
-        { player2: newPlayer, player1ID: data.player2ID, winnerID: data.win ? data.player.ID : data.player2ID });
+      socket.broadcast.emit(`timeup_${data.game.ID}`,
+        { game: data.game, player2: newPlayer, player1ID: data.player2ID, winnerID: data.win ? data.player.ID : data.player2ID });
     });
 
     // socket.on("leave_game", async data => {
@@ -171,6 +186,7 @@ module.exports = io => { // catch here
     //   socket.broadcast.emit(`opponent_leave_game_${data.gameID}`, { user: newOpponent });
     // });
 
+    // chưa cập nhật giao diện bên front-end
     socket.on("owner_leave_game", async data => {
       console.log("owner leaves game");
       console.log(data);

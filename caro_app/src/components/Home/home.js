@@ -7,6 +7,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import EloRanking from '../Table/index';
 import { useHistory } from 'react-router-dom';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
@@ -72,48 +73,52 @@ function Home({ onlineUserList, socket }) {
   }
 
   return (
-    <div style={{ position: 'relative' }}>
-      <img src={background} style={homeBackground} alt="Home background" />
-      <div>
-        <OnlineUsers onlineUserList={onlineUserList} />
-      </div>
-      <div style={{ position: 'absolute', left: '5%', bottom: '20%', width: '25%' }}>
-        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-          <div>
-            <Button style={{ marginRight: '10px' }} fullWidth variant="outlined" color="secondary" onClick={handleClickOpen} >
-              Join Game
-            </Button>
-          </div>
-          <div>
-            <Button style={{ marginLeft: '10px' }} fullWidth variant="contained" color="primary"  >
-              Quick join
-            </Button>
-          </div>
+    <>
+      <div style={{ position: 'relative', marginBottom: '70px' }}>
+        <img src={background} style={homeBackground} alt="Home background" />
+        <div>
+          <OnlineUsers onlineUserList={onlineUserList} />
         </div>
-        <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-          <form >
-            <DialogTitle id="form-dialog-title">Provide Game ID to join</DialogTitle>
-            <DialogContent>
+        <div style={{ position: 'absolute', left: '5%', bottom: '20%', width: '25%' }}>
+          <div style={{ display: "flex", justifyContent: "flex-start" }}>
+            <div>
+              <Button style={{ marginRight: '10px' }} fullWidth variant="outlined" color="secondary" onClick={handleClickOpen} >
+                Join Game
+            </Button>
+            </div>
+            <div>
+              <Button style={{ marginLeft: '10px' }} fullWidth variant="contained" color="primary"  >
+                Quick join
+            </Button>
+            </div>
+          </div>
+          <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+            <form >
+              <DialogTitle id="form-dialog-title">Provide Game ID to join</DialogTitle>
+              <DialogContent>
 
-              <TextField autoFocus margin="dense" label="Game ID" fullWidth
-                onChange={(event) => { setGameId(event.target.value); }}
-              />
-              <TextField margin="dense" label="Password (if needed)" fullWidth
-                onChange={(event) => { setGamePassword(event.target.value); }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleQuickJoin} color="secondary">
-                Go
+                <TextField autoFocus margin="dense" label="Game ID" fullWidth
+                  onChange={(event) => { setGameId(event.target.value); }}
+                />
+                <TextField margin="dense" label="Password (if needed)" fullWidth
+                  onChange={(event) => { setGamePassword(event.target.value); }}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleQuickJoin} color="secondary">
+                  Go
               </Button>
-              <Button onClick={handleClose} color="primary">
-                Cancel
+                <Button onClick={handleClose} color="primary">
+                  Cancel
               </Button>
-            </DialogActions>
-          </form>
-        </Dialog>
-      </div>
-    </div >
+              </DialogActions>
+            </form>
+          </Dialog>
+        </div>
+      </div >
+      <EloRanking />
+    </>
+
   );
 }
 export default Home;

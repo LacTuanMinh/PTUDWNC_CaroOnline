@@ -240,6 +240,26 @@ function Game({ socket, onlineUserList }) {
     });
   }, [gameID, userID]);
 
+  // player 2 & observer get info from player1 (owner)
+  useEffect(() => {
+    socket.on(`I_need_game_info_${gameID}_${userID}`, (data) => {
+      socket.emit(`I_provide_game_info`, {
+        gameID,
+        userID: data.userID,
+        chatHistory: chatHistory,
+        moves: history
+      });
+    });
+  }, [gameID, userID, chatHistory, history]);
+
+  // for observer to get game info
+  useEffect(() => {
+    socket.on(`receive_your_data_${gameID}_${userID}`, data => {
+      setChatHistory(data.chatHistory);
+      setHistory(data.moves);
+    });
+  }, [gameID, userID]);
+
   //player ready
   useEffect(() => {
     socket.on(`ready_${gameID}`, data => {
@@ -296,25 +316,28 @@ function Game({ socket, onlineUserList }) {
       getPlayer(data.player1ID);
 
       const gameData = {
-        game,
-        player2ID: userID === game.Player1ID ? player2.ID : userID,
-        result: data.winnerID === game.Player1ID ? 1 : 2,
+        game: data.game,
+        player2ID: userID === data.game.Player1ID ? data.player2.ID : userID,
+        result: data.winnerID === data.game.Player1ID ? 1 : 2,
         status: 0,
         moves: JSON.stringify(history),
         chatHistory: JSON.stringify(chatHistory)
       }
-      if (!game.Result) {
+      if (!data.game.Result) {
         updateGameInfo(gameData);
       }
 
+      setHasWinner(true);
       setPlayer1Ready(false);
       setPlayer2Ready(false);
-      setHasWinner(false);
     });
-  }, [gameID, history, chatHistory, game]);
+  }, [gameID, userID]);
 
   const handleClick = (i) => {
     if (!isMainPlayer)// chỉ là khán giả thì ko click được
+      return;
+
+    if (!start)
       return;
 
     const newHistory = history.slice(0, stepNumber + 1);
@@ -372,40 +395,46 @@ function Game({ socket, onlineUserList }) {
   }, [winner]);
 
   useEffect(() => {
-    if (isMainPlayer && hasWinner) {
-      const elo = calculateElo(player1.Elo, player2.Elo);
-      const win = player === winner;
-      const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
-      const data = {
-        player1,
-        win: win,
-        elo: elo,
-        player2ID: player2.ID
-      }
-      updatePlayersInfo(data);
 
-      // some code to update game result here
-      const gameData = {
-        game,
-        player2ID: userID === game.Player1ID ? player2.ID : userID,
-        result: (win && userID === game.Player1ID) || (!win && userID === game.Player2ID) ? 1 : 2,
-        status: 0,
-        moves: JSON.stringify(history),
-        chatHistory: JSON.stringify(chatHistory)
-      }
+    if (hasWinner) {
+      setPlayer2Ready(false);
+      setPlayer1Ready(false);
+    }
+
+    if (isMainPlayer && hasWinner) {
       if (!game.Result) {
+        const elo = calculateElo(player1.Elo, player2.Elo);
+        const win = player === winner;
+        const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
+        const data = {
+          player1,
+          win: win,
+          elo: elo,
+          player2ID: player2.ID
+        }
+        updatePlayersInfo(data);
+
+        const gameData = {
+          game,
+          player2ID: userID === game.Player1ID ? player2.ID : userID,
+          result: (win && userID === game.Player1ID) || (!win && userID === game.Player2ID) ? 1 : 2,
+          status: 0,
+          moves: JSON.stringify(history),
+          chatHistory: JSON.stringify(chatHistory)
+        }
         updateGameInfo(gameData);
+
+        alert(msg);
       }
 
       // emit to update players info for observers
-      
+
 
       // emit tới server để xóa game này khỏi game layout của những người chơi khác
 
-      alert(msg);
-      setPlayer2Ready(false);
-      setPlayer1Ready(false);
-      setHasWinner(false);
+
+      // setStart(false);
+      // setHasWinner(false);
     }
   }, [winner, hasWinner, isMainPlayer, history, chatHistory, game]);
 
@@ -530,62 +559,74 @@ function Game({ socket, onlineUserList }) {
           <div className="player-info">
             <CardHeader title="Player Info"></CardHeader>
             <Player player={player2} xOrO={opponent} />
-
-            {/* game not started */}
+            {/* game not started and game result is null*/}
             {!start ?
-              <Typography style={{ margin: "10px", color: "darkgreen" }}>
-                {player2Ready ? 'Ready' : 'Not Ready'}
-              </Typography> :
+              (
+                hasWinner ?
+                  <></> :
+                  <Typography style={{ margin: "10px", color: "darkgreen" }}>
+                    {player2Ready ? 'Ready' : 'Not Ready'}
+                  </Typography>
+              ) :
               <Timer
-                socket={socket}
-                gameID={gameID}
+                setHasWinner={setHasWinner}
                 value={game.TimeThinkingEachTurn}
                 isYourTurn={!isYourTurn}
-                setIsYourTurn={setIsYourTurn}
+                game={game}
                 player2={player2}
                 player1={player1}
+                setPlayer1={setPlayer1}
+                setPlayer2={setPlayer2}
+                setGame={setGame}
                 isPlayer2={true}
                 elo={calculateElo(player2.Elo, player1.Elo)}
                 isMainPlayer={isMainPlayer}
+                history={history}
+                chatHistory={chatHistory}
               />}
-
             <br></br>
-            <Player player={player1} xOrO={player} />
 
+            <Player player={player1} xOrO={player} />
             {!start ?
               <>
                 {/* game not started */}
                 {
-                  isMainPlayer ?
-                    // là người chơi chính thì hiện nút để ready or cancel
-                    (player2.ID ?
-                      <Button style={{ margin: "10px" }} variant="contained" color="primary"
-                        onClick={handleReady}
-                      >
-                        {player1Ready ? "Cancel" : "Ready"}
-                      </Button>
+                  hasWinner ? <React.Fragment></React.Fragment> : (
+                    isMainPlayer && player1.ID ?
+                      // là người chơi chính thì hiện nút để ready or cancel
+                      (player2.ID ?
+                        <Button style={{ margin: "10px" }} variant="contained" color="primary"
+                          onClick={handleReady}
+                        >
+                          {player1Ready ? "Cancel" : "Ready"}
+                        </Button>
+                        :
+                        <React.Fragment></React.Fragment>
+                      )
                       :
-                      <React.Fragment></React.Fragment>
-                    )
-                    :
-                    <Typography style={{ margin: "10px", color: "darkgreen" }}>
-                      {player1Ready ? 'Ready' : 'Not Ready'}
-                    </Typography>
+                      <Typography style={{ margin: "10px", color: "darkgreen" }}>
+                        {player1Ready ? 'Ready' : 'Not Ready'}
+                      </Typography>
+                  )
                 }
               </>
               // waiting for opponent, hide the Ready Button
               :
               <Timer
-                socket={socket}
-                gameID={gameID}
+                setHasWinner={setHasWinner}
                 value={game.TimeThinkingEachTurn}
                 isYourTurn={isYourTurn}
-                setIsYourTurn={setIsYourTurn}
+                game={game}
                 player2={player1}
                 player1={player2}
+                setPlayer1={setPlayer1}
+                setPlayer2={setPlayer2}
+                setGame={setGame}
                 isPlayer2={false}
                 elo={calculateElo(player2.Elo, player1.Elo)}
                 isMainPlayer={isMainPlayer}
+                history={history}
+                chatHistory={chatHistory}
               />
             }
           </div>
@@ -593,13 +634,12 @@ function Game({ socket, onlineUserList }) {
           <div className="game-board">
             <CardHeader style={{ padding: '5px' }} title={"Game name: " + game.Name}></CardHeader>
             <CardHeader style={{ padding: '5px' }} title={"Game ID: " + game.ID}></CardHeader>
-            {start ?
-              <Board
-                key={stepNumber}
-                squares={current.squares}
-                onClick={i => handleClick(i)}
-                winLine={winInfo.winLine}
-              /> : <React.Fragment></React.Fragment>}
+            <Board
+              key={stepNumber}
+              squares={current.squares}
+              onClick={i => handleClick(i)}
+              winLine={winInfo.winLine}
+            />
           </div>
           <div className="game-info">
 
@@ -646,18 +686,15 @@ function Game({ socket, onlineUserList }) {
                 </AccordionSummary>
                 <AccordionDetails style={{ display: 'flex', flexDirection: 'column' }}>
                   {game.IsBlockedRule ? <Typography>Blocked Rule</Typography> : <React.Fragment></React.Fragment>}
-                  {start ?
-                    <React.Fragment>
-                      <div>{status}</div>
-                      <div>
-                        <button onClick={() => sortButtonClicked()}>
-                          {isAscending ? "Descending" : "Ascending"}
-                        </button>
-                      </div>
-                      <ol style={{ maxHeight: '200px', overflowY: 'scroll' }}>{moves}</ol>
-                    </React.Fragment> :
-                    <React.Fragment></React.Fragment>
-                  }
+
+                  <div>{status}</div>
+                  <div>
+                    <button onClick={() => sortButtonClicked()}>
+                      {isAscending ? "Descending" : "Ascending"}
+                    </button>
+                  </div>
+                  <ol style={{ maxHeight: '200px', overflowY: 'scroll' }}>{moves}</ol>
+
                 </AccordionDetails>
               </Accordion>
               <Accordion>

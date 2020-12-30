@@ -19,6 +19,8 @@ module.exports = {
 
     getUserAvatarByID: id => db.load(`SELECT Avatar FROM Users WHERE ID = '${id}' AND IsAdmin = 0`),
 
+    getRanking: limit => db.load(`SELECT Name, Elo, ROUND((WinCount / PlayCount) * 100, 2) AS WinRate FROM Users WHERE PlayCount > 0 AND IsAdmin = 0 ORDER BY Elo DESC LIMIT ${limit}`),
+
     addUser: entity => db.add('Users', entity),
 
     updateUserStatus: (id, status) => db.patch('Users', { Status: status }, { ID: id }),
