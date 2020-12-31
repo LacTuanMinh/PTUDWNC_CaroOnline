@@ -3,6 +3,8 @@ const db = require('../utils/db');
 module.exports = {
     getAllGames: _ => db.load('SELECT * FROM Games WHERE Status = 1 OR Status = 2'),
 
+    getAllGamesByUserID: id => db.load(`SELECT ID, Name, Player1ID, Result FROM Games WHERE (Player1ID = '${id}' OR Player2ID = '${id}') AND Status = 0`),
+
     checkGameExistByID: id => db.load(`SELECT ID,Password FROM Games WHERE ID = '${id}' AND Status = 1`),
 
     getGameByID: id => db.load(`SELECT * FROM Games WHERE ID = '${id}'`),

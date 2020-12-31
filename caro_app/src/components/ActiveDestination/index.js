@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import config from '../../constants/config.json';
 const API_URL = config.API_URL_TEST;
 
-export default function ({ socket, isLoggedIn, setIsLoggedIn }) {
+export default function ActiveDestination({ socket, isLoggedIn, setIsLoggedIn }) {
 	const ID = useParams().id;
 	const history = useHistory();
 	const [status, setStatus] = useState("Activating your account. Please wait a moment ...")

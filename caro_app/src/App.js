@@ -1,7 +1,7 @@
 import {
   BrowserRouter as Router,
   Route,
-  Switch
+  Switch,
 } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Games from './components/GameList/games';
@@ -12,7 +12,8 @@ import Profile from './components/Profile/profile';
 import SignUp from './components/SignUp/signup';
 import Navbar from './components/Navbar/navbar';
 import Footer from './components/Footer/footer';
-import ActiveDestination from './components/ActiveDestination/index'
+import ActiveDestination from './components/ActiveDestination/index';
+import PlayedGame from './components/PlayedGame/playedGame';
 import './App.css';
 import socketIOClient from "socket.io-client";
 import config from './constants/config.json';
@@ -24,9 +25,10 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('userID') !== null);
   const [onlineUserList, setOnlineUserList] = useState([]);
 
+
   useEffect(() => {
     socket.on("server_RefreshList", list => {
-      //console.log(list);
+      console.log(list);
       setOnlineUserList(list);
     });
   }, [setOnlineUserList]);
@@ -57,6 +59,9 @@ function App() {
           </Route>
           <Route path='/active/:id'>
             <ActiveDestination socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+          </Route>
+          <Route path='/playedGame/:id'>
+            <PlayedGame />
           </Route>
         </Switch>
       </div>

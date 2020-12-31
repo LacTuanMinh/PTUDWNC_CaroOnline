@@ -18,11 +18,32 @@ module.exports = io => {
     res.status(200).send({ games });
   });
 
+  router.get('/playedGames/:userID', async (req, res) => {
+
+    const userID = req.params.userID;
+    const games = await gameModel.getAllGamesByUserID(userID);
+
+    res.status(200).send({ list: games });
+  });
+
+  router.get('/playedGameDetail/:ID', async (req, res) => {
+    const gameID = req.params.ID;
+    const game = await gameModel.getGameByID(gameID);
+
+    const [player1Name, player2Name] = await Promise.all([
+      userModel.getUserNameByID(game[0].Player1ID),
+      userModel.getUserNameByID(game[0].Player2ID),
+    ]);
+    console.log({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
+    res.status(200).send({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
+  });
+
   router.get('/get/:ID', async (req, res) => {
     const gameID = req.params.ID;
     const game = await gameModel.getGameByID(gameID);
 
     if (game) {
+      console.log(game[0]);
       res.status(200).send({ game: game[0] });
     }
     //else res.status(404).send()
@@ -64,7 +85,6 @@ module.exports = io => {
     return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });
 
-  // const m
   io.on("connection", async (socket) => {
 
     socket.on("move", data => {

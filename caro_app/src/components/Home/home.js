@@ -16,7 +16,6 @@ const API_URL = config.API_URL_TEST;
 const homeBackground = {
   marginTop: '-20px',
   borderRadius: '0 0 0 200%',
-  // border: '1px solid grey',
   borderTopWidth: '0',
   width: '100%',
   boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)'

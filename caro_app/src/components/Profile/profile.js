@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
@@ -11,6 +12,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
+import CardActions from '@material-ui/core/CardActions';
 import ImageUploadDialog from '../Dialogs/ImageUploadDialog';
 import Badge from '@material-ui/core/Badge';
 import DateFnsUtils from '@date-io/date-fns';
@@ -18,6 +20,7 @@ import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/picker
 import ReplayIcon from '@material-ui/icons/Replay';
 import SimpleSnackbar from '../SnackBar/snackbar';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
+import PlayedGamesDialog from '../Dialogs/PlayedGamesDialog/index';
 import config from '../../constants/config.json';
 import { isBlankString, isEmailPattern } from '../../utils/helper';
 
@@ -82,7 +85,8 @@ const useStyles = makeStyles((theme) => ({
 export default function Profile() {
   const classes = useStyles();
   const userID = localStorage.getItem('userID');
-  const token = localStorage.getItem('jwtToken')
+  const token = localStorage.getItem('jwtToken');
+  const history = useHistory();
   const [name, setName] = useState("");
   const [validName, setValidName] = useState(true);
   const [email, setEmail] = useState("");
@@ -106,12 +110,17 @@ export default function Profile() {
         }
       });
 
-      const result = await res.json();
-      setInfo(result.userInfo);
-      setName(result.userInfo.Name);
-      setEmail(result.userInfo.Email);
-      setAvatar(result.userInfo.Avatar);
-      setDateOfBirth(result.userInfo.DateOfBirth);
+      if (res.status === 200) {
+        const result = await res.json();
+        setInfo(result.userInfo);
+        setName(result.userInfo.Name);
+        setEmail(result.userInfo.Email);
+        setAvatar(result.userInfo.Avatar);
+        setDateOfBirth(result.userInfo.DateOfBirth);
+      } else {
+        history.push('/signin');
+        return;
+      }
     }
     ComponentWillMount();
   }, []);
@@ -137,7 +146,7 @@ export default function Profile() {
   const handleNameChange = (name) => {
     setName(name);
     if (isBlankString(name)) {
-      setContents(contents => [...contents.filter(content => content.id != 1), { id: 1, msg: "Name field can't be empty!!!" }]);
+      setContents(contents => [...contents.filter(content => content.id !== 1), { id: 1, msg: "Name field can't be empty!!!" }]);
       setValidName(false);
     } else {
       setContents(contents.filter(content => content.id !== 1));
@@ -148,11 +157,11 @@ export default function Profile() {
   const handleEmailChange = (email) => {
     setEmail(email);
     if (isBlankString(email)) {
-      setContents(contents => [...contents.filter(content => content.id != 2), { id: 2, msg: "Email field can't be empty!!!" }]);
+      setContents(contents => [...contents.filter(content => content.id !== 2), { id: 2, msg: "Email field can't be empty!!!" }]);
       setValidEmail(false);
     }
     else if (!isEmailPattern(email)) {// === false
-      setContents(contents => [...contents.filter(content => content.id != 2), { id: 2, msg: "Email field doesn't match the email format!!!" }]);
+      setContents(contents => [...contents.filter(content => content.id !== 2), { id: 2, msg: "Email field doesn't match the email format!!!" }]);
       setValidEmail(false);
     }
     else {
@@ -169,7 +178,7 @@ export default function Profile() {
       setValidDOB(true);
     }
     else {
-      setContents(contents => [...contents.filter(content => content.id != 3), { id: 3, msg: "Invalid date!!!" }]);
+      setContents(contents => [...contents.filter(content => content.id !== 3), { id: 3, msg: "Invalid date!!!" }]);
       setValidDOB(false);
     }
   }
@@ -267,6 +276,9 @@ export default function Profile() {
                     </tbody>
                   </table>
                 </CardContent>
+                <CardActions>
+                  <PlayedGamesDialog />
+                </CardActions>
               </Card>
             </div>
           </Grid>
@@ -342,12 +354,7 @@ export default function Profile() {
                   Save Change
                 </Button>
                 <Typography align="left" component="h2" style={{ marginTop: 10, marginBottom: 12, fontWeight: 'bold' }}> Passowrd: </Typography>
-                <ChangePasswordDialog
-                // showSnackbar={showSnackbar}
-                // setShowSnackBar={setShowSnackBar}
-                // contents={contents}
-                // setContents={setContents}
-                />
+                <ChangePasswordDialog />
               </div>
             </div>
           </Grid>

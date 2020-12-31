@@ -89,8 +89,6 @@ module.exports = function (io) { // catch here
     const userID = req.params.userID;
     const result = await userModel.getUserAvatarByID(userID);
 
-    console.log(result);
-
     if (result.length !== 1) { // wrong userID
       return res.status(400).send({ mesg: "Error! Please try later" });
     }
@@ -100,9 +98,6 @@ module.exports = function (io) { // catch here
     }
 
     const AvatarURL = result[0].Avatar;
-    // console.log(path.join(__dirname, '../public', AvatarURL));
-    // console.log(`./${AvatarURL}`);
-    // res.status(200).sendFile(`public/${AvatarURL}`);
     res.status(200).sendFile(path.join(__dirname, '../public', AvatarURL));
   })
 
@@ -178,7 +173,6 @@ module.exports = function (io) { // catch here
     return res.status(200).sendFile(path.join(__dirname, '../public', newUrl.replace('./public/', '')));
   });
 
-
   const userSocketIdMap = new Map(); //a map of online usernames and their clients
 
   io.on("connection", async (socket) => {
@@ -195,31 +189,25 @@ module.exports = function (io) { // catch here
       }
 
       const list = await userModel.getAllOnlineUsers();
-      // console.log(list);
       io.sockets.emit("server_RefreshList", list);
     } else {
       const list = await userModel.getAllOnlineUsers();
-      // console.log(list);
       io.sockets.emit("server_RefreshList", list);
     }
 
     socket.on("client_LoggedIn", async (data) => {
-      // console.log("client logged in", data.userID);
+      console.log("client logged in", data.userID);
       const addResult = trackUserOnline.addClientToMap(userSocketIdMap, data.userID, socket.id);
 
       if (addResult === 1) {
-        // console.log("userID: " + data.userID);
         const res = await userModel.updateUserStatus(data.userID, 1);
-        // console.log(res);
       }
-
       const list = await userModel.getAllOnlineUsers();
       io.sockets.emit("server_RefreshList", list);
     });
 
     socket.on("client_LoggedOut", async (data) => {
       // console.log("client logged out", data.userID);
-
       const rmvResult = trackUserOnline.removeClientFromMap(userSocketIdMap, data.userID, socket.id);
 
       if (rmvResult === 1) {

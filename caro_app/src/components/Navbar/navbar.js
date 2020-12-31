@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useHistory, Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -32,11 +32,34 @@ const useStyles = makeStyles((theme) => ({
 export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
   const classes = useStyles();
   const history = useHistory();
+  const userID = localStorage.getItem('userID');
   const token = localStorage.getItem('jwtToken');
+
+  useEffect(() => {
+    function storageChange(event) {
+      if (event.key === 'jwtToken') {
+        if (event.newValue === null) {
+          setIsLoggedIn(false);
+          socket.emit('client_LoggedOut', { userID });
+          history.push('/signin');
+          return;
+
+        } else {
+          setIsLoggedIn(true);
+          history.push('/');
+          return;
+        }
+      }
+    }
+    window.addEventListener('storage', storageChange);
+    return () => {
+      window.removeEventListener('storage', storageChange);
+    }
+  }, []);
 
   const logoutButtonClicked = async () => {
     const data = {
-      userID: localStorage.getItem('userID')
+      userID
     }
     const res = await fetch(`${API_URL}/users/signout`, {
       method: 'POST',
@@ -52,9 +75,9 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
 
     }
     else { // other status: 200, 401, ...
-
-      localStorage.clear();
       setIsLoggedIn(false);
+      localStorage.removeItem('jwtToken')
+      localStorage.clear();
       history.push('/');
 
       if (res.status === 200) // only status 200

@@ -72,7 +72,7 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
   const handleUsernameChange = (username) => {
     setUsername(username);
     if (isBlankString(username)) {
-      setContents(contents => [...contents.filter(content => content.id != 1), { id: 1, msg: "Username can't be empty." }]);
+      setContents(contents => [...contents.filter(content => content.id !== 1), { id: 1, msg: "Username can't be empty." }]);
       setValidUserName(false);
     } else {
       setContents(contents.filter(content => content.id !== 1));
@@ -83,7 +83,7 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
   const handlePasswordChange = (password) => {
     setPassword(password);
     if (isBlankString(password) || password.length < 6) {
-      setContents(contents => [...contents.filter(content => content.id != 2), { id: 2, msg: "Pasword can't be empty or shorter than 6 chars" }]);
+      setContents(contents => [...contents.filter(content => content.id !== 2), { id: 2, msg: "Pasword can't be empty or shorter than 6 chars" }]);
       setValidPassword(false);
     } else {
       setContents(contents.filter(content => content.id !== 2));
