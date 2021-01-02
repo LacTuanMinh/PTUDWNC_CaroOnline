@@ -3,7 +3,7 @@ const db = require('../utils/db');
 module.exports = {
     getAllUsername: _ => db.load('SELECT Username FROM Users WHERE IsAdmin = 0'),
 
-    // getAllOnlineUsers: _ => db.load(`SELECT ID, Name FROM Users WHERE IsAdmin = 0 AND Status = 1`),
+    getAllUsers: _ => db.load(`SELECT ID, Username, Name, Email, Status FROM Users WHERE IsAdmin = 0 ORDER BY Name ASC`),
 
     getPasswordByID: id => db.load(`SELECT Password FROM Users WHERE ID = '${id}' AND IsAdmin = 0`),
 

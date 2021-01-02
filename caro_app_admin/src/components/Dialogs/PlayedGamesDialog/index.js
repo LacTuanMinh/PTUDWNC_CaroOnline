@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useHistory } from 'react-router-dom'
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Avatar from '@material-ui/core/Avatar';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -40,9 +43,8 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-export default function PlayedGamesDialog() {
+export default function PlayedGamesDialog({ userID }) {
 	const classes = useStyles();
-	const userID = localStorage.getItem('userID');
 	const token = window.localStorage.getItem('jwtToken');
 	const history = useHistory();
 	const [open, setOpen] = useState(false);
@@ -60,7 +62,7 @@ export default function PlayedGamesDialog() {
 	useEffect(() => {
 		async function retrieveGameList() {
 
-			const res = await fetch(`${API_URL}/games/playedGames/${userID}`, {
+			const res = await fetch(`${API_URL}/management/playedGames/${userID}`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -75,55 +77,53 @@ export default function PlayedGamesDialog() {
 
 
 	const handleChangeToViewPlayedGame = (gameID) => {
-		const playedGame = window.open(`/playedGame/${gameID}`, "_blank");
+		const playedGame = window.open(`/games/${gameID}`, "_blank");
 		playedGame.focus();
+		return;
 	}
 
 	return (
 		<>
-			<Button fullWidth variant="outlined" color="primary" onClick={handleClickOpen}>
-				Review your played games
+			<Button fullWidth variant="contained" color="secondary" onClick={handleClickOpen}>
+				Played games
       </Button>
 			<Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title" fullWidth>
 				<form >
-					<DialogTitle id="form-dialog-title">Review your played games</DialogTitle>
+					<DialogTitle id="form-dialog-title" >Played games</DialogTitle>
 					<DialogContent>
 
 						<div className={classes.demo}>
 							<List dense={dense}>
-								{gameList.map((game, index) => (
-									<>
-										<ListItem key={index} button>
-											<ListItemAvatar>
-												<Avatar>
-													<HistoryIcon />
-												</Avatar>
-											</ListItemAvatar>
-											<ListItemText
-												primary={game.Name}
-												secondary={game.Player1ID === userID && game.Result === 1 ? "You won" : "You lost"}
-											/>
-											<ListItemSecondaryAction>
-												<IconButton edge="end" aria-label="delete" onClick={() => handleChangeToViewPlayedGame(game.ID)} >
-													<VisibilityIcon />
-												</IconButton>
-											</ListItemSecondaryAction>
-										</ListItem>
-										<Divider />
-									</>
-								))}
+								{
+									gameList.length === 0 ?
+										<Typography variant="h6" style={{ textAlign: 'center' }}>No game played</Typography>
+										:
+										(gameList.map((game, index) => (
+											<React.Fragment key={game.ID}>
+												<ListItem >
+													<ListItemAvatar>
+														<Avatar>
+															<HistoryIcon />
+														</Avatar>
+													</ListItemAvatar>
+													<ListItemText
+														primary={game.Name}
+													// secondary={game.Player1ID === userID && game.Result === 1 ? "You won" : "You lost"}
+													/>
+													<ListItemSecondaryAction>
+														<IconButton edge="end" aria-label="delete" onClick={() => handleChangeToViewPlayedGame(game.ID)} >
+															<VisibilityIcon />
+														</IconButton>
+													</ListItemSecondaryAction>
+												</ListItem>
+												<Divider />
+											</React.Fragment>
+										)))
+								}
+
 							</List>
 						</div>
-
 					</DialogContent>
-					{/* <DialogActions>
-						<Button color="secondary">
-							Update
-            </Button>
-						<Button onClick={handleClose} color="primary">
-							Cancel
-           </Button>
-					</DialogActions> */}
 				</form>
 			</Dialog>
 		</>

@@ -9,6 +9,9 @@ import SignIn from './components/SignIn/index';
 import Profile from './components/Profile/index';
 import Navbar from './components/Navbar/index';
 import Footer from './components/Footer/index';
+import UserManagement from './components/UserManagement/index';
+import UserDetail from './components/UserDetail/index';
+import PlayedGame from './components/PlayedGame/index';
 import './App.css';
 
 function App() {
@@ -29,12 +32,18 @@ function App() {
           <Route path='/signIn'>
             <SignIn isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
           </Route>
-          {/* <Route exact path='/games'>
-            <Games />
+          {/* users này là người chơi, không phải admin */}
+          <Route exact path='/users'>
+            <UserManagement />
+          </Route>
+          {/* userID: id của người chơi, không phải của admin */}
+          <Route exact path='/users/:userID'>
+            <UserDetail />
           </Route>
           <Route path='/games/:gameID'>
-            <Game />
-          </Route> */}
+            <PlayedGame />
+          </Route>
+
         </Switch>
       </div>
       <br></br>

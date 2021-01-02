@@ -100,8 +100,6 @@ export default function Profile() {
 
   useEffect(() => {
     async function ComponentWillMount() {
-      const token = window.localStorage.getItem('jwtToken');
-      const userID = localStorage.getItem('userID');
       const res = await fetch(`${API_URL}/users/profile/${userID}`, {
         method: 'GET',
         headers: {

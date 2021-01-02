@@ -76,7 +76,7 @@ export default function Navbar({ socket, isLoggedIn, setIsLoggedIn }) {
     }
     else { // other status: 200, 401, ...
       setIsLoggedIn(false);
-      localStorage.removeItem('jwtToken')
+      localStorage.removeItem('jwtToken');
       localStorage.clear();
       history.push('/');
 

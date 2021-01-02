@@ -70,8 +70,6 @@ router.get('/avatar/:userID', async (req, res) => {
   const userID = req.params.userID;
   const result = await userModel.getUserAvatarByID(userID);
 
-  console.log(result);
-
   if (result.length !== 1) { // wrong userID
     return res.status(400).send({ mesg: "Error! Please try later" });
   }
@@ -81,11 +79,8 @@ router.get('/avatar/:userID', async (req, res) => {
   }
 
   const AvatarURL = result[0].Avatar;
-  // console.log(path.join(__dirname, '../public', AvatarURL));
-  // console.log(`./${AvatarURL}`);
-  // res.status(200).sendFile(`public/${AvatarURL}`);
   res.status(200).sendFile(path.join(__dirname, '../public', AvatarURL));
-})
+});
 
 router.post('/profile/updateinfo/:userID', async (req, res) => {
 

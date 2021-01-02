@@ -1,11 +1,14 @@
+
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
+import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 
 function Copyright() {
   return (
-    <Typography variant="body2" color="textSecondary" align="center">
+    <Typography variant="body2" color="textSecondary">
       {'Copyright © '}
       <Link color="inherit" href="https://material-ui.com/">
         Your Website
@@ -17,30 +20,35 @@ function Copyright() {
 }
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '50vh',
+  },
+  main: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
   footer: {
-    backgroundColor: theme.palette.background.paper,
-    paddingTop: theme.spacing(0),
-  }
+    padding: theme.spacing(2, 1),
+    marginTop: 'auto',
+    backgroundColor:
+      theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
+  },
 }));
 
-function Footer() {
+export default function StickyFooter() {
   const classes = useStyles();
 
   return (
-    <React.Fragment>
-      {/* Footer */}
+    <div className={classes.root}>
+      <CssBaseline />
       <footer className={classes.footer}>
-        <Typography variant="h6" align="center" gutterBottom>
-          Footer
-        </Typography>
-        <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-          Something here to give the footer a purpose!
-        </Typography>
-        <Copyright />
+        <Container maxWidth="sm">
+          <Typography variant="body1">Email: caroonlineteam@gmail.com</Typography>
+          <Copyright />
+        </Container>
       </footer>
-      {/* End footer */}
-    </React.Fragment >
+    </div>
   );
 }
-
-export default Footer;

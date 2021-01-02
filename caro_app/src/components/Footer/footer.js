@@ -35,10 +35,10 @@ function Footer() {
       {/* Footer */}
       <footer className={classes.footer}>
         <Typography variant="h6" align="center" gutterBottom>
-          Footer
+          Contact us:
         </Typography>
         <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-          Something here to give the footer a purpose!
+          Email: caroonlineteam@gmail.com
         </Typography>
         <Copyright />
       </footer>

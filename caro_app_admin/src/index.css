@@ -11,3 +11,95 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.board-row:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+.status {
+  margin-bottom: 10px;
+}
+
+.square {
+  background: #fff;
+  border: 1px solid #999;
+  float: left;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+
+.square.yellow {
+  background-color: yellow;
+}
+
+.square:focus {
+  outline: none;
+}
+
+.kbd-navigation .square:focus {
+  background: #ddd;
+}
+
+.game {
+  display: flex;
+  flex-direction: row;
+  margin-left: 5px;
+  padding: 0px !important;
+}
+
+.game-board {
+  min-width: 700px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game-info {
+  margin-left: 20px;
+  width: 300px;
+}
+
+.player-info {
+  margin-right: 15px ;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chat-box {
+  margin-left: 20px;
+  min-width: 320px;
+}
+
+.chat-box .chat-item {
+  display: flex;
+  align-items: flex-start;
+  margin-left: 5px;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+.chat-box .form {
+  display: flex;
+  width: 100%;
+
+}
+
+.chat-box .submit-button {
+  background-color: '';
+  
+}
+
+.selected-move {
+  font-weight: bold;
+}

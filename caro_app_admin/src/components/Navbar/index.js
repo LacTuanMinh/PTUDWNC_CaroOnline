@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useHistory } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -34,6 +34,27 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const history = useHistory();
   const token = localStorage.getItem('jwtToken');
 
+  useEffect(() => {
+    function storageChange(event) {
+      if (event.key === 'jwtToken') {
+        if (event.newValue === null) {
+          setIsLoggedIn(false);
+          history.push('/signin');
+          return;
+
+        } else {
+          setIsLoggedIn(true);
+          history.push('/');
+          return;
+        }
+      }
+    }
+    window.addEventListener('storage', storageChange);
+    return () => {
+      window.removeEventListener('storage', storageChange);
+    }
+  }, []);
+
   const logoutButtonClicked = async () => {
     const data = {
       userID: localStorage.getItem('userID')
@@ -51,9 +72,10 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       alert(result.mesg);
     }
     else { // other status: 200, 401, ...
+      localStorage.removeItem('jwtToken');
       localStorage.clear();
       setIsLoggedIn(false);
-      history.push('/');
+      history.push('/signin');
     }
   }
 
