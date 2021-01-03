@@ -22,7 +22,7 @@ import SimpleSnackbar from '../SnackBar/snackbar';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
 import PlayedGamesDialog from '../Dialogs/PlayedGamesDialog/index';
 import config from '../../constants/config.json';
-import { isBlankString, isEmailPattern } from '../../utils/helper';
+import { isBlankString, isEmailPattern, convertISOToYMD } from '../../utils/helper';
 
 const API_URL = config.API_URL_TEST;
 
@@ -253,15 +253,15 @@ export default function Profile() {
                 />
                 <CardContent>
                   {/* <Typography> */}
-                  <table style={{ margin: '10px', width: '100%' }}>
+                  <table style={{ margin: '10px', width: '100%', fontSize: "20px" }}>
                     <tbody>
-                      <tr>
+                      {/* <tr>
                         <td style={{ textAlign: 'right', fontWeight: 'bold', width: '50%' }}>Username:</td>
                         <td style={{ textAlign: 'center', width: '50%' }}>{info.Username}</td>
-                      </tr>
+                      </tr> */}
                       <tr>
-                        <td style={{ textAlign: 'right', fontWeight: 'bold' }}>Elo mark:</td>
-                        <td style={{ textAlign: 'center' }}>{info.Elo}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 'bold', width: '50%' }}>Elo mark:</td>
+                        <td style={{ textAlign: 'center', width: '50%' }}>{info.Elo}</td>
                       </tr>
                       <tr>
                         <td style={{ textAlign: 'right', fontWeight: 'bold' }}>Total play(s):</td>
@@ -283,9 +283,6 @@ export default function Profile() {
 
           <Grid item xs={12} md={6}>
             <div className={classes.paper}>
-              {/* <Avatar className={classes.avatar}>
-                <ContactMailRoundedIcon />
-              </Avatar> */}
               <Typography component="h2" variant="h5">
                 YOUR PROFILE
                 <IconButton onClick={handleResetInfo} title="Reset information" color="primary" aria-label="add an alarm" style={{ fontSize: 'large' }} >
@@ -330,7 +327,6 @@ export default function Profile() {
                     <Typography className={classes.floatRight} align="right" style={{ color: "red" }}>Invalid</Typography>
                   }
                 </div>
-
                 <MuiPickersUtilsProvider utils={DateFnsUtils} >
                   <KeyboardDatePicker
                     // disableToolbar
@@ -346,6 +342,15 @@ export default function Profile() {
                     placeholder="Date of Birth"
                   />
                 </MuiPickersUtilsProvider>
+
+                <div className={classes.container}>
+                  <Typography align="left" component="h2" className={classes.floatLeft}>
+                    <b>Activated date:</b>
+                  </Typography>
+                  <TextField variant="outlined" margin="normal" required fullWidth
+                    placeholder="Activated date" value={convertISOToYMD(info.ActivatedDate)} disabled
+                  />
+                </div>
                 <Button type="submit" fullWidth variant="outlined" color="primary" onClick={handleSaveChange}
                   className={classes.submit} startIcon={<SaveIcon />}
                 >

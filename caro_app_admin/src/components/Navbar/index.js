@@ -97,27 +97,27 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
           <div>
             <NavLink to='/' className={classes.navLink}>
               <Button variant="contained" color="secondary">
-                Home
+                <Typography style={{ fontWeight: 'bold' }}>Home</Typography>
               </Button>
             </NavLink>
             {isLoggedIn ?
               <React.Fragment>
                 <NavLink to='/profile' className={classes.navLink}>
                   <Button variant="contained" color="secondary">
-                    Profile
-                </Button>
+                    <Typography style={{ fontWeight: 'bold' }}>Profile</Typography>
+                  </Button>
                 </NavLink>
                 <NavLink to='/' className={classes.navLink}>
                   <Button variant="contained" color="secondary" onClick={logoutButtonClicked}>
-                    Sign Out
-                </Button>
+                    <Typography style={{ fontWeight: 'bold' }}>Sign Out</Typography>
+                  </Button>
                 </NavLink>
               </React.Fragment> :
               <React.Fragment>
                 <NavLink to='/signIn' className={classes.navLink}>
                   <Button variant="contained" color="secondary">
-                    Sign In
-                </Button>
+                    <Typography style={{ fontWeight: 'bold' }}>Sign In</Typography>
+                  </Button>
                 </NavLink>
               </React.Fragment>}
           </div>

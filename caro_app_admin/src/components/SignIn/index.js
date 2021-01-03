@@ -91,44 +91,38 @@ function SignIn({ isLoggedIn, setIsLoggedIn }) {
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
 
-    const signIn = async () => {
-      const data = {
-        username: username,
-        password: password
-      };
+    const data = {
+      username: username,
+      password: password
+    };
 
-      if (!validUserName || !validPassword) {
-        setShowSnackBar(true);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/signin`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      const result = await res.json();
-      if (res.status === 200) {
-
-        window.localStorage.setItem('jwtToken', result.token);
-        window.localStorage.setItem('userID', result.id);
-        window.localStorage.setItem('name', result.name);
-
-        setIsLoggedIn(true);
-
-        history.push("/");
-
-      } else {
-        alert(result.mesg);
-      }
+    if (!validUserName || !validPassword) {
+      setShowSnackBar(true);
+      return;
     }
-    // call API here
-    signIn();
+
+    const res = await fetch(`${API_URL}/signin`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    const result = await res.json();
+    if (res.status === 200) {
+
+      window.localStorage.setItem('jwtToken', result.token);
+      window.localStorage.setItem('userID', result.id);
+      window.localStorage.setItem('name', result.name);
+      setIsLoggedIn(true);
+      history.push("/");
+    } else {
+      setContents([{ id: 3, msg: result.msg }])
+      setShowSnackBar(true);
+    }
   }
 
   return (
@@ -143,7 +137,7 @@ function SignIn({ isLoggedIn, setIsLoggedIn }) {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
-        <form className={classes.form} onSubmit={handleSubmit}>
+        <form className={classes.form} onSubmit={handleSignIn}>
           <TextField id="username" name="username" label="Username" variant="outlined"
             margin="normal" required fullWidth autoComplete="username" autoFocus
             onChange={e => handleUsernameChange(e.target.value)}

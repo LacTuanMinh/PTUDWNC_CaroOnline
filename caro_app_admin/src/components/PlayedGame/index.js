@@ -32,7 +32,6 @@ export default function PlayedGame() {
       position: -1
     }
   ]);
-  const [player, setPlayer] = useState("X");// X || O
   const [chatHistory, setChatHistory] = useState([]);
   const [avatar1, setAvatar1] = useState("");
   const [avatar2, setAvatar2] = useState("");
@@ -117,8 +116,6 @@ export default function PlayedGame() {
     moves.reverse();
   }
 
-  const opponent = player === "X" ? "O" : "X";
-
   let status;
   if (winner) {
     status = "Winner: " + winner;
@@ -143,18 +140,18 @@ export default function PlayedGame() {
           <div className="player-info">
             <CardHeader title="Player Info"></CardHeader>
             <div style={{ border: `3px solid blue` }}>
-              <img src={avatar1 ? avatar1 : defaultAvatar}
+              <img src={avatar1 ? avatar1 : defaultAvatar} alt={"Player 1"}
                 style={{ height: '150px', width: '200px' }}
               />
-              <Typography>Name: {player1Name} {game.Player1ID === userID ? " (You)" : null}</Typography>
+              <Typography>Name: {player1Name} {game.Result === 1 ? " (Winner)" : null}</Typography>
             </div>
             <br></br>
 
             <div style={{ border: `3px solid red` }}>
-              <img src={avatar2 ? avatar2 : defaultAvatar}
+              <img src={avatar2 ? avatar2 : defaultAvatar} alt={"Player 2"}
                 style={{ height: '150px', width: '200px' }}
               />
-              <Typography>Name: {player2Name} {game.Player2ID === userID ? " (You)" : null}</Typography>
+              <Typography>Name: {player2Name} {game.Result === 2 ? " (Winner)" : null}</Typography>
             </div>
           </div>
 

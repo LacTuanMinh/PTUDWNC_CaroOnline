@@ -25,7 +25,7 @@ export default function SimpleSnackbar({ open, setOpen, contents }) {
 				<SnackbarContent
 					message={
 						contents.length === 0 ? <Typography variant='h6'>Update sucessfully!!!</Typography> :
-							contents.map((content, i) => <Typography key={i} variant='h6'>{content.msg}</Typography>)
+							contents.map((content, i) => <Typography style={{ fontSize: '18px' }} key={i} variant='h6'>{content.msg}</Typography>)
 					}
 					style={{ alignContent: "center", backgroundColor: `${contents.length === 0 ? "green" : "red"}` }}
 				/>

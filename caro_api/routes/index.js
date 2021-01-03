@@ -10,6 +10,7 @@ const v1options = {
 };
 uuidv1(v1options);
 const emailServer = require('../utils/email');
+const { convertISOToYMD } = require('../utils/helper');
 
 router.get('/', (req, res) => {
   res.render('index', { title: 'Express' });
@@ -23,7 +24,10 @@ router.post('/signin', async (req, res) => {
     const user = users[0];
 
     if (user.Status === -1) { // chưa active  tài khoản qua email
-      return res.status(401).send({ mesg: "Your account has not been activated. Please check your email to continue!" });
+      return res.status(401).send({ msg: "Your account has not been activated. Please check your email to continue!" });
+    }
+    if (user.Status === 2) {
+      return res.status(401).send({ msg: "Your account has been banned by admin team." });
     }
 
     if (bcrypt.compareSync(password, user.Password)) {
@@ -100,6 +104,9 @@ router.post('/active', async (req, res) => {
     return res.status(400).send({ msg: "Your account has been activated before. Just join our app now." })
   } else {
     const token = jwt.sign({ id: ID }, config.passportKey);
+    const date = convertISOToYMD(new Date().toISOString());
+
+    await userModel.updateUserActivatedDate(ID, date);
     const name = await userModel.getUserNameByID(ID);
     return res.status(200).send({ msg: "Welcom to join our app", token, id: ID, name: name[0].Name });
   }

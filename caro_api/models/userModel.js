@@ -29,7 +29,9 @@ module.exports = {
 
     updateUserInfo: (id, { Name, Email, DateOfBirth }) => db.patch('Users', { Name, Email, DateOfBirth }, { ID: id }),
 
-    updateUserPassword: (id, { Password }) => db.patch('Users', { Password }, { ID: id }),
+    updateUserPassword: (id, Password) => db.patch('Users', { Password }, { ID: id }),
 
-    updateUserAvatar: (id, { Avatar }) => db.patch('Users', { Avatar }, { ID: id }),
+    updateUserAvatar: (id, Avatar) => db.patch('Users', { Avatar }, { ID: id }),
+
+    updateUserActivatedDate: (id, date) => db.patch('Users', { ActivatedDate: date }, { ID: id }),
 }

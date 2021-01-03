@@ -4,14 +4,12 @@ import { useHistory } from 'react-router-dom'
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Avatar from '@material-ui/core/Avatar';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -46,7 +44,6 @@ const useStyles = makeStyles((theme) => ({
 export default function PlayedGamesDialog({ userID }) {
 	const classes = useStyles();
 	const token = window.localStorage.getItem('jwtToken');
-	const history = useHistory();
 	const [open, setOpen] = useState(false);
 	const [dense, setDense] = useState(false);
 	const [gameList, setGameList] = useState([]);
@@ -76,7 +73,7 @@ export default function PlayedGamesDialog({ userID }) {
 	}, [setGameList]);
 
 
-	const handleChangeToViewPlayedGame = (gameID) => {
+	const handleToPlayedGame = (gameID) => {
 		const playedGame = window.open(`/games/${gameID}`, "_blank");
 		playedGame.focus();
 		return;
@@ -96,7 +93,10 @@ export default function PlayedGamesDialog({ userID }) {
 							<List dense={dense}>
 								{
 									gameList.length === 0 ?
-										<Typography variant="h6" style={{ textAlign: 'center' }}>No game played</Typography>
+										<>
+											<Divider />
+											<Typography variant="h6" style={{ textAlign: 'center' }}>No game played</Typography>
+										</>
 										:
 										(gameList.map((game, index) => (
 											<React.Fragment key={game.ID}>
@@ -111,7 +111,7 @@ export default function PlayedGamesDialog({ userID }) {
 													// secondary={game.Player1ID === userID && game.Result === 1 ? "You won" : "You lost"}
 													/>
 													<ListItemSecondaryAction>
-														<IconButton edge="end" aria-label="delete" onClick={() => handleChangeToViewPlayedGame(game.ID)} >
+														<IconButton edge="end" aria-label="delete" onClick={() => handleToPlayedGame(game.ID)} >
 															<VisibilityIcon />
 														</IconButton>
 													</ListItemSecondaryAction>
@@ -120,7 +120,6 @@ export default function PlayedGamesDialog({ userID }) {
 											</React.Fragment>
 										)))
 								}
-
 							</List>
 						</div>
 					</DialogContent>

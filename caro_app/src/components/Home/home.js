@@ -7,7 +7,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import EloRanking from '../Table/index';
+import EloRanking from '../Ranking/index';
 import { useHistory } from 'react-router-dom';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
@@ -20,6 +20,7 @@ const homeBackground = {
   width: '100%',
   boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)'
 }
+
 
 function Home({ onlineUserList, socket }) {
   const history = useHistory();
@@ -81,12 +82,12 @@ function Home({ onlineUserList, socket }) {
         <div style={{ position: 'absolute', left: '5%', bottom: '20%', width: '25%' }}>
           <div style={{ display: "flex", justifyContent: "flex-start" }}>
             <div>
-              <Button style={{ marginRight: '10px' }} fullWidth variant="outlined" color="secondary" onClick={handleClickOpen} >
+              <Button style={{ marginRight: '0.5vw', width: '10vw' }} fullWidth variant="outlined" color="secondary" onClick={handleClickOpen} >
                 Join Game
             </Button>
             </div>
             <div>
-              <Button style={{ marginLeft: '10px' }} fullWidth variant="contained" color="primary"  >
+              <Button style={{ marginLeft: '0.5vw', width: '10vw' }} fullWidth variant="contained" color="primary"  >
                 Quick join
             </Button>
             </div>

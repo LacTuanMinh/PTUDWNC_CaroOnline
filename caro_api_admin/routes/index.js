@@ -22,18 +22,18 @@ router.post('/signin', async (req, res) => {
       const token = jwt.sign({ id: user.ID }, config.passportKey);
 
       return res.status(200).send({
-        mesg: "Signed in",
+        msg: "Signed in",
         token: token,
         id: user.ID,
         name: user.Name
       });
     }
     else {
-      return res.status(401).send({ mesg: "Wrong password! Check again" });
+      return res.status(401).send({ msg: "Wrong password! Check again" });
     }
   }
   else {
-    return res.status(401).send({ mesg: 'No such user found' });
+    return res.status(401).send({ msg: 'No such user found' });
   }
 });
 

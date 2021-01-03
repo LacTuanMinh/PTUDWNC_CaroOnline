@@ -7,6 +7,7 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Divider from '@material-ui/core/Divider';
 import { authen } from '../../utils/helper';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
 import { calculateWinner } from '../Game/gameServices';

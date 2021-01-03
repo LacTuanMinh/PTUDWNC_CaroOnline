@@ -16,7 +16,7 @@ const StyledTableCell = withStyles((theme) => ({
 		color: theme.palette.common.white,
 	},
 	body: {
-		fontSize: 20,
+		fontSize: 18,
 	},
 }))(TableCell);
 
@@ -31,8 +31,10 @@ const StyledTableRow = withStyles((theme) => ({
 const useStyles = makeStyles({
 	table: {
 		width: '50%',
-
 	},
+	center: {
+		textAlign: 'center',
+	}
 });
 
 export default function CustomizedTables() {
@@ -68,25 +70,21 @@ export default function CustomizedTables() {
 				display: 'flex', justifyContent: 'center'
 			}} >
 				<Table className={classes.table} aria-label="customized table" style={{ border: '1px solid grey', borderRadius: '5px' }}>
-					<TableHead  >
+					<TableHead >
 						<TableRow>
-							<StyledTableCell>TOP</StyledTableCell>
-							<StyledTableCell>Name</StyledTableCell>
-							<StyledTableCell align="right">Elo </StyledTableCell>
-							<StyledTableCell align="right">Win Rate</StyledTableCell>
+							<StyledTableCell className={classes.center} style={{ width: '15%' }}>TOP</StyledTableCell>
+							<StyledTableCell className={classes.center} style={{ width: '40%' }}>Name</StyledTableCell>
+							<StyledTableCell className={classes.center} style={{ width: '25%' }}>Elo </StyledTableCell>
+							<StyledTableCell className={classes.center} style={{ width: '20%' }}>Win Rate</StyledTableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
 						{list.map((row, index) => (
 							<StyledTableRow key={index}>
-								<StyledTableCell component="th" scope="row">
-									{index + 1}
-								</StyledTableCell>
-								<StyledTableCell component="th" scope="row">
-									{row.Name}
-								</StyledTableCell>
-								<StyledTableCell align="right">{row.Elo}</StyledTableCell>
-								<StyledTableCell align="right">{row.WinRate}%</StyledTableCell>
+								<StyledTableCell className={classes.center} component="th" scope="row"> 	{index + 1} 	</StyledTableCell>
+								<StyledTableCell className={classes.center} component="th" scope="row"> {row.Name} </StyledTableCell>
+								<StyledTableCell className={classes.center} >{row.Elo}</StyledTableCell>
+								<StyledTableCell className={classes.center} >{row.WinRate}%</StyledTableCell>
 							</StyledTableRow>
 						))}
 					</TableBody>

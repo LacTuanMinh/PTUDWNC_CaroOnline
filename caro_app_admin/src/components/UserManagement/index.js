@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useHistory } from "react-router-dom";
-import { fade, makeStyles } from '@material-ui/core/styles';
+import { useHistory } from "react-router-dom";
+import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableBody from '@material-ui/core/TableBody';
@@ -14,6 +14,7 @@ import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
+import { InformationSnackbar } from '../SnackBar/snackbar';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
 const API_URL = config.API_URL_TEST;
@@ -25,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
 		paddingBottom: theme.spacing(4),
 	},
 	tableHeader: {
+		textAlign: 'center',
 		fontWeight: 'bolder',
 		fontSize: '18px'
 	},
@@ -40,7 +42,12 @@ const useStyles = makeStyles((theme) => ({
 		"&:hover": {
 			backgroundColor: "#f1f3f4"
 		}
-	}
+	},
+	tableBody: {
+		textAlign: 'center',
+		fontSize: '15px',
+		padding: '8px'
+	},
 }));
 
 export default function UserManagement() {
@@ -52,6 +59,8 @@ export default function UserManagement() {
 	const [displayedUsers, setDisplayedUsers] = useState([]);
 	const [nameInput, setNameInput] = useState("");
 	const [emailInput, setEmailInput] = useState("");
+	const [showSnackbar, setShowSnackBar] = useState(false);
+	const [content, setContent] = useState("");
 
 	useEffect(() => {
 		async function retrieveUsers() {
@@ -93,9 +102,63 @@ export default function UserManagement() {
 		const userDetail = window.open(`/users/${userID}`, "_blank");
 		userDetail.focus();
 	}
+	const handleBanUser = async (event, userID) => {
+		event.stopPropagation(); // prevent click this button lead to user detail page
+
+		const res = await fetch(`${API_URL}/management/ban/${userID}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`
+			}
+		});
+		if (res.status === 200) {
+			const usersCopy = JSON.parse(JSON.stringify(users));
+			setUsers(usersCopy =>
+				usersCopy.map((user, index) => {
+					if (user.ID === userID) {
+						user.Status = 2;
+					}
+					return user;
+				})
+			);
+
+		} else {
+			const result = await res.json();
+			setContent(result.msg);
+			setShowSnackBar(true);
+		}
+	}
+	const handleUnbanUser = async (event, userID) => {
+		event.stopPropagation();
+
+		const res = await fetch(`${API_URL}/management/unban/${userID}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`
+			}
+		});
+		if (res.status === 200) {
+			const usersCopy = JSON.parse(JSON.stringify(users));
+			setUsers(usersCopy =>
+				usersCopy.map((user, index) => {
+					if (user.ID === userID) {
+						user.Status = 0;
+					}
+					return user;
+				})
+			);
+		} else {
+			const result = await res.json();
+			setContent(result.msg);
+			setShowSnackBar(true);
+		}
+	}
 
 	return (
 		<React.Fragment>
+			<InformationSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} content={content} />
 			<Container maxWidth="lg" className={classes.container}>
 				<Grid item xs={12} md={12} sm={12}>
 					<Paper className={classes.shadow}>
@@ -129,12 +192,12 @@ export default function UserManagement() {
 							<Table stickyHeader size="small">
 								<TableHead>
 									<TableRow >
-										<TableCell className={classes.tableHeader}>ID</TableCell>
-										<TableCell className={classes.tableHeader}>Name</TableCell>
-										<TableCell className={classes.tableHeader}>Email</TableCell>
-										<TableCell className={classes.tableHeader}>Username</TableCell>
-										<TableCell className={classes.tableHeader}>Status</TableCell>
-										<TableCell className={classes.tableHeader} align="right"></TableCell>
+										<TableCell className={classes.tableHeader} style={{ width: '15%' }}>ID</TableCell>
+										<TableCell className={classes.tableHeader} style={{ width: '20%' }}>Name</TableCell>
+										<TableCell className={classes.tableHeader} style={{ width: '20%' }}>Email</TableCell>
+										<TableCell className={classes.tableHeader} style={{ width: '20%' }}>Username</TableCell>
+										<TableCell className={classes.tableHeader} style={{ width: '10%' }}>Status</TableCell>
+										<TableCell className={classes.tableHeader} style={{ width: '10%' }}></TableCell>
 									</TableRow>
 								</TableHead>
 								<TableBody>
@@ -145,22 +208,19 @@ export default function UserManagement() {
 											</TableRow>
 											:
 											(displayedUsers.map((user, index) => {
-												const status = user.Status === -1 ? "Inactive" : (user.Status === 2 ? "Banned" : (user.Status === 0 ? "Offlined" : "Onlined"));
+												const status = user.Status === -1 ? "Inactivated" : (user.Status === 2 ? "Banned" : "Activated");
 												return (
-													<TableRow key={index} onClick={() => handleToUserDetail(user.ID)} className={classes.hover}>
-														<TableCell>{user.ID}</TableCell>
-														<TableCell>{user.Name}</TableCell>
-														<TableCell>{user.Email}</TableCell>
-														<TableCell>{user.Username}</TableCell>
-														<TableCell>{status}</TableCell>
-														<TableCell align="right">{
+													<TableRow key={index} title={"Click to view user detail"} onClick={() => handleToUserDetail(user.ID)} className={classes.hover}>
+														<TableCell className={classes.tableBody} >{user.ID}</TableCell>
+														<TableCell className={classes.tableBody} >{user.Name}</TableCell>
+														<TableCell className={classes.tableBody} >{user.Email}</TableCell>
+														<TableCell className={classes.tableBody} >{user.Username}</TableCell>
+														<TableCell className={classes.tableBody} >{status}</TableCell>
+														<TableCell className={classes.tableBody} >{
 															user.Status !== -1 && user.Status !== 2 ?
-																(
-																	<Button variant="outlined" color="secondary" >Ban</Button>
-																) :
-																(
-																	<Button variant="outlined" color="primary"> Unban</Button>
-																)
+																<Button variant="outlined" color="secondary" onClick={(e) => handleBanUser(e, user.ID)} title={"Click to ban this user"}>Ban</Button>
+																:
+																<Button variant="outlined" color="primary" onClick={(e) => handleUnbanUser(e, user.ID)} title={"Click to unban this user"}> Unban</Button>
 														}</TableCell>
 													</TableRow>
 												)

@@ -9,7 +9,7 @@ module.exports = io => {
   };
   uuidv1(v1options);
   const trackGameObservers = require('../utils/trackGameObservers');
-  const { isBlankString } = require('../utils/helper');
+  const { isBlankString, convertISOToYMD } = require('../utils/helper');
 
   const observerOfAGame = new Map();
 
@@ -75,12 +75,14 @@ module.exports = io => {
       Moves: moves,
       ChatHistory: chatHistory
     }
+    const gameOverAt = new Date().toISOString();
     await gameModel.updateGame(game.ID, {
       Player2ID: updatedGame.Player2ID,
       Result: updatedGame.Result,
       Status: updatedGame.Status,
       Moves: updatedGame.Moves,
-      ChatHistory: updatedGame.ChatHistory
+      ChatHistory: updatedGame.ChatHistory,
+      GameOverAt: convertISOToYMD(gameOverAt),
     });
     return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });

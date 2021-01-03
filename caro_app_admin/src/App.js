@@ -11,6 +11,7 @@ import Navbar from './components/Navbar/index';
 import Footer from './components/Footer/index';
 import UserManagement from './components/UserManagement/index';
 import UserDetail from './components/UserDetail/index';
+import GameManagement from './components/GameManagement/index';
 import PlayedGame from './components/PlayedGame/index';
 import './App.css';
 
@@ -40,10 +41,12 @@ function App() {
           <Route exact path='/users/:userID'>
             <UserDetail />
           </Route>
-          <Route path='/games/:gameID'>
+          <Route exact path='/games'>
+            <GameManagement />
+          </Route>
+          <Route exact path='/games/:gameID'>
             <PlayedGame />
           </Route>
-
         </Switch>
       </div>
       <br></br>

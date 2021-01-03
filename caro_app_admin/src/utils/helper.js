@@ -6,7 +6,6 @@ async function authen() {
     const jwtToken = window.localStorage.getItem('jwtToken');
     const res = await fetch(`${API_URL}/users/authenticate`, {
         method: 'POST',
-        // body: JSON.stringify({ newUserName }),
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${jwtToken}`
@@ -25,7 +24,13 @@ function containsBlank(token) {
 
 function isEmailPattern(token) {
     const regex = /\S+@\S+\.\S+/;
-    return regex.test(token)
+    return regex.test(token);
 }
 
-export { authen, isBlankString, containsBlank, isEmailPattern };
+function convertISOToDMY(token) {
+    let formattedDOB = new Date(token).toLocaleDateString();
+    formattedDOB = formattedDOB.split(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    return (formattedDOB[2].length === 1 ? "0" + formattedDOB[2] : formattedDOB[2]) + "/" + (formattedDOB[1].length === 1 ? "0" + formattedDOB[1] : formattedDOB[1]) + "/" + formattedDOB[3];
+}
+
+export { authen, isBlankString, containsBlank, isEmailPattern, convertISOToDMY };

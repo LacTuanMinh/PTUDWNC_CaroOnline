@@ -9,6 +9,7 @@ import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -81,7 +82,7 @@ export default function PlayedGamesDialog() {
 
 	return (
 		<>
-			<Button fullWidth variant="outlined" color="primary" onClick={handleClickOpen}>
+			<Button fullWidth variant="contained" color="secondary" onClick={handleClickOpen}>
 				Review your played games
       </Button>
 			<Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title" fullWidth>
@@ -90,29 +91,38 @@ export default function PlayedGamesDialog() {
 					<DialogContent>
 
 						<div className={classes.demo}>
-							<List dense={dense}>
-								{gameList.map((game, index) => (
+							{
+								gameList.length === 0 ?
 									<>
-										<ListItem key={index} button>
-											<ListItemAvatar>
-												<Avatar>
-													<HistoryIcon />
-												</Avatar>
-											</ListItemAvatar>
-											<ListItemText
-												primary={game.Name}
-												secondary={game.Player1ID === userID && game.Result === 1 ? "You won" : "You lost"}
-											/>
-											<ListItemSecondaryAction>
-												<IconButton edge="end" aria-label="delete" onClick={() => handleChangeToViewPlayedGame(game.ID)} >
-													<VisibilityIcon />
-												</IconButton>
-											</ListItemSecondaryAction>
-										</ListItem>
 										<Divider />
+										<Typography variant="h6" style={{ textAlign: 'center' }}>No game played</Typography>
 									</>
-								))}
-							</List>
+									:
+									<List dense={dense}>
+										{gameList.map((game, index) => (
+											<>
+												<ListItem key={index} button>
+													<ListItemAvatar>
+														<Avatar>
+															<HistoryIcon />
+														</Avatar>
+													</ListItemAvatar>
+													<ListItemText
+														primary={game.Name}
+														secondary={game.Player1ID === userID && game.Result === 1 ? "You won" : "You lost"}
+													/>
+													<ListItemSecondaryAction>
+														<IconButton edge="end" aria-label="delete" onClick={() => handleChangeToViewPlayedGame(game.ID)} >
+															<VisibilityIcon />
+														</IconButton>
+													</ListItemSecondaryAction>
+												</ListItem>
+												<Divider />
+											</>
+										))}
+									</List>
+							}
+
 						</div>
 
 					</DialogContent>

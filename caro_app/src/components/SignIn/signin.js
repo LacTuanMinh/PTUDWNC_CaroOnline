@@ -129,7 +129,9 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
         history.push("/games");
 
       } else {
-        alert(result.mesg);
+        // alert(result.mesg);
+        setContents([{ id: -1, msg: result.msg }]);
+        setShowSnackBar(true);
       }
     }
     // call API here

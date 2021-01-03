@@ -12,6 +12,11 @@ const { convertISOToYMD } = require('../utils/helper');
 
 router.use(express.static('public'));
 
+router.get('/games', async (req, res) => {
+	const games = await managementModel.getAllGames();
+	res.status(200).send({ games });
+})
+
 
 router.get('/users', async (req, res) => {
 	const users = await managementModel.getAllUsers();
@@ -20,11 +25,10 @@ router.get('/users', async (req, res) => {
 
 router.get('/users/:userID', async (req, res) => {
 	const userID = req.params.userID;
-
 	const results = await managementModel.getUserByID(userID);
+
 	if (results.length === 1) {
 		const result = results[0];
-		console.log((results));
 		delete result.Password;
 		delete result.Status;
 		delete result.IsAdmin;
@@ -61,13 +65,34 @@ router.get('/playedGames/:userID', async (req, res) => {
 router.get('/playedGameDetail/:ID', async (req, res) => {
 	const gameID = req.params.ID;
 	const game = await managementModel.getGameByID(gameID);
-
+	console.log(gameID, game);
 	const [player1Name, player2Name] = await Promise.all([
 		managementModel.getUserNameByID(game[0].Player1ID),
 		managementModel.getUserNameByID(game[0].Player2ID),
 	]);
-	// console.log({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
 	res.status(200).send({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
+});
+
+router.post('/ban/:userID', async (req, res) => {
+
+	const userID = req.params.userID;
+	const result = await managementModel.updateUserStatus(userID, 2);
+	if (result.affectedRows === 0) {
+		return res.status(400).send({ msg: 'User not found' });
+	} else {
+		return res.status(200).send({ msg: 'Banned' });
+	}
+});
+
+router.post('/unban/:userID', async (req, res) => {
+
+	const userID = req.params.userID;
+	const result = await managementModel.updateUserStatus(userID, 0);
+	if (result.affectedRows === 0) {
+		return res.status(400).send({ msg: 'User not found' });
+	} else {
+		return res.status(200).send({ msg: 'Unbanned' });
+	}
 });
 
 module.exports = router;
