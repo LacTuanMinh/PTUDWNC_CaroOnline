@@ -1,5 +1,14 @@
 {
   "mysql": {
+    "connectionLimit": 100,
+    "host": "freedb.tech",
+    "port": 3306,
+    "user": "freedbtech_hknguyen",
+    "password": "root",
+    "database": "freedbtech_caroonline",
+    "insecureAuth": true
+  },
+  "mysql_remote": {
     "connectionLimit": 600,
     "host": "remotemysql.com",
     "port": 3306,

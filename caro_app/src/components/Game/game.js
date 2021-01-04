@@ -538,14 +538,13 @@ function Game({ socket, onlineUserList }) {
   // }
 
   const handleURLChangeWhenPlayingGame = () => {
-
     // if (('Are you sure you want to leave game')) {
 
     // }
   }
 
   const opponent = player === "X" ? "O" : "X";
-  let element = (
+  const element = (
     <React.Fragment>
       <Prompt
         when={start}
@@ -553,7 +552,7 @@ function Game({ socket, onlineUserList }) {
       />
       <div style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
-          <OnlineUsers onlineUserList={onlineUserList} />
+          <OnlineUsers socket={socket} gameID={gameID} onlineUserList={onlineUserList} observers={observers} />
         </div>
         <div className="game" style={{ marginTop: '25px' }}>
           <div className="player-info">

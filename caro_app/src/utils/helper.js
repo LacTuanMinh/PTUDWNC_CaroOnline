@@ -30,7 +30,8 @@ function isEmailPattern(token) {
 function convertISOToDMY(token) {
     let formattedDOB = new Date(token).toLocaleDateString();
     formattedDOB = formattedDOB.split(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    return (formattedDOB[2].length === 1 ? "0" + formattedDOB[2] : formattedDOB[2]) + "/" + (formattedDOB[1].length === 1 ? "0" + formattedDOB[1] : formattedDOB[1]) + "/" + formattedDOB[3];
+    // return formattedDOB[1] + "/" + formattedDOB[2] + "/" + formattedDOB[3];
+    return (formattedDOB[1].length === 1 ? "0" + formattedDOB[1] : formattedDOB[1]) + "/" + (formattedDOB[2].length === 1 ? "0" + formattedDOB[2] : formattedDOB[2]) + "/" + formattedDOB[3];
 }
 
-export { authen, isBlankString, containsBlank, isEmailPattern, convertISOToDMY as convertISOToYMD };
+export { authen, isBlankString, containsBlank, isEmailPattern, convertISOToDMY };

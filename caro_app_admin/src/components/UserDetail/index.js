@@ -12,6 +12,7 @@ import CardActions from '@material-ui/core/CardActions';
 import Badge from '@material-ui/core/Badge';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
 import PlayedGamesDialog from '../Dialogs/PlayedGamesDialog/index';
+import MedalIcon from '../../images/medal.png';
 import config from '../../constants/config.json';
 
 const API_URL = config.API_URL_TEST;
@@ -81,6 +82,7 @@ export default function UserDetail() {
 	const [email, setEmail] = useState("");
 	const [dateOfBirth, setDateOfBirth] = useState((new Date()).toISOString());
 	const [avatar, setAvatar] = useState("");
+	const [activatedDate, setActivatedDate] = useState((new Date()).toISOString());
 	const [info, setInfo] = useState({});
 
 	useEffect(() => {
@@ -99,6 +101,7 @@ export default function UserDetail() {
 				setName(result.userInfo.Name);
 				setEmail(result.userInfo.Email);
 				setAvatar(result.userInfo.Avatar);
+				setActivatedDate(new Date(result.userInfo.ActivatedDate).toLocaleDateString());
 				setDateOfBirth(result.userInfo.DateOfBirth !== null ?
 					(new Date(result.userInfo.DateOfBirth)).toLocaleDateString()
 					:
@@ -142,17 +145,20 @@ export default function UserDetail() {
 								<CardHeader
 									title={
 										<Badge color="secondary">
-											Achivement
-                    </Badge>}
+											<div style={{ display: 'table' }}>
+												<img src={MedalIcon} height="40" width="40" style={{
+													display: 'table-cell',
+													verticalAlign: 'middle',
+													marginRight: '10px'
+												}} />
+												<span style={{ display: 'table-cell', verticalAlign: 'middle', marginLeft: '10px' }}> {info.medal}</span>
+											</div>
+										</Badge>}
 									className={classes.cardHeader}
 								/>
 								<CardContent>
 									<table style={{ margin: '5px', width: '100%', fontSize: '18px' }}>
 										<tbody>
-											{/* <tr>
-												<td style={{ textAlign: 'right', fontWeight: 'bold', width: '50%' }}>Activated date:</td>
-												<td style={{ textAlign: 'center', width: '50%' }}>{info.Username}</td>
-											</tr> */}
 											<tr>
 												<td style={{ textAlign: 'right', fontWeight: 'bold', width: '50%' }}>Elo mark:</td>
 												<td style={{ textAlign: 'center', width: '50%' }}>{info.Elo}</td>
@@ -209,7 +215,7 @@ export default function UserDetail() {
 									</Typography>
 								</div>
 								<TextField variant="outlined" margin="normal" disabled fullWidth
-									placeholder="Activated dare" value={"abc"}
+									placeholder="Activated dare" value={activatedDate}
 								/>
 							</div>
 						</div>

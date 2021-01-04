@@ -11,8 +11,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { authen, isBlankString, containsBlank, isEmailPattern } from '../../utils/helper'
-import config from '../../constants/config.json';
 import { InformationSnackbar } from '../SnackBar/snackbar';
+import config from '../../constants/config.json';
 
 const API_URL = config.API_URL_TEST;
 // function Copyright() {
@@ -68,20 +68,15 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
     Authen();
   }, [history]);
 
-  // useEffect(() => {
-
-  //   setShowSnackBar(true);
-  // }, [setContent])
-
   const handleSubmit = async (e) => {
-
     e.preventDefault();
     const data = {
       name: name,
       username: username,
       email: email,
       password: password
-    };
+    }
+
     if (isBlankString(data.username) || isBlankString(data.password) || isBlankString(data.name) || isBlankString(data.email)) {
       setContent('Some input fields are an empty string.');
       setShowSnackBar(true);
@@ -91,7 +86,6 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
     if (containsBlank(data.username)) {
       setContent('Username can not contain blank space.');
       setShowSnackBar(true);
-
       return;
     }
 

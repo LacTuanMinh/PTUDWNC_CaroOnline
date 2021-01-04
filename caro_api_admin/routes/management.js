@@ -8,7 +8,7 @@ const util = require("util");
 const rename = util.promisify(fs.rename);
 const unlink = util.promisify(fs.unlink);
 const config = require('../config/default.json');
-const { convertISOToYMD } = require('../utils/helper');
+const { convertISOToYMD, mapEloToMedal } = require('../utils/helper');
 
 router.use(express.static('public'));
 
@@ -32,6 +32,7 @@ router.get('/users/:userID', async (req, res) => {
 		delete result.Password;
 		delete result.Status;
 		delete result.IsAdmin;
+		result.medal = await mapEloToMedal(result.Elo);
 		res.status(200).send({ userInfo: result });
 	} else {
 		res.status(400).end();

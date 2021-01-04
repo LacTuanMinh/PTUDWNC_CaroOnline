@@ -10,6 +10,7 @@ import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import ResetPasswordDialog from '../Dialogs/ResetPasswordDialog';
 import SimpleSnackbar from '../SnackBar/snackbar';
 import { makeStyles } from '@material-ui/core/styles';
 import { authen, isBlankString } from '../../utils/helper';
@@ -117,17 +118,13 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
         }
       });
       const result = await res.json();
-
       if (res.status === 200) {
-
         window.localStorage.setItem('jwtToken', result.token);
         window.localStorage.setItem('userID', result.id);
         window.localStorage.setItem('name', result.name);
-
         socket.emit('client_LoggedIn', { userID: result.id });
         setIsLoggedIn(true);
         history.push("/games");
-
       } else {
         // alert(result.mesg);
         setContents([{ id: -1, msg: result.msg }]);
@@ -143,13 +140,16 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
       <SimpleSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} contents={contents} />
 
       <CssBaseline />
-      <div className={classes.paper}>
+      <div className={classes.paper} style={{ marginBottom: '60px' }}>
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign in
+          Welcome To Our Page
         </Typography>
+        <Link onClick={signUpClicked} variant="body2" style={{ cursor: 'pointer', margin: '10px' }}>
+          {"Don't have an account? Sign up"}
+        </Link>
         <form className={classes.form} onSubmit={handleSubmit}>
           <TextField id="username" name="username" label="Username" variant="outlined"
             margin="normal" required fullWidth autoComplete="username" autoFocus
@@ -164,16 +164,14 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
           </Button>
           <Grid container justify="flex-end">
             <Grid item>
-              <Link onClick={signUpClicked} variant="body2" style={{ cursor: 'pointer ' }}>
-                {"Don't have an account? Sign Up"}
-              </Link>
+              <ResetPasswordDialog />
             </Grid>
           </Grid>
         </form>
       </div>
-      <Box mt={8}>
+      {/* <Box mt={8}>
         <Copyright />
-      </Box>
+      </Box> */}
     </Container>
   );
 }

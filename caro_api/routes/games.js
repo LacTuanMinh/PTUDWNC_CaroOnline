@@ -43,7 +43,7 @@ module.exports = io => {
     const game = await gameModel.getGameByID(gameID);
 
     if (game) {
-      console.log(game[0]);
+      // console.log(game[0]);
       res.status(200).send({ game: game[0] });
     }
     //else res.status(404).send()
@@ -89,8 +89,12 @@ module.exports = io => {
 
   io.on("connection", async (socket) => {
 
+    socket.on("invite", data => {
+      socket.broadcast.emit(`invite_${data.userID}`, { ...data });
+    });
+
     socket.on("move", data => {
-      console.log(data);
+      // console.log(data);
       socket.broadcast.emit(`load_moves_${data.gameID}`,
         {
           history: data.history,
@@ -103,7 +107,7 @@ module.exports = io => {
     });
 
     socket.on("chat", data => {
-      console.log(data);
+      // console.log(data);
       socket.broadcast.emit(`load_chat_${data.gameID}`, { message: data.message });
     });
 

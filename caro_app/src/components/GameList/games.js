@@ -97,8 +97,6 @@ function Games({ socket }) {
       setGames(games => {
         const gamesCopy = games.slice();
         return [data.game].concat(gamesCopy);
-        // games.slice().concat([data.game])});
-
       });
       if (data.game.Player1ID === userID) {
         history.push(`/games/${data.game.ID}`);

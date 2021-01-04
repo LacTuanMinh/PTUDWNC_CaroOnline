@@ -12,7 +12,7 @@ module.exports = function (io) { // catch here
   const rename = util.promisify(fs.rename);
   const unlink = util.promisify(fs.unlink);
   const config = require('../config/default.json');
-  const { convertISOToYMD } = require('../utils/helper');
+  const { mapEloToMedal, convertISOToYMD } = require('../utils/helper');
   const storage = multer.diskStorage({
 
     filename: function (req, file, cb) {
@@ -78,6 +78,7 @@ module.exports = function (io) { // catch here
       delete result.Password;
       delete result.Status;
       delete result.IsAdmin;
+      result.medal = await mapEloToMedal(result.Elo);
       res.status(200).send({ userInfo: result });
     } else {
       res.status(400).end();
@@ -113,9 +114,7 @@ module.exports = function (io) { // catch here
     console.log(result);
 
     if (result.affectedRows === 1) {
-      console.log("ok");
       res.status(200).send({ mesg: 'ok' });
-
     } else res.status(400).end();
 
   });
@@ -174,6 +173,8 @@ module.exports = function (io) { // catch here
   });
 
   const userSocketIdMap = new Map(); //a map of online usernames and their clients
+
+  userSocketIdMap.clear();
 
   io.on("connection", async (socket) => {
     console.log("New client connected: ", socket.id);

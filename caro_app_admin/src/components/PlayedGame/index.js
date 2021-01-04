@@ -139,17 +139,17 @@ export default function PlayedGame() {
         <div className="game" style={{ marginTop: '25px' }}>
           <div className="player-info">
             <CardHeader title="Player Info"></CardHeader>
-            <div style={{ border: `3px solid blue` }}>
+            <div style={{ border: `3px solid blue`, maxWidth: '210px', minWidth: '210px' }}>
               <img src={avatar1 ? avatar1 : defaultAvatar} alt={"Player 1"}
-                style={{ height: '150px', width: '200px' }}
+                style={{ height: '150px', maxWidth: '210px' }}
               />
               <Typography>Name: {player1Name} {game.Result === 1 ? " (Winner)" : null}</Typography>
             </div>
             <br></br>
 
-            <div style={{ border: `3px solid red` }}>
+            <div style={{ border: `3px solid red`, maxWidth: '210px', minWidth: '210px' }}>
               <img src={avatar2 ? avatar2 : defaultAvatar} alt={"Player 2"}
-                style={{ height: '150px', width: '200px' }}
+                style={{ height: '150px', maxWidth: '210px' }}
               />
               <Typography>Name: {player2Name} {game.Result === 2 ? " (Winner)" : null}</Typography>
             </div>

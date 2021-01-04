@@ -62,8 +62,8 @@ export default function CustomizedTables() {
 
 	return (
 		<>
-			<Typography style={{ fontSize: "34px" }}>
-				Top Players
+			<Typography style={{ fontSize: "26px" }}>
+				TOP PLAYERS
 			</Typography>
 
 			<TableContainer style={{

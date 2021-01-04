@@ -22,8 +22,8 @@ import SimpleSnackbar from '../SnackBar/snackbar';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
 import PlayedGamesDialog from '../Dialogs/PlayedGamesDialog/index';
 import config from '../../constants/config.json';
-import { isBlankString, isEmailPattern, convertISOToYMD } from '../../utils/helper';
-
+import { isBlankString, isEmailPattern, convertISOToDMY } from '../../utils/helper';
+import MedalIcon from '../../images/medal.png';
 const API_URL = config.API_URL_TEST;
 
 const useStyles = makeStyles((theme) => ({
@@ -93,7 +93,8 @@ export default function Profile() {
   const [validEmail, setValidEmail] = useState(true);
   const [dateOfBirth, setDateOfBirth] = useState((new Date()).toISOString());
   const [validDOB, setValidDOB] = useState(true);
-  const [avatar, setAvatar] = useState({});
+  const [avatar, setAvatar] = useState("");
+  const [activatedDate, setActivatedDate] = useState((new Date()).toISOString());
   const [info, setInfo] = useState({});
   const [contents, setContents] = useState([]);
   const [showSnackbar, setShowSnackBar] = useState(false);
@@ -110,10 +111,12 @@ export default function Profile() {
 
       if (res.status === 200) {
         const result = await res.json();
+        console.log(result.userInfo);
         setInfo(result.userInfo);
         setName(result.userInfo.Name);
         setEmail(result.userInfo.Email);
         setAvatar(result.userInfo.Avatar);
+        setActivatedDate(result.userInfo.ActivatedDate);
         setDateOfBirth(result.userInfo.DateOfBirth);
       } else {
         history.push('/signin');
@@ -161,8 +164,7 @@ export default function Profile() {
     else if (!isEmailPattern(email)) {// === false
       setContents(contents => [...contents.filter(content => content.id !== 2), { id: 2, msg: "Email field doesn't match the email format!!!" }]);
       setValidEmail(false);
-    }
-    else {
+    } else {
       setContents(contents.filter(content => content.id !== 2));
       setValidEmail(true);
     }
@@ -183,13 +185,11 @@ export default function Profile() {
 
   const handleSaveChange = async () => {
     if (validDOB && validEmail && validName) {
-
       const data = {
         Name: name,
         Email: email,
         DateOfBirth: dateOfBirth
       }
-
       const res = await fetch(`${API_URL}/users/profile/updateinfo/${userID}`, {
         method: 'POST',
         headers: {
@@ -210,11 +210,9 @@ export default function Profile() {
         infoCopy.DateOfBirth = data.DateOfBirth;
         setInfo(infoCopy);
         setShowSnackBar(true);
-
       } else {
         // alert("Some error when updating!")
       }
-
     } else {
       setShowSnackBar(true);
     }
@@ -233,10 +231,8 @@ export default function Profile() {
   return (
     <>
       <SimpleSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} contents={contents} />
-
       <Container component="main" maxWidth="lg">
         <Grid container spacing={4}>
-
           <Grid item xs={12} md={6}>
             <div className={classes.paper} style={{ padding: '20px' }}>
               <img height={200} width={200} style={{ borderRadius: '8px' }} className={classes.paperLikeShadow}
@@ -247,7 +243,14 @@ export default function Profile() {
                 <CardHeader
                   title={
                     <Badge color="secondary">
-                      Achivement
+                      <div style={{ display: 'table' }}>
+                        <img src={MedalIcon} height="40" width="40" style={{
+                          display: 'table-cell',
+                          verticalAlign: 'middle',
+                          marginRight: '10px'
+                        }} />
+                        <span style={{ display: 'table-cell', verticalAlign: 'middle', marginLeft: '10px' }}> {info.medal}</span>
+                      </div>
                     </Badge>}
                   className={classes.cardHeader}
                 />
@@ -255,19 +258,15 @@ export default function Profile() {
                   {/* <Typography> */}
                   <table style={{ margin: '10px', width: '100%', fontSize: "20px" }}>
                     <tbody>
-                      {/* <tr>
-                        <td style={{ textAlign: 'right', fontWeight: 'bold', width: '50%' }}>Username:</td>
-                        <td style={{ textAlign: 'center', width: '50%' }}>{info.Username}</td>
-                      </tr> */}
-                      <tr>
+                      <tr key={1}>
                         <td style={{ textAlign: 'right', fontWeight: 'bold', width: '50%' }}>Elo mark:</td>
                         <td style={{ textAlign: 'center', width: '50%' }}>{info.Elo}</td>
                       </tr>
-                      <tr>
+                      <tr key={2}>
                         <td style={{ textAlign: 'right', fontWeight: 'bold' }}>Total play(s):</td>
                         <td style={{ textAlign: 'center' }}>{info.PlayCount}</td>
                       </tr>
-                      <tr>
+                      <tr key={3}>
                         <td style={{ textAlign: 'right', fontWeight: 'bold' }}>Winned play(s):</td>
                         <td style={{ textAlign: 'center' }}>{info.WinCount}</td>
                       </tr>
@@ -348,7 +347,7 @@ export default function Profile() {
                     <b>Activated date:</b>
                   </Typography>
                   <TextField variant="outlined" margin="normal" required fullWidth
-                    placeholder="Activated date" value={convertISOToYMD(info.ActivatedDate)} disabled
+                    placeholder="Activated date" value={convertISOToDMY(activatedDate)} disabled
                   />
                 </div>
                 <Button type="submit" fullWidth variant="outlined" color="primary" onClick={handleSaveChange}

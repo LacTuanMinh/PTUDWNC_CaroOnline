@@ -45,7 +45,6 @@ export default function PlayedGamesDialog() {
 	const classes = useStyles();
 	const userID = localStorage.getItem('userID');
 	const token = window.localStorage.getItem('jwtToken');
-	const history = useHistory();
 	const [open, setOpen] = useState(false);
 	const [dense, setDense] = useState(false);
 	const [gameList, setGameList] = useState([]);
@@ -100,8 +99,8 @@ export default function PlayedGamesDialog() {
 									:
 									<List dense={dense}>
 										{gameList.map((game, index) => (
-											<>
-												<ListItem key={index} button>
+											<React.Fragment key={index}>
+												<ListItem button>
 													<ListItemAvatar>
 														<Avatar>
 															<HistoryIcon />
@@ -118,7 +117,7 @@ export default function PlayedGamesDialog() {
 													</ListItemSecondaryAction>
 												</ListItem>
 												<Divider />
-											</>
+											</React.Fragment>
 										))}
 									</List>
 							}

@@ -14,6 +14,8 @@ import Navbar from './components/Navbar/navbar';
 import Footer from './components/Footer/footer';
 import ActiveDestination from './components/ActiveDestination/index';
 import PlayedGame from './components/PlayedGame/playedGame';
+import InvitationDialog from './components/Dialogs/InvitationDiallog/index';
+import ResetDestination from './components/ResetDetination/index';
 import './App.css';
 import socketIOClient from "socket.io-client";
 import config from './constants/config.json';
@@ -25,7 +27,6 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('userID') !== null);
   const [onlineUserList, setOnlineUserList] = useState([]);
 
-
   useEffect(() => {
     socket.on("server_RefreshList", list => {
       console.log(list);
@@ -36,29 +37,33 @@ function App() {
   return (
     <Router>
       <Navbar socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-      <br></br>
+      <InvitationDialog socket={socket} />
+      <br />
       <div className="App">
         <Switch>
           <Route path='/' exact>
             <Home socket={socket} onlineUserList={onlineUserList} />
           </Route>
-          <Route path='/profile'>
-            <Profile />
-          </Route>
           <Route path='/signin'>
             <SignIn socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-          </Route>
-          <Route exact path='/games'>
-            <Games socket={socket} />
-          </Route>
-          <Route path='/games/:gameID'>
-            <Game socket={socket} onlineUserList={onlineUserList} />
           </Route>
           <Route path='/signup'>
             <SignUp socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
           </Route>
           <Route path='/active/:id'>
             <ActiveDestination socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+          </Route>
+          <Route path='/reset/:id'>
+            <ResetDestination isLoggedIn={isLoggedIn} />
+          </Route>
+          <Route path='/profile'>
+            <Profile />
+          </Route>
+          <Route exact path='/games'>
+            <Games socket={socket} />
+          </Route>
+          <Route path='/games/:gameID'>
+            <Game socket={socket} onlineUserList={onlineUserList} />
           </Route>
           <Route path='/playedGame/:id'>
             <PlayedGame />

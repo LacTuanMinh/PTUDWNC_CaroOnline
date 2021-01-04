@@ -85,7 +85,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function OnlineUsers({ onlineUserList }) {
+export default function OnlineUsers({ socket, gameID, onlineUserList, observers, }) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [searchString, setSearchString] = useState("");
@@ -101,22 +101,23 @@ export default function OnlineUsers({ onlineUserList }) {
     setOpen(false);
 
   }
+
+  const handleUserInvitaion = (id) => {
+    const hostName = localStorage.getItem('name');
+    socket.emit(`invite`, { hostName, gameID, userID: id });
+  }
   useEffect(() => {
     setOnlineUserListCopy(onlineUserList.slice());
   }, [onlineUserList]);
 
   useEffect(() => {
-
-    if (searchString !== "")// có nội dung cần tìm
-    {
-      console.log("v");
+    if (searchString !== "") {// có nội dung cần tìm
       setOnlineUserListCopy(onlineUserListCopy.slice()
         .filter(user => user.Name.toLowerCase().includes(searchString.toLowerCase())))
     } else {
       setOnlineUserListCopy(onlineUserList);
     }
   }, [searchString, onlineUserList]); // 2nd dependency help make sure new client connects will not make filtered list wrong
-
 
   return (
     <div className={classes.root}>
@@ -152,16 +153,19 @@ export default function OnlineUsers({ onlineUserList }) {
         </div>
         <Divider />
         <List>
-          {onlineUserListCopy.map((item) => (
-            <ListItem key={item.ID}>
+          {onlineUserListCopy.map((user) => (
+            <ListItem key={user.ID}>
               <ListItemIcon >
                 <StyledBadge badgeContent={""} >
                   <FaceIcon fontSize="large" />
                 </StyledBadge>
               </ListItemIcon>
-              <ListItemText primary={item.Name} />
-              {item.ID !== userID ?
-                <Button variant="outlined" style={{ fontSize: '12px', borderRadius: '5px', padding: '2px' }}>Invite</Button>
+              <ListItemText primary={user.Name} />
+              {user.ID !== userID ?
+                <Button variant="outlined" style={{ fontSize: '12px', borderRadius: '5px', padding: '2px' }}
+                  onClick={() => handleUserInvitaion(user.ID)}>
+                  Invite
+                  </Button>
                 :
                 <></>
               }

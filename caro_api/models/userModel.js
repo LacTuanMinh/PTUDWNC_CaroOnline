@@ -21,6 +21,8 @@ module.exports = {
 
     getRanking: limit => db.load(`SELECT Name, Elo, ROUND((WinCount / PlayCount) * 100, 2) AS WinRate FROM Users WHERE PlayCount > 0 AND IsAdmin = 0 ORDER BY Elo DESC LIMIT ${limit}`),
 
+    getMedal: _ => db.load(`SELECT * FROM Medals ORDER BY ID ASC`),
+
     addUser: entity => db.add('Users', entity),
 
     updateUserStatus: (id, status) => db.patch('Users', { Status: status }, { ID: id }),
@@ -29,9 +31,9 @@ module.exports = {
 
     updateUserInfo: (id, { Name, Email, DateOfBirth }) => db.patch('Users', { Name, Email, DateOfBirth }, { ID: id }),
 
-    updateUserPassword: (id, Password) => db.patch('Users', { Password }, { ID: id }),
+    updateUserPassword: (id, { Password }) => db.patch('Users', { Password }, { ID: id }),
 
-    updateUserAvatar: (id, Avatar) => db.patch('Users', { Avatar }, { ID: id }),
+    updateUserAvatar: (id, { Avatar }) => db.patch('Users', { Avatar }, { ID: id }),
 
     updateUserActivatedDate: (id, date) => db.patch('Users', { ActivatedDate: date }, { ID: id }),
 }
