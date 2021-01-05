@@ -2,6 +2,7 @@ module.exports = io => {
   const express = require('express');
   const router = express.Router();
   const { v1: uuidv1 } = require('uuid');
+  const dockerNames = require('docker-names');
   const gameModel = require('../models/gameModel');
   const userModel = require('../models/userModel');
   const v1options = {
@@ -9,7 +10,7 @@ module.exports = io => {
   };
   uuidv1(v1options);
   const trackGameObservers = require('../utils/trackGameObservers');
-  const { isBlankString, convertISOToYMD } = require('../utils/helper');
+  const { isBlankString, convertISOToYMD, canBePaired } = require('../utils/helper');
 
   const observerOfAGame = new Map();
 
@@ -86,6 +87,8 @@ module.exports = io => {
     });
     return res.status(200).send({ msg: 'game info updated', game: updatedGame });
   });
+
+  let waitingUserForPairing = [];
 
   io.on("connection", async (socket) => {
 
@@ -193,6 +196,83 @@ module.exports = io => {
         { game: data.game, player2: newPlayer, player1ID: data.player2ID, winnerID: data.win ? data.player.ID : data.player2ID });
     });
 
+    socket.on("find_opponent", async (data) => {
+
+      const info = await userModel.getUserByID(data.userID);
+      const newUser = { userID: data.userID, elo: info[0].Elo }
+
+      if (waitingUserForPairing.length === 0) { // không có ai đang chờ ghép cặp
+        waitingUserForPairing.push(newUser);
+        return;
+
+      } else { // có người chờ ghép cặp
+
+        for (let i = 0; i < waitingUserForPairing.length; i++) {
+
+          if (canBePaired(newUser.elo, waitingUserForPairing[i].elo)) { // khoảng cách elo ok
+            /* hero unit */
+            // 1. tạo phòng mới và thêm vào db
+            const newGame = {
+              ID: uuidv1(),
+              Name: dockerNames.getRandomName(),
+              Password: null,
+              IsBlockedRule: false,
+              TimeThinkingEachTurn: 10,
+              Moves: null,
+              Status: 1,  // waiting
+              Player1ID: waitingUserForPairing[i].userID,
+              Player2ID: null,
+              Result: null
+            }
+            const result = await gameModel.addGame(newGame);
+            // if (result.affectedRows === 0) {
+            //   io.sockets.emit(`newGameFail${userID}`, { msg: "Fail to create game" });
+            //   return;
+            // }
+            // 2. emit cho người thứ 1
+            // io.sockets.emit("server_NewGame", { msg: "Game created", game: newGame });
+            io.sockets.emit(`pair_successfully_${waitingUserForPairing[i].userID}`, { gameID: newGame.ID });
+
+            // 3. emit cho người thứ 2
+            await gameModel.updateGame(newGame.ID, { Player2ID: newUser.userID });
+            const players = await gameModel.getPlayers(newGame.ID);
+            const game = await gameModel.getGameByID(newGame.ID);
+            io.sockets.emit(`pair_successfully_${newUser.userID}`, { gameID: newGame.ID });
+
+            // 4. thông báo cho người thứ 1 biết
+            io.sockets.emit(`notify_join_game_${newGame.ID}`, {
+              isMainPlayer: true,
+              // do ko biết được thứ tự player1 hay player2 là dòng nào,
+              // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
+              observers: [],
+              player1: newUser.userID === players[0].ID ? players[1] : players[0],
+              player2: newUser.userID === players[0].ID ? players[0] : players[1],
+              userID: newUser.userID,
+              game: game[0]
+            });
+            // 5. xóa người thứ 1 khỏi hàng đợi
+            waitingUserForPairing.splice(i, 1);
+            console.log(waitingUserForPairing);
+            return;
+            /* end */
+          } else { // cho chờ
+            waitingUserForPairing.push(newUser);
+            return;
+          }
+        }
+      }
+    });
+
+    socket.on('remove_pairing', (data) => {
+      for (let i = 0; i < waitingUserForPairing.length; i++) {
+        if (waitingUserForPairing[i].userID === data.userID) {
+          waitingUserForPairing.splice(i, 1);
+          console.log(waitingUserForPairing);
+          return;
+        }
+      }
+    });
+
     // socket.on("leave_game", async data => {
     //   console.log(data);
     //   const newUser = {
@@ -253,10 +333,9 @@ module.exports = io => {
 
       if (result.affectedRows === 0) {
         io.sockets.emit(`newGameFail${userID}`, { msg: "Fail to create game" });
-        return;
+      } else {
+        io.sockets.emit("server_NewGame", { msg: "Game created", game: newGame });
       }
-      // console.log('thành công', result);
-      io.sockets.emit("server_NewGame", { msg: "Game created", game: newGame });
     });
   });
 

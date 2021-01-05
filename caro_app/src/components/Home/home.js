@@ -4,9 +4,11 @@ import background from '../../images/background.jpg';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
+import Typography from '@material-ui/core/Typography';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import EloRanking from '../Ranking/index';
 import { useHistory } from 'react-router-dom';
 import { authen } from '../../utils/helper';
@@ -23,32 +25,51 @@ const homeBackground = {
 
 
 function Home({ onlineUserList, socket }) {
+  const jwtToken = window.localStorage.getItem('jwtToken');
+  const userID = localStorage.getItem('userID');
   const history = useHistory();
   const [gameId, setGameId] = useState("");
   const [gamePassword, setGamePassword] = useState("");
-  const [open, setOpen] = useState(false);
-  const userID = localStorage.getItem('userID');
+  const [openJoinByID, setOpenJoinByID] = useState(false);
+  const [openPairing, setOpenPairing] = useState(false);
 
-  const handleClickOpen = async () => {
+  const handleClickOpenJoinByID = async () => {
     const status = await authen();
     if (status === 401) {
       alert('Log in please');
       history.push('/signin');
       return;
     }
-    setOpen(true);
+    setOpenJoinByID(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleClickOpenPairing = async () => {
+    const status = await authen();
+    if (status === 401) {
+      alert('Log in please');
+      history.push('/signin');
+      return;
+    }
+    setOpenPairing(true);
+    socket.emit('find_opponent', { userID });
+    socket.on(`pair_successfully_${userID}`, (data) => {
+      history.push('/games/' + data.gameID);
+    })
+  }
+
+  const handleCloseJoinByID = () => {
+    setOpenJoinByID(false);
     setGameId("");
     setGamePassword("");
   };
 
-  const handleQuickJoin = async () => {
+  const handleClosePairing = () => {
+    socket.emit('remove_pairing', { userID });
+    setOpenPairing(false);
+  }
 
+  const handleJoinGameByID = async () => {
 
-    const jwtToken = window.localStorage.getItem('jwtToken');
     const data = {
       gameID: gameId,
       password: gamePassword
@@ -82,17 +103,17 @@ function Home({ onlineUserList, socket }) {
         <div style={{ position: 'absolute', left: '5%', bottom: '20%', width: '25%' }}>
           <div style={{ display: "flex", justifyContent: "flex-start" }}>
             <div>
-              <Button style={{ marginRight: '0.5vw', width: '10vw' }} fullWidth variant="outlined" color="secondary" onClick={handleClickOpen} >
+              <Button style={{ marginRight: '0.5vw', width: '10vw' }} fullWidth variant="outlined" color="secondary" onClick={handleClickOpenJoinByID} >
                 Join Game
             </Button>
             </div>
             <div>
-              <Button style={{ marginLeft: '0.5vw', width: '10vw' }} fullWidth variant="contained" color="primary"  >
+              <Button style={{ marginLeft: '0.5vw', width: '10vw' }} fullWidth variant="contained" color="primary" onClick={handleClickOpenPairing} >
                 Quick join
             </Button>
             </div>
           </div>
-          <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+          <Dialog open={openJoinByID} onClose={handleCloseJoinByID} aria-labelledby="form-dialog-title">
             <form >
               <DialogTitle id="form-dialog-title">Provide Game ID to join</DialogTitle>
               <DialogContent>
@@ -105,20 +126,25 @@ function Home({ onlineUserList, socket }) {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleQuickJoin} color="secondary">
+                <Button onClick={handleJoinGameByID} color="secondary">
                   Go
               </Button>
-                <Button onClick={handleClose} color="primary">
+                <Button onClick={handleCloseJoinByID} color="primary">
                   Cancel
               </Button>
               </DialogActions>
             </form>
           </Dialog>
+          <Dialog fullWidth style={{ textAlign: 'center' }} open={openPairing} onClose={handleClosePairing}>
+            <DialogContent >
+              <CircularProgress />
+              <Typography variant='h6'>Please wait, we are browsing a suitable opponent for you</Typography>
+            </DialogContent>
+          </Dialog>
         </div>
       </div >
       <EloRanking />
     </>
-
   );
 }
 export default Home;

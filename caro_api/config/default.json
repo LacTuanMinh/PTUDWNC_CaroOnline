@@ -29,6 +29,10 @@
   "serverPort": 8000,
   "passportKey": "whatdoyoumean",
   "hashRound": 10,
+  "minEloDistance": 300,
+  "facebook_key": "384191462701845",
+  "facebook_secret": "7bbf97a5f80aaf1e36a8c8d38ca2cb00",
+  "callback_url": "/auth/facebook/callback",
   "APP_URL_TEST": "http://localhost:3000",
   "APP_URL_DEPLOY": "https://online-caro.web.app"
 }

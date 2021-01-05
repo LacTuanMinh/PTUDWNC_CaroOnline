@@ -173,7 +173,6 @@ module.exports = function (io) { // catch here
   });
 
   const userSocketIdMap = new Map(); //a map of online usernames and their clients
-
   userSocketIdMap.clear();
 
   io.on("connection", async (socket) => {
@@ -229,9 +228,7 @@ module.exports = function (io) { // catch here
       }
 
       const list = await userModel.getAllOnlineUsers();
-      socket.broadcast.emit("server_RefreshList", list)
-      // socket.removeAllListeners('disconnect');
-      // io.removeAllListeners('connection');
+      socket.broadcast.emit("server_RefreshList", list);
     });
   });
 

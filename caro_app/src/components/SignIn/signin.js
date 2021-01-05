@@ -6,12 +6,16 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
+import Divider from '@material-ui/core/Divider';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import ResetPasswordDialog from '../Dialogs/ResetPasswordDialog';
 import SimpleSnackbar from '../SnackBar/snackbar';
+import FacebookIcon from '@material-ui/icons/Facebook';
+import GoogleIcon from '../../images/google.png';
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import GoogleLogin from 'react-google-login';
 import { makeStyles } from '@material-ui/core/styles';
 import { authen, isBlankString } from '../../utils/helper';
 import config from '../../constants/config.json';
@@ -48,6 +52,29 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  shadow: {
+    boxShadow: '4px 4px 8px 4px rgba(0, 0, 0, 0.2), 4px 6px 20px 4px rgba(0, 0, 0, 0.19)',
+  },
+  socialLoginButton: {
+    display: 'table',
+    width: '300px',
+    height: '50px',
+    fontWeight: 'bolder',
+    textAlign: 'center',
+    borderRadius: '5px',
+    margin: '20px',
+    cursor: 'pointer'
+  },
+  facebook: {
+    border: '1px solid  #3b5998',
+    backgroundColor: ' #3b5998',
+    color: 'white',
+  },
+  google: {
+    border: '1px solid  #f1f3f4',
+    backgroundColor: ' #f1f3f4',
+    color: 'black',
+  }
 }));
 
 function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
@@ -135,43 +162,146 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
     signIn();
   }
 
+  const responseFacebook = async (response) => {
+
+    const data = {
+      name: response.name,
+      email: response.email,
+      id: response.id
+    };
+
+    const res = await fetch(`${API_URL}/auth/socialmedia`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const result = await res.json();
+    if (res.status === 200) {
+      window.localStorage.setItem('jwtToken', result.token);
+      window.localStorage.setItem('userID', result.id);
+      window.localStorage.setItem('name', result.name);
+      socket.emit('client_LoggedIn', { userID: result.id });
+      alert("Welcome to our app");
+      setIsLoggedIn(true);
+      history.push("/");
+    } else {
+      // alert(result.mesg);
+      setContents([{ id: -1, msg: result.msg }]);
+      setShowSnackBar(true);
+    }
+  }
+
+  const responseGoogle = async (response) => {
+    console.log(response);
+
+    const data = {
+      name: response.profileObj.name,
+      email: response.profileObj.email,
+      id: response.googleId
+    };
+    const res = await fetch(`${API_URL}/auth/socialmedia`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const result = await res.json();
+    if (res.status === 200) {
+      window.localStorage.setItem('jwtToken', result.token);
+      window.localStorage.setItem('userID', result.id);
+      window.localStorage.setItem('name', result.name);
+      socket.emit('client_LoggedIn', { userID: result.id });
+      alert("Welcome to our app");
+      setIsLoggedIn(true);
+      history.push("/");
+    } else {
+      // alert(result.mesg);
+      setContents([{ id: -1, msg: result.msg }]);
+      setShowSnackBar(true);
+    }
+  }
+
+
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="md">
       <SimpleSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} contents={contents} />
 
       <CssBaseline />
-      <div className={classes.paper} style={{ marginBottom: '60px' }}>
-        <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Welcome To Our Page
-        </Typography>
-        <Link onClick={signUpClicked} variant="body2" style={{ cursor: 'pointer', margin: '10px' }}>
-          {"Don't have an account? Sign up"}
-        </Link>
-        <form className={classes.form} onSubmit={handleSubmit}>
-          <TextField id="username" name="username" label="Username" variant="outlined"
-            margin="normal" required fullWidth autoComplete="username" autoFocus
-            onChange={e => handleUsernameChange(e.target.value)}
+
+      <Grid container spacing={6} /*style={{ paddingLeft: '100px', paddingRight: '100px' }}*/>
+        <Grid item xs={12} sm={5} md={5} >
+          <div className={classes.paper} style={{ marginBottom: '60px' }}>
+            <Avatar className={classes.avatar}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Welcome To Our Page
+            </Typography>
+            <Link onClick={signUpClicked} variant="body2" style={{ cursor: 'pointer', margin: '10px' }}>
+              {"Don't have an account? Sign up"}
+            </Link>
+            <form className={classes.form} onSubmit={handleSubmit}>
+              <TextField id="username" name="username" label="Username" variant="outlined"
+                margin="normal" required fullWidth autoComplete="username" autoFocus
+                onChange={e => handleUsernameChange(e.target.value)}
+              />
+              <TextField id="password" name="password" label="Password" type="password"
+                variant="outlined" margin="normal" required fullWidth autoComplete="current-password"
+                onChange={e => handlePasswordChange(e.target.value)}
+              />
+              <Button className={classes.submit} type="submit" fullWidth variant="contained" color="primary">
+                Sign In
+              </Button>
+              <Grid container justify="flex-end">
+                <Grid item>
+                  <ResetPasswordDialog />
+                </Grid>
+              </Grid>
+            </form>
+          </div>
+        </Grid>
+
+        <Grid item xs={12} sm={2} md={2} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Divider orientation="vertical" style={{ height: '35vh' }} />
+          <span style={{ margin: '15px' }}>OR</span>
+          <Divider orientation="vertical" style={{ height: '45vh' }} />
+        </Grid>
+
+        <Grid item xs={12} sm={5} md={5} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <FacebookLogin
+            appId="384191462701845"
+            autoLoad={false}
+            fields="name,email,picture"
+            // onClick={componentClicked}
+            callback={responseFacebook}
+            render={renderProps => (
+              <div className={`${classes.socialLoginButton} ${classes.facebook} ${classes.shadow}`}>
+                <Typography onClick={renderProps.onClick} style={{ display: 'table-cell', verticalAlign: 'middle', fontWeight: 'bold' }}> <FacebookIcon style={{ margin: '10px', verticalAlign: 'middle' }} />Sign in with FaceBook</Typography>
+              </div>
+            )}
           />
-          <TextField id="password" name="password" label="Password" type="password"
-            variant="outlined" margin="normal" required fullWidth autoComplete="current-password"
-            onChange={e => handlePasswordChange(e.target.value)}
+          <GoogleLogin
+            clientId="226602372235-lp2s47icle0bm0c58rnsp58f9a4tuid3.apps.googleusercontent.com"
+            render={renderProps => (
+              <div className={`${classes.socialLoginButton} ${classes.google} ${classes.shadow}`} onClick={renderProps.onClick}>
+                <Typography style={{ display: 'table-cell', verticalAlign: 'middle', fontWeight: 'bold' }}>
+                  <img src={GoogleIcon} alt="Google icon" style={{ width: '25px', height: '25px', margin: '10px', verticalAlign: 'middle' }} />
+                    Sign in with Google
+                </Typography>
+              </div>)}
+            buttonText="Login"
+            onSuccess={responseGoogle}
+            onFailure={responseGoogle}
+            cookiePolicy={'single_host_origin'}
           />
-          <Button className={classes.submit} type="submit" fullWidth variant="contained" color="primary">
-            Sign In
-          </Button>
-          <Grid container justify="flex-end">
-            <Grid item>
-              <ResetPasswordDialog />
-            </Grid>
-          </Grid>
-        </form>
-      </div>
-      {/* <Box mt={8}>
-        <Copyright />
-      </Box> */}
+        </Grid>
+      </Grid>
+
     </Container>
   );
 }

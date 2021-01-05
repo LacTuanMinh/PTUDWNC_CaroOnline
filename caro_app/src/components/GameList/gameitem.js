@@ -42,7 +42,7 @@ function GameItem({ game, socket }) {
     setOpen(false);
   }
 
-  const handleJoin = () => {
+  const handleJoinWithPassword = () => {
     if (password === game.Password) {
       history.push('/games/' + game.ID);
       socket.emit("join_game", { gameID: game.ID, userID });
@@ -103,7 +103,7 @@ function GameItem({ game, socket }) {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleJoin} color="primary">
+          <Button onClick={handleJoinWithPassword} color="primary">
             Join
           </Button>
         </DialogActions>

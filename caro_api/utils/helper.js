@@ -1,5 +1,5 @@
 const userModel = require('../models/userModel');
-
+const config = require('../config/default.json');
 module.exports = {
 	isBlankString: (token) => token.trim().length === 0,
 
@@ -25,6 +25,10 @@ module.exports = {
 			}
 		}
 		return medals[medals.length - 1].Name;
+	},
+
+	canBePaired: (elo1, elo2) => {
+		return Math.abs(elo1 - elo2) <= config.minEloDistance;
 	}
 }
 

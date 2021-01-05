@@ -34,6 +34,11 @@ function App() {
     });
   }, [setOnlineUserList]);
 
+  // useEffect(()=>{
+
+  // })
+
+
   return (
     <Router>
       <Navbar socket={socket} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
