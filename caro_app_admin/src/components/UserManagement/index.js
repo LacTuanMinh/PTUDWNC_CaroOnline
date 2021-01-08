@@ -10,6 +10,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import Input from '@material-ui/core/Input';
 import SearchIcon from '@material-ui/icons/Search';
+import TablePagination from '@material-ui/core/TablePagination';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -61,6 +62,8 @@ export default function UserManagement() {
 	const [emailInput, setEmailInput] = useState("");
 	const [showSnackbar, setShowSnackBar] = useState(false);
 	const [content, setContent] = useState("");
+	const [page, setPage] = useState(0);
+	const [rowsPerPage, setRowsPerPage] = useState(10);
 
 	useEffect(() => {
 		async function retrieveUsers() {
@@ -156,6 +159,15 @@ export default function UserManagement() {
 		}
 	}
 
+	const handleChangePage = (event, newPage) => {
+		setPage(newPage);
+	}
+
+	const handleChangeRowsPerPage = (event) => {
+		setRowsPerPage(+event.target.value);
+		setPage(0);
+	}
+
 	return (
 		<React.Fragment>
 			<InformationSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} content={content} />
@@ -207,7 +219,7 @@ export default function UserManagement() {
 												<TableCell style={{ textAlign: 'center' }} colSpan={6}>User not found</TableCell>
 											</TableRow>
 											:
-											(displayedUsers.map((user, index) => {
+											(displayedUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => {
 												const status = user.Status === -1 ? "Inactivated" : (user.Status === 2 ? "Banned" : "Activated");
 												return (
 													<TableRow key={index} title={"Click to view user detail"} onClick={() => handleToUserDetail(user.ID)} className={classes.hover}>
@@ -229,6 +241,16 @@ export default function UserManagement() {
 								</TableBody>
 							</Table>
 						</TableContainer>
+						<TablePagination
+							rowsPerPageOptions={[10, 25, 100]}
+							component="div"
+							count={displayedUsers.length}
+							rowsPerPage={rowsPerPage}
+							page={page}
+							onChangePage={handleChangePage}
+							onChangeRowsPerPage={handleChangeRowsPerPage}
+							style={{ backgroundColor: '#f1f3f4' }}
+						/>
 					</Paper>
 				</Grid>
 			</Container>

@@ -130,7 +130,7 @@ export default function UserDetail() {
 			}
 		}
 		retrieveAvatar();
-	}, [setAvatar]);
+	}, [info]);
 
 	return (
 		<>

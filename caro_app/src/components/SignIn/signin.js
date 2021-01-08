@@ -286,7 +286,7 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
             )}
           />
           <GoogleLogin
-            clientId="226602372235-lp2s47icle0bm0c58rnsp58f9a4tuid3.apps.googleusercontent.com"
+            clientId="226602372235-lp2s47icle0bm0c58rnsp58f9a4tuid3.apps.googleusercontent.com" // clientID này của account: lactuanminh2121
             render={renderProps => (
               <div className={`${classes.socialLoginButton} ${classes.google} ${classes.shadow}`} onClick={renderProps.onClick}>
                 <Typography style={{ display: 'table-cell', verticalAlign: 'middle', fontWeight: 'bold' }}>
