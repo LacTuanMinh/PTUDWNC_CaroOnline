@@ -56,6 +56,7 @@ function Game({ socket, onlineUserList }) {
   const [player, setPlayer] = useState("X");// X || O
   const [player1Ready, setPlayer1Ready] = useState(false);
   const [player2Ready, setPlayer2Ready] = useState(false);
+  const [timeUpAt, setTimeUpAt] = useState(0);
 
   async function getPlayer(id) {
     const res = await fetch(`${API_URL}/users/get/${id}`, {
@@ -140,7 +141,15 @@ function Game({ socket, onlineUserList }) {
   // set game status (can start?) depends on 'youreReady' and 'opponentReady'
   useEffect(() => {
     setStart(player1Ready && player2Ready);
-  }, [player1Ready, player2Ready]);
+    if (player1Ready && player2Ready) {
+      socket.emit("game_started", { 
+        gameID,
+        chatHistory,
+        timeThinkingEachTurn: game.TimeThinkingEachTurn,
+        elo: calculateElo(player1.Elo, player2.Elo)
+      });
+    }
+  }, [player1Ready, player2Ready, chatHistory]);
 
   // get game info when component mount
   useEffect(() => {
@@ -172,6 +181,7 @@ function Game({ socket, onlineUserList }) {
       setHistory(data.history);
       setStepNumber(data.history.length - 1);
       setXIsNext(data.player === "X");
+      setTimeUpAt(data.timeUpAt);
       //setIsYourTurn(data.isYourTurn);
       if (data.opponentID === userID) {
         setIsYourTurn(data.isYourTurn);
@@ -308,23 +318,16 @@ function Game({ socket, onlineUserList }) {
 
   // time up
   useEffect(() => {
-    socket.on(`timeup_${gameID}`, data => {
+    socket.on(`time_up_${gameID}`, data => {
       console.log("time up");
-      // reset player2
-      setPlayer2(data.player2);
-      // reset player1
-      getPlayer(data.player1ID);
 
-      const gameData = {
-        game: data.game,
-        player2ID: userID === data.game.Player1ID ? data.player2.ID : userID,
-        result: data.winnerID === data.game.Player1ID ? 1 : 2,
-        status: 0,
-        moves: JSON.stringify(history),
-        chatHistory: JSON.stringify(chatHistory)
+      if (userID === data.player1.ID) {
+        setPlayer1(data.player1);
+        setPlayer2(data.player2);
       }
-      if (!data.game.Result) {
-        updateGameInfo(gameData);
+      else {
+        setPlayer1(data.player2);
+        setPlayer2(data.player1);
       }
 
       setHasWinner(true);
@@ -367,6 +370,8 @@ function Game({ socket, onlineUserList }) {
           position: i
         }
       ]),
+      hatHistory: chatHistory,
+      isXTurn: xIsNext,
       player: xIsNext ? "O" : "X",
       playerID: userID,
       opponentID: player2.ID,
@@ -559,74 +564,34 @@ function Game({ socket, onlineUserList }) {
             <CardHeader title="Player Info"></CardHeader>
             <Player player={player2} xOrO={opponent} />
             {/* game not started and game result is null*/}
-            {!start ?
-              (
-                hasWinner ?
-                  <></> :
-                  <Typography style={{ margin: "10px", color: "darkgreen" }}>
-                    {player2Ready ? 'Ready' : 'Not Ready'}
-                  </Typography>
-              ) :
-              <Timer
-                setHasWinner={setHasWinner}
-                value={game.TimeThinkingEachTurn}
-                isYourTurn={!isYourTurn}
-                game={game}
-                player2={player2}
-                player1={player1}
-                setPlayer1={setPlayer1}
-                setPlayer2={setPlayer2}
-                setGame={setGame}
-                isPlayer2={true}
-                elo={calculateElo(player2.Elo, player1.Elo)}
-                isMainPlayer={isMainPlayer}
-                history={history}
-                chatHistory={chatHistory}
-              />}
+            {hasWinner ? <></> :
+              <Typography style={{ margin: "10px", color: "darkgreen" }}>
+                {player2Ready ? 'Ready' : 'Not Ready'}
+              </Typography>
+            }
+
+            <br></br>
+            <Timer 
+              start={start} 
+              timeUpAt={timeUpAt} 
+              timeThinkingEachTurn={game.TimeThinkingEachTurn}
+            />
             <br></br>
 
             <Player player={player1} xOrO={player} />
-            {!start ?
-              <>
-                {/* game not started */}
-                {
-                  hasWinner ? <React.Fragment></React.Fragment> : (
-                    isMainPlayer && player1.ID ?
-                      // là người chơi chính thì hiện nút để ready or cancel
-                      (player2.ID ?
-                        <Button style={{ margin: "10px" }} variant="contained" color="primary"
-                          onClick={handleReady}
-                        >
-                          {player1Ready ? "Cancel" : "Ready"}
-                        </Button>
-                        :
-                        <React.Fragment></React.Fragment>
-                      )
-                      :
-                      <Typography style={{ margin: "10px", color: "darkgreen" }}>
-                        {player1Ready ? 'Ready' : 'Not Ready'}
-                      </Typography>
-                  )
-                }
-              </>
-              // waiting for opponent, hide the Ready Button
-              :
-              <Timer
-                setHasWinner={setHasWinner}
-                value={game.TimeThinkingEachTurn}
-                isYourTurn={isYourTurn}
-                game={game}
-                player2={player1}
-                player1={player2}
-                setPlayer1={setPlayer1}
-                setPlayer2={setPlayer2}
-                setGame={setGame}
-                isPlayer2={false}
-                elo={calculateElo(player2.Elo, player1.Elo)}
-                isMainPlayer={isMainPlayer}
-                history={history}
-                chatHistory={chatHistory}
-              />
+            {hasWinner ? <React.Fragment></React.Fragment> :
+              (isMainPlayer && player1.ID ?
+                // là người chơi chính thì hiện nút để ready or cancel
+                (player2.ID ?
+                  <Button style={{ margin: "10px" }} variant="contained" color="primary"
+                    onClick={handleReady}
+                  >
+                    {player1Ready ? "Cancel" : "Ready"}
+                  </Button> : <React.Fragment></React.Fragment>
+                ) :
+              <Typography style={{ margin: "10px", color: "darkgreen" }}>
+                {player1Ready ? 'Ready' : 'Not Ready'}
+              </Typography>)
             }
           </div>
 

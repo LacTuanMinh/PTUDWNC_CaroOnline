@@ -89,15 +89,139 @@ module.exports = io => {
   });
 
   let waitingUserForPairing = [];
+  const gameInfo = new Map();
 
   io.on("connection", async (socket) => {
+    // let myInterval = setInterval(() => {
+    //   const countDown = Math.ceil((gameInfo.get(gameID).timeUpAt - Date.now()) / 1000);
+    //   if (countDown === 0) {
+    //     console.log("TIME UP");
+    //     clearInterval(myInterval);
+    //   }
+    //   else {
+    //     console.log(countDown);
+    //   }
+    // }, 1000);
 
     socket.on("invite", data => {
       socket.broadcast.emit(`invite_${data.userID}`, { ...data });
     });
 
+    socket.on("game_started", data => {
+      const timeUpAt = Date.now() + data.timeThinkingEachTurn * 1000;
+      const isXTurn = true;
+      gameInfo.set(data.gameID, { 
+        moves: [],
+        chatHistory: data.chatHistory,
+        isXTurn,
+        elo: data.elo,
+        timeUpAt,
+        myInterval: setInterval(async () => {
+          const countDown = Math.round((timeUpAt - Date.now()) / 1000);
+          if (countDown === 0) {
+            console.log("TIME UP");
+
+            const [player1, player2] = await Promise.all([
+              gameModel.getPlayer1(data.gameID),
+              gameModel.getPlayer2(data.gameID)
+            ]);
+
+            // update game
+            const game = {
+              Player2ID: player2.ID,
+              Result: isXTurn ? 2 : 1, // X lost
+              Status: 0,
+              Moves: JSON.stringify([]),
+              ChatHistory: JSON.stringify(data.chatHistory)
+            }
+            gameModel.updateGame(data.gameID, game);
+
+            // emit time up
+            io.sockets.emit(`time_up_${data.gameID}`, 
+              { winner: isXTurn ? "X" : "O", elo: data.elo, player1, player2 });
+            
+            // update players' elo
+            if (isXTurn) {
+              player1.Elo -= data.elo;
+              player1.PlayCount += 1;
+
+              player2.Elo += data.elo;
+              player2.WinCount += 1;
+              player2.PlayCount += 1;
+            }
+
+            await userModel.updateUserScore(player1.ID, 
+              { Elo: player1.Elo, WinCount: player1.WinCount, PlayCount: player1.PlayCount });
+            await userModel.updateUserScore(player2.ID, 
+              { Elo: player2.Elo, WinCount: player2.WinCount, PlayCount: player2.PlayCount });
+
+            clearInterval(myInterval);
+          }
+          else {
+            console.log(countDown);
+          }
+        }, 1000)
+      });
+
+      io.sockets.emit(`game_started_${data.gameID}`, { timeUpAt: gameInfo.get(data.gameID).timeUpAt });
+    });
+
     socket.on("move", data => {
+      const timeUpAt = Date.now() + data.timeThinkingEachTurn * 1000;
       // console.log(data);
+      const gameData = gameInfo.get(data.gameID);
+      gameInfo.set(data.gameID, { 
+        ...gameData,
+        moves: data.history,
+        isXTurn: !data.isXTurn,
+        timeUpAt,
+        myInterval: setInterval(async () => {
+          const countDown = Math.round((timeUpAt - Date.now()) / 1000);
+          if (countDown === 0) {
+            console.log("TIME UP");
+
+            const [player1, player2] = await Promise.all([
+              gameModel.getPlayer1(data.gameID),
+              gameModel.getPlayer2(data.gameID)
+            ]);
+
+            // update game
+            const game = {
+              Player2ID: player2.ID,
+              Result: isXTurn ? 2 : 1, // X lost
+              Status: 0,
+              Moves: JSON.stringify(data.history),
+              ChatHistory: JSON.stringify(gameData.chatHistory)
+            }
+            gameModel.updateGame(data.gameID, game);
+            
+            // emit time up
+            io.sockets.emit(`time_up_${data.gameID}`, { winner: data.isXTurn ? "X" : "O", elo: data.elo });
+            
+            // update players' elo
+
+            if (data.isXTurn) {
+              player1.Elo -= data.elo;
+              player1.PlayCount += 1;
+
+              player2.Elo += data.elo;
+              player2.WinCount += 1;
+              player2.PlayCount += 1;
+            }
+            
+            await userModel.updateUserScore(player1.ID, 
+              { Elo: player1.Elo, WinCount: player1.WinCount, PlayCount: player1.PlayCount });
+            await userModel.updateUserScore(player2.ID, 
+              { Elo: player2.Elo, WinCount: player2.WinCount, PlayCount: player2.PlayCount });
+
+            clearInterval(gameData.myInterval);
+          }
+          else if (count > 0) {
+            console.log(countDown);
+          }
+        }, 1000)
+      });
+
       socket.broadcast.emit(`load_moves_${data.gameID}`,
         {
           history: data.history,
@@ -105,12 +229,18 @@ module.exports = io => {
           playerID: data.playerID,
           opponentID: data.opponentID,
           isYourTurn: data.isYourTurn,
+          timeUpAt: gameInfo.get(data.gameID).timeUpAt,
           game: data.game
         });
     });
 
     socket.on("chat", data => {
       // console.log(data);
+      const gameData = gameInfo.get(data.gameID);
+      gameInfo.set(data.gameID, { 
+        ...gameData,
+        chatHistory: chatHistory.concat(data.message)
+      });
       socket.broadcast.emit(`load_chat_${data.gameID}`, { message: data.message });
     });
 
@@ -217,7 +347,7 @@ module.exports = io => {
               Name: dockerNames.getRandomName(),
               Password: null,
               IsBlockedRule: false,
-              TimeThinkingEachTurn: 10,
+              TimeThinkingEachTurn: 60,
               Moves: null,
               Status: 1,  // waiting
               Player1ID: waitingUserForPairing[i].userID,
@@ -330,6 +460,12 @@ module.exports = io => {
         Result: null
       }
       const result = await gameModel.addGame(newGame);
+      gameInfo.set(newGame.ID, { 
+        moves: [],
+        chatHistory: [],
+        isXTurn: true,
+        timeUpAt: 0
+      });
 
       if (result.affectedRows === 0) {
         io.sockets.emit(`newGameFail${userID}`, { msg: "Fail to create game" });

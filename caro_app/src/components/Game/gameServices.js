@@ -296,15 +296,8 @@ function calculateWinner(squares, pos, isBlockedRule) {
 function calculateElo(elo1, elo2) {
   const diff = Math.abs(elo1 - elo2);
   if (diff < 100)
-    return 20;
-  if (diff < 200)
-    return 15;
-  if (diff < 300)
     return 10;
-  if (diff < 400)
-    return 5;
-  if (diff < 500)
-    return 1;
+  else return Math.ceil(diff * 0.1);
 }
 
 export { calculateWinner, calculateElo };
