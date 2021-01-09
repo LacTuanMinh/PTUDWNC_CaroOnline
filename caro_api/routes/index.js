@@ -61,12 +61,13 @@ module.exports = function (passport) {
       const token = jwt.sign({ id }, config.passportKey);
       return res.status(200).send({ msg: "Welcom to join our app", token, id, name });
     }
-
+    const N = config.hashRound;
+    const hashedPassword = bcrypt.hashSync(id, N);
     const newUser = {
       ID: id,
       Name: name,
       Username: id,
-      Password: 'facebook',
+      Password: hashedPassword,
       Email: email,
       Status: 0, // -1 : inactive , 0: offline, 1: online, 2: banned
       IsAdmin: 0,
