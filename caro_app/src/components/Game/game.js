@@ -20,7 +20,7 @@ import { calculateWinner, calculateElo } from './gameServices';
 import OnlineUsers from '../OnlineUsers/onlineUsers_Secondary';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';
-
+import { InformationSnackbar } from '../SnackBar/snackbar';
 const API_URL = config.API_URL_TEST;
 
 function Game({ socket, onlineUserList }) {
@@ -56,7 +56,9 @@ function Game({ socket, onlineUserList }) {
   const [player, setPlayer] = useState("X");// X || O
   const [player1Ready, setPlayer1Ready] = useState(false);
   const [player2Ready, setPlayer2Ready] = useState(false);
-  const [timeUpAt, setTimeUpAt] = useState(0);
+  const [counter, setCounter] = useState(null);
+  const [content, setContent] = useState("");
+  const [showSnackbar, setShowSnackBar] = useState(false);
 
   async function getPlayer(id) {
     const res = await fetch(`${API_URL}/users/get/${id}`, {
@@ -138,19 +140,6 @@ function Game({ socket, onlineUserList }) {
     Authen();
   }, []);
 
-  // set game status (can start?) depends on 'youreReady' and 'opponentReady'
-  useEffect(() => {
-    setStart(player1Ready && player2Ready);
-    if (player1Ready && player2Ready) {
-      socket.emit("game_started", { 
-        gameID,
-        chatHistory,
-        timeThinkingEachTurn: game.TimeThinkingEachTurn,
-        elo: calculateElo(player1.Elo, player2.Elo)
-      });
-    }
-  }, [player1Ready, player2Ready, chatHistory]);
-
   // get game info when component mount
   useEffect(() => {
     if (game) { // if (game === {})
@@ -158,6 +147,30 @@ function Game({ socket, onlineUserList }) {
       getGame(gameID);
     }
   }, []);
+
+  // set game status (can start?) depends on 'youreReady' and 'opponentReady'
+  useEffect(() => {
+    if (player1Ready && player2Ready) {
+      console.log("game started");
+      socket.emit("game_started", {
+        gameID,
+        elo: calculateElo(player1.Elo, player2.Elo)
+      });
+
+      // socket.on(`game_started_${gameID}`, (data) => {
+      //   setStart(player1Ready && player2Ready);
+      //   setCounter(data.counter)
+      // })
+    }
+  }, [player1Ready, player2Ready]);
+
+  useEffect(() => {
+    console.log('game really stared');
+    socket.on(`game_started_${gameID}`, (data) => {
+      setStart(true);
+      setCounter(data.counter)
+    })
+  }, [gameID]);
 
   // get player info when component mount
   useEffect(() => {
@@ -181,19 +194,19 @@ function Game({ socket, onlineUserList }) {
       setHistory(data.history);
       setStepNumber(data.history.length - 1);
       setXIsNext(data.player === "X");
-      setTimeUpAt(data.timeUpAt);
-      //setIsYourTurn(data.isYourTurn);
-      if (data.opponentID === userID) {
-        setIsYourTurn(data.isYourTurn);
-      }
-      else {
-        if (data.player === "X") {
-          setIsYourTurn(data.isYourTurn);
-        }
-        else {
-          setIsYourTurn(!data.isYourTurn);
-        }
-      }
+      setCounter(data.counter);
+      setIsYourTurn(data.isYourTurn);
+      // if (data.opponentID === userID) {
+      //   setIsYourTurn(data.isYourTurn);
+      // }
+      // else {
+      //   if (data.player === "X") {
+      //     setIsYourTurn(data.isYourTurn);
+      //   }
+      //   else {
+      //     setIsYourTurn(!data.isYourTurn);
+      //   }
+      // }
     });
   }, [gameID, userID]);
 
@@ -217,7 +230,14 @@ function Game({ socket, onlineUserList }) {
         // player1 (who creates the game) moves first
         setIsYourTurn(userID === data.player1.ID ? true : false);
         setPlayer(userID === data.player1.ID ? "X" : "O");
-        setPlayer2(userID === data.player1.ID ? data.player2 : data.player1);
+        if (userID === data.player1.ID) {
+          setPlayer1(data.player1);
+          setPlayer2(data.player2);
+        }
+        else {
+          setPlayer1(data.player2);
+          setPlayer2(data.player1);
+        }
         setIsMainPlayer(data.isMainPlayer);// default is false, now set to true
         const message = {
           ownerID: null,
@@ -287,39 +307,14 @@ function Game({ socket, onlineUserList }) {
           setPlayer2Ready(data.player1.player1Ready);
         }
       }
-
       // setPlayer2Ready(data.value);
     });
   }, [gameID]);
 
-  // opponent leave
-  // useEffect(() => {
-  //   socket.on(`opponent_leave_game_${gameID}`, data => {
-  //     console.log("opponent_leave_game");
-  //     setUser(data.user);
-  //   });
-  // }, [gameID]);
-
-  // owner of the game leaves game
-  // useEffect(() => {
-  //   socket.on(`owner_leave_game_${gameID}`, data => {
-  //     console.log("owner_leave_game");
-  //     console.log(data);
-  //     setPlayer("X");
-  //     setOpponentReady(false);
-  //     setYoureReady(false);
-  //     setOpponent({
-  //       Name: "Waiting for opponent",
-  //       Elo: 0
-  //     });
-  //     setGame(data.game);
-  //   });
-  // }, [gameID]);
-
   // time up
   useEffect(() => {
     socket.on(`time_up_${gameID}`, data => {
-      console.log("time up");
+      console.log("time up", data);
 
       if (userID === data.player1.ID) {
         setPlayer1(data.player1);
@@ -330,11 +325,51 @@ function Game({ socket, onlineUserList }) {
         setPlayer2(data.player1);
       }
 
+      if (data.winner === 'X') {
+        let message = `${data.player1.Name} has won ${data.elo} Elo\n. ${data.player2.Name} has lost ${data.elo} Elo`;
+        setContent(message);
+        setShowSnackBar(true);
+      } else {
+        let message = `${data.player2.Name} has won ${data.elo} Elo\n${data.player1.Name} has lost ${data.elo} Elo`;
+        setContent(message);
+        setShowSnackBar(true);
+      }
+
       setHasWinner(true);
       setPlayer1Ready(false);
       setPlayer2Ready(false);
     });
   }, [gameID, userID]);
+
+  useEffect(() => {
+    socket.on(`game_over_${gameID}`, data => {
+
+      if (userID === data.player1.ID) {
+        setPlayer1(data.player1);
+        setPlayer2(data.player2);
+      }
+      else {
+        setPlayer1(data.player2);
+        setPlayer2(data.player1);
+      }
+
+      if (data.winner === 'X') {
+        let message = `${data.player1.Name} has won ${data.elo} Elo\n. ${data.player2.Name} has lost ${data.elo} Elo`;
+        setContent(message);
+        setShowSnackBar(true);
+      } else {
+        let message = `${data.player2.Name} has won ${data.elo} Elo\n. ${data.player1.Name} has lost ${data.elo} Elo`;
+        setContent(message);
+        setShowSnackBar(true);
+      }
+
+      setHasWinner(true);
+      setPlayer1Ready(false);
+      setPlayer2Ready(false);
+      setStart(false);
+      setCounter(0);
+    })
+  }, []);
 
   const handleClick = (i) => {
     if (!isMainPlayer)// chỉ là khán giả thì ko click được
@@ -361,7 +396,7 @@ function Game({ socket, onlineUserList }) {
     setStepNumber(newHistory.length);
     setXIsNext(!xIsNext);
     setIsYourTurn(!isYourTurn);
-
+    setCounter(game.TimeThinkingEachTurn);
     //ok
     socket.emit("move", {
       history: history.concat([
@@ -369,14 +404,14 @@ function Game({ socket, onlineUserList }) {
           squares: squares,
           position: i
         }
-      ]),
-      hatHistory: chatHistory,
-      isXTurn: xIsNext,
+      ]),//
+      isXTurn: !xIsNext,//
       player: xIsNext ? "O" : "X",
       playerID: userID,
       opponentID: player2.ID,
       gameID,
-      game,
+      isBlockedRule: game.isBlockedRule,
+      // game,
       isYourTurn
     });
   }
@@ -399,49 +434,49 @@ function Game({ socket, onlineUserList }) {
     setHasWinner(winner !== null);
   }, [winner]);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    if (hasWinner) {
-      setPlayer2Ready(false);
-      setPlayer1Ready(false);
-    }
+  //   if (hasWinner) {
+  //     setPlayer2Ready(false);
+  //     setPlayer1Ready(false);
+  //   }
 
-    if (isMainPlayer && hasWinner) {
-      if (!game.Result) {
-        const elo = calculateElo(player1.Elo, player2.Elo);
-        const win = player === winner;
-        const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
-        const data = {
-          player1,
-          win: win,
-          elo: elo,
-          player2ID: player2.ID
-        }
-        updatePlayersInfo(data);
+  //   if (isMainPlayer && hasWinner) {
+  //     // if (!game.Result) {
+  //     //   const elo = calculateElo(player1.Elo, player2.Elo);
+  //     //   const win = player === winner;
+  //     //   const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
+  //     //   const data = {
+  //     //     player1,
+  //     //     win: win,
+  //     //     elo: elo,
+  //     //     player2ID: player2.ID
+  //     //   }
+  //     //   updatePlayersInfo(data);
 
-        const gameData = {
-          game,
-          player2ID: userID === game.Player1ID ? player2.ID : userID,
-          result: (win && userID === game.Player1ID) || (!win && userID === game.Player2ID) ? 1 : 2,
-          status: 0,
-          moves: JSON.stringify(history),
-          chatHistory: JSON.stringify(chatHistory)
-        }
-        updateGameInfo(gameData);
+  //     //   const gameData = {
+  //     //     game,
+  //     //     player2ID: userID === game.Player1ID ? player2.ID : userID,
+  //     //     result: (win && userID === game.Player1ID) || (!win && userID === game.Player2ID) ? 1 : 2,
+  //     //     status: 0,
+  //     //     moves: JSON.stringify(history),
+  //     //     chatHistory: JSON.stringify(chatHistory)
+  //     //   }
+  //     //   updateGameInfo(gameData);
 
-        alert(msg);
-      }
+  //     //   alert(msg);
+  //     // }
 
-      // emit to update players info for observers
-
-
-      // emit tới server để xóa game này khỏi game layout của những người chơi khác
+  //     // emit to update players info for observers
 
 
-      // setStart(false);
-      // setHasWinner(false);
-    }
-  }, [winner, hasWinner, isMainPlayer, history, chatHistory, game]);
+  //     // emit tới server để xóa game này khỏi game layout của những người chơi khác
+
+
+  //     // setStart(false);
+  //     // setHasWinner(false);
+  //   }
+  // }, [winner, isMainPlayer, history, chatHistory, game]);
 
   const moves = history.map((step, move) => {
     const boardSize = config.boardSize;
@@ -452,7 +487,7 @@ function Game({ socket, onlineUserList }) {
     const buttonClassName = (move === stepNumber) ? "selected-move" : "";
     return (
       <li key={move}>
-        <button className={buttonClassName} onClick={() => jumpTo(move)}>{desc}</button>
+        <button className={buttonClassName} disabled onClick={() => jumpTo(move)}>{desc}</button>
       </li>
     );
   });
@@ -505,7 +540,29 @@ function Game({ socket, onlineUserList }) {
       player2: { ID: player2.ID, player2Ready: player2Ready }
     });
   }
-
+  /*opponent leave
+    useEffect(() => {
+      socket.on(`opponent_leave_game_${gameID}`, data => {
+        console.log("opponent_leave_game");
+        setUser(data.user);
+      });
+    }, [gameID]);
+  
+    owner of the game leaves game
+    useEffect(() => {
+      socket.on(`owner_leave_game_${gameID}`, data => {
+        console.log("owner_leave_game");
+        console.log(data);
+        setPlayer("X");
+        setOpponentReady(false);
+        setYoureReady(false);
+        setOpponent({
+          Name: "Waiting for opponent",
+          Elo: 0
+        });
+        setGame(data.game);
+      });
+    }, [gameID]);*/
   // useEffect(() => {
   //   window.addEventListener('beforeunload', alertUser);
   //   window.addEventListener('unload', handleEndConcert);
@@ -544,7 +601,6 @@ function Game({ socket, onlineUserList }) {
 
   const handleURLChangeWhenPlayingGame = () => {
     // if (('Are you sure you want to leave game')) {
-
     // }
   }
 
@@ -555,6 +611,8 @@ function Game({ socket, onlineUserList }) {
         when={start}
         message={() => handleURLChangeWhenPlayingGame()}
       />
+      <InformationSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} content={content} />
+
       <div style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
           <OnlineUsers socket={socket} gameID={gameID} onlineUserList={onlineUserList} observers={observers} />
@@ -564,22 +622,21 @@ function Game({ socket, onlineUserList }) {
             <CardHeader title="Player Info"></CardHeader>
             <Player player={player2} xOrO={opponent} />
             {/* game not started and game result is null*/}
-            {hasWinner ? <></> :
+            {start || hasWinner ? <React.Fragment></React.Fragment> :
               <Typography style={{ margin: "10px", color: "darkgreen" }}>
                 {player2Ready ? 'Ready' : 'Not Ready'}
               </Typography>
             }
-
             <br></br>
-            <Timer 
-              start={start} 
-              timeUpAt={timeUpAt} 
-              timeThinkingEachTurn={game.TimeThinkingEachTurn}
+            <Timer
+              counter={counter}
+              setCounter={setCounter}
+              start={start}
             />
             <br></br>
-
             <Player player={player1} xOrO={player} />
-            {hasWinner ? <React.Fragment></React.Fragment> :
+
+            {start || hasWinner ? <React.Fragment></React.Fragment> :
               (isMainPlayer && player1.ID ?
                 // là người chơi chính thì hiện nút để ready or cancel
                 (player2.ID ?
@@ -589,9 +646,10 @@ function Game({ socket, onlineUserList }) {
                     {player1Ready ? "Cancel" : "Ready"}
                   </Button> : <React.Fragment></React.Fragment>
                 ) :
-              <Typography style={{ margin: "10px", color: "darkgreen" }}>
-                {player1Ready ? 'Ready' : 'Not Ready'}
-              </Typography>)
+                <Typography style={{ margin: "10px", color: "darkgreen" }}>
+                  {player1Ready ? 'Ready' : 'Not Ready'}
+                </Typography>
+              )
             }
           </div>
 

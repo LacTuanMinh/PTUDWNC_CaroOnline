@@ -2,28 +2,42 @@ import React, { useState, useEffect } from 'react';
 import config from '../../constants/config.json';
 
 const API_URL = config.API_URL_TEST;
+let myTimeout = null;
 
-function Timer({start, timeUpAt, timeThinkingEachTurn}) {
-  const [seconds, setSeconds] = useState(timeThinkingEachTurn);
+function Timer({ counter, setCounter, start }) {
+  // const [seconds, setSeconds] = useState(counter);
+
+  // useEffect(() => {
+  //   // setSeconds(counter);
+  //   if (start === true) {
+  //     myInterval = setInterval(() => {
+
+  //       if (counter <= 0) {
+  //         clearInterval(myInterval);
+  //         setCounter(null);
+  //       }
+  //       else setCounter(counter - 1);
+  //     }, 1000);
+  //   }
+
+  // }, [start]);
 
   useEffect(() => {
-    let myInterval = setInterval(() => {
-      if (start && seconds > 0) {
-        setSeconds(seconds - 1);
-      }
-      else {
-        setSeconds(timeThinkingEachTurn);
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(myInterval);
-    };
-  }, [seconds, start, timeThinkingEachTurn]);
+    clearTimeout(myTimeout);
+    if (counter > 0) {
+      myTimeout = setTimeout(() => {
+        if (counter > 0) {
+          setCounter(counter - 1)
+        }
+      }, 1000);
+    } else {
+      setCounter(0);
+    }
+  });
 
   return (
     <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '10px' }}>
-      Time: {seconds}
+      Time: {counter}
     </div>
   );
 }
