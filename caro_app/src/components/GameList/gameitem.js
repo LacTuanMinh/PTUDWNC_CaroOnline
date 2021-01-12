@@ -8,6 +8,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import LockIcon from '@material-ui/icons/Lock';
+import TimerIcon from '@material-ui/icons/Timer';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -81,6 +82,8 @@ function GameItem({ game, socket }) {
               : <React.Fragment></React.Fragment>}
             {game.IsBlockedRule ? <Typography style={{ fontWeight: "bold" }}>Blocked Rule</Typography>
               : <React.Fragment></React.Fragment>}
+            <TimerIcon size="small" color="primary"></TimerIcon>
+            <Typography>{game.TimeThinkingEachTurn}s</Typography>
           </CardActions>
         </Card>
       </Grid>

@@ -237,6 +237,32 @@ module.exports = io => {
         // emit thông báo tới room
       } else if (winInfo.isDraw) {
         // Draw
+        const gameOverAt = new Date().toISOString();
+        const game = {
+          Player2ID: player2[0].ID,
+          Result: 0, // draw
+          Status: 0,
+          Moves: JSON.stringify(gameInfo.moves),
+          ChatHistory: JSON.stringify(gameInfo.chatHistory),
+          GameOverAt: convertISOToYMD(gameOverAt),
+        }
+        await gameModel.updateGame(data.gameID, game);
+        // update players' elo
+        player1[0].Elo += 1;
+        player1[0].PlayCount += 1;
+        player2[0].Elo += 1;
+        player2[0].PlayCount += 1;
+
+        await Promise.all([
+          userModel.updateUserScore(player1[0].ID,
+            { Elo: player1[0].Elo, WinCount: player1[0].WinCount, PlayCount: player1[0].PlayCount }),
+          userModel.updateUserScore(player2[0].ID,
+            { Elo: player2[0].Elo, WinCount: player2[0].WinCount, PlayCount: player2[0].PlayCount })
+        ]);
+
+        io.sockets.emit(`game_over_${data.gameID}`, {
+          winner: null, elo: 1, player1: player1[0], player2: player2[0]
+        });
       } else {
         // chưa có người thắng thua, thì tạo interval mới cho game đó
         const gameInterval = function () {
@@ -311,18 +337,14 @@ module.exports = io => {
 
     socket.on("chat", data => {
       // console.log(data);
-      const gameData = allGamesInfo.get(data.gameID);
-      allGamesInfo.set(data.gameID, {
-        ...gameData,
-        chatHistory: chatHistory.concat(data.message)
-      });
+      const gameInfo = allGamesInfo.get(data.gameID);
+      gameInfo.chatHistory = gameInfo.chatHistory.concat([data.message]);
       socket.broadcast.emit(`load_chat_${data.gameID}`, { message: data.message });
     });
 
     socket.on("join_game", async data => {
       const originPlayers = await gameModel.getPlayers(data.gameID);
       // game status === 2 means playing
-
 
       if (originPlayers.length === 2) {  // there is already opponent 
         console.log('khán giả');
@@ -576,6 +598,102 @@ module.exports = io => {
       } else {
         io.sockets.emit("server_NewGame", { msg: "Game created", game: newGame });
       }
+    });
+
+    socket.on("draw_request", data => {
+      socket.broadcast.emit(`received_draw_request_${data.gameID}`, { to: data.to });
+    });
+
+    socket.on("surrender_request", data => {
+      socket.broadcast.emit(`received_surrender_request_${data.gameID}`, { to: data.to });
+    });
+
+    socket.on("deny_request", data => {
+      socket.broadcast.emit(`request_denied_${data.gameID}`, { to: data.to });
+    });
+
+    socket.on("accept_request", async data => {
+      console.log(data);
+
+      const gameInfo = allGamesInfo.get(data.gameID);
+      const [player1, player2] = await Promise.all([
+        gameModel.getPlayer1(data.gameID),
+        gameModel.getPlayer2(data.gameID)
+      ]);
+      const gameOverAt = new Date().toISOString();
+      clearInterval(gameIntervals.get(data.gameID));
+
+      if (data.drawOrSurrender === "draw") {
+        const game = {
+          Player2ID: player2[0].ID,
+          Result: 0, // draw
+          Status: 0,
+          Moves: JSON.stringify(gameInfo.moves),
+          ChatHistory: JSON.stringify(gameInfo.chatHistory),
+          GameOverAt: convertISOToYMD(gameOverAt),
+        }
+        await gameModel.updateGame(data.gameID, game);
+        // update players' elo
+        player1[0].Elo += 1;
+        player1[0].PlayCount += 1;
+        player2[0].Elo += 1;
+        player2[0].PlayCount += 1;
+
+        await Promise.all([
+          userModel.updateUserScore(player1[0].ID,
+            { Elo: player1[0].Elo, WinCount: player1[0].WinCount, PlayCount: player1[0].PlayCount }),
+          userModel.updateUserScore(player2[0].ID,
+            { Elo: player2[0].Elo, WinCount: player2[0].WinCount, PlayCount: player2[0].PlayCount })
+        ]);
+
+        io.sockets.emit(`game_over_${data.gameID}`, {
+          winner: null, elo: 1, player1: player1[0], player2: player2[0]
+        });
+      }
+      else if (data.drawOrSurrender === "surrender") {
+        const game = {
+          Player2ID: player2[0].ID,
+          Result: data.to === player1[0].ID ? 2 : 1,
+          Status: 0,
+          Moves: JSON.stringify(gameInfo.moves),
+          ChatHistory: JSON.stringify(gameInfo.chatHistory),
+          GameOverAt: convertISOToYMD(gameOverAt),
+        }
+        await gameModel.updateGame(data.gameID, game);
+        // update players' elo
+        
+        if (game.Result === 1) {
+          console.log("x thắng");
+          player1[0].Elo += gameInfo.elo;
+          player1[0].PlayCount += 1;
+          player1[0].WinCount += 1;
+          player2[0].Elo -= gameInfo.elo;
+          player2[0].PlayCount += 1;
+        } else {
+          console.log("x thua");
+          player1[0].Elo -= gameInfo.elo;
+          player1[0].PlayCount += 1;
+          player2[0].Elo += gameInfo.elo;
+          player2[0].WinCount += 1;
+          player2[0].PlayCount += 1;
+        }
+
+        await Promise.all([
+          userModel.updateUserScore(player1[0].ID,
+            { Elo: player1[0].Elo, WinCount: player1[0].WinCount, PlayCount: player1[0].PlayCount }),
+          userModel.updateUserScore(player2[0].ID,
+            { Elo: player2[0].Elo, WinCount: player2[0].WinCount, PlayCount: player2[0].PlayCount })
+        ]);
+
+        io.sockets.emit(`game_over_${data.gameID}`, {
+          winner: game.Result === 1 ? "X" : "O", elo: gameInfo.elo, player1: player1[0], player2: player2[0]
+        });
+      }
+
+      gameIntervals.delete(data.gameID);
+      allGamesInfo.delete(data.gameID);
+
+      //socket.broadcast.emit(`request_accepted_${data.gameID}`, { to: data.to });
     });
   });
 

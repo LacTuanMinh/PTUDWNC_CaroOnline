@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { useHistory } from 'react-router-dom'
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -73,7 +72,6 @@ export default function PlayedGamesDialog() {
 		retrieveGameList();
 	}, [setGameList]);
 
-
 	const handleChangeToViewPlayedGame = (gameID) => {
 		const playedGame = window.open(`/playedGame/${gameID}`, "_blank");
 		playedGame.focus();
@@ -108,7 +106,10 @@ export default function PlayedGamesDialog() {
 													</ListItemAvatar>
 													<ListItemText
 														primary={game.Name}
-														secondary={game.Player1ID === userID && game.Result === 1 ? "You won" : "You lost"}
+														secondary={(game.Player1ID === userID && game.Result === 1) || 
+															(game.Player2ID === userID && game.Result === 2) ? "You won" : 
+																((game.Player1ID === userID && game.Result === 2) || 
+																	(game.Player2ID === userID && game.Result === 1) ? "You lost" : "Draw")}
 													/>
 													<ListItemSecondaryAction>
 														<IconButton edge="end" aria-label="delete" onClick={() => handleChangeToViewPlayedGame(game.ID)} >

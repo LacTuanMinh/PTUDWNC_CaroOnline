@@ -13,6 +13,10 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogTitle from '@material-ui/core/DialogTitle';
+
 import Board from './board';
 import Player from '../Player/player';
 import Timer from '../Timer/timer';
@@ -59,6 +63,8 @@ function Game({ socket, onlineUserList }) {
   const [counter, setCounter] = useState(null);
   const [content, setContent] = useState("");
   const [showSnackbar, setShowSnackBar] = useState(false);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState("");
 
   async function getPlayer(id) {
     const res = await fetch(`${API_URL}/users/get/${id}`, {
@@ -343,7 +349,6 @@ function Game({ socket, onlineUserList }) {
 
   useEffect(() => {
     socket.on(`game_over_${gameID}`, data => {
-
       if (userID === data.player1.ID) {
         setPlayer1(data.player1);
         setPlayer2(data.player2);
@@ -357,8 +362,13 @@ function Game({ socket, onlineUserList }) {
         let message = `${data.player1.Name} has won ${data.elo} Elo\n. ${data.player2.Name} has lost ${data.elo} Elo`;
         setContent(message);
         setShowSnackBar(true);
-      } else {
+      } else if (data.winner === 'O') {
         let message = `${data.player2.Name} has won ${data.elo} Elo\n. ${data.player1.Name} has lost ${data.elo} Elo`;
+        setContent(message);
+        setShowSnackBar(true);
+      } else {
+        // draw
+        let message = `Draw!!! ${data.player1.Name} and ${data.player2.Name} got +1 Elo`;
         setContent(message);
         setShowSnackBar(true);
       }
@@ -540,6 +550,71 @@ function Game({ socket, onlineUserList }) {
       player2: { ID: player2.ID, player2Ready: player2Ready }
     });
   }
+
+  const handleDrawRequest = () => {
+    setContent("Your request has been sent, please wait for respond");
+    setShowSnackBar(true);
+    socket.emit("draw_request", { gameID, to: player2.ID });
+  }
+
+  const handleSurrenderRequest = () => {
+    setContent("Your request has been sent, please wait for respond");
+    setShowSnackBar(true);
+    socket.emit("surrender_request", { gameID, to: player2.ID });
+  }
+
+  useEffect(() => {
+    socket.on(`received_draw_request_${gameID}`, data => {
+      if (data.to === userID) {
+        setDialogTitle(player2.Name + " want a draw");
+        setRequestDialogOpen(true);
+      }
+    });
+  }, [gameID, player2.Name]);
+
+  useEffect(() => {
+    socket.on(`received_surrender_request_${gameID}`, data => {
+      if (data.to === userID) {
+        setDialogTitle(player2.Name + " want to surrender");
+        setRequestDialogOpen(true);
+      }
+    });
+  }, [gameID, player2.Name]);
+
+  const handleCloseRequest = () => {
+    setRequestDialogOpen(false);
+    socket.emit("deny_request", { gameID, to: player2.ID });
+  }
+
+  const handleAcceptRequest = () => {
+    const tokens = dialogTitle.split(' ');
+    socket.emit("accept_request", { 
+      gameID, 
+      to: player2.ID,
+      elo: calculateElo(player1.Elo, player2.Elo),
+      drawOrSurrender: tokens[tokens.length - 1] 
+    });
+    setRequestDialogOpen(false);
+  }
+
+  useEffect(() => {
+    socket.on(`request_denied_${gameID}`, data => {
+      if (data.to === userID) {
+        setContent("Your request has been denied");
+        setShowSnackBar(true);
+      }
+    });
+  }, [gameID]);
+
+  // useEffect(() => {
+  //   socket.on(`request_accepted_${gameID}`, data => {
+  //     if (data.to === userID) {
+  //       setContent("Your request has been accepted");
+  //       setShowSnackBar(true);
+  //     }
+  //   });
+  // }, [gameID]);
+
   /*opponent leave
     useEffect(() => {
       socket.on(`opponent_leave_game_${gameID}`, data => {
@@ -613,6 +688,18 @@ function Game({ socket, onlineUserList }) {
       />
       <InformationSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} content={content} />
 
+      <Dialog open={requestDialogOpen} onClose={handleCloseRequest} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">{dialogTitle}</DialogTitle>
+        <DialogActions>
+          <Button onClick={handleCloseRequest} color="primary">
+            Deny
+          </Button>
+          <Button onClick={handleAcceptRequest} color="primary">
+            Accept
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <div style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', zIndex: '1', width: '100%' }}>
           <OnlineUsers socket={socket} gameID={gameID} onlineUserList={onlineUserList} observers={observers} />
@@ -633,7 +720,21 @@ function Game({ socket, onlineUserList }) {
               setCounter={setCounter}
               start={start}
             />
+            {start && isMainPlayer ? 
+              <div style={{ display: 'flex'}}>
+                <Button color="primary" variant="contained" style={{ marginRight: '5px' }}
+                  onClick={handleDrawRequest}
+                >
+                  Draw
+                </Button>
+                <Button color="primary" variant="contained" onClick={handleSurrenderRequest}>
+                  Surrrender
+                </Button>
+              </div> :
+              <React.Fragment></React.Fragment>
+            }
             <br></br>
+
             <Player player={player1} xOrO={player} />
 
             {start || hasWinner ? <React.Fragment></React.Fragment> :
