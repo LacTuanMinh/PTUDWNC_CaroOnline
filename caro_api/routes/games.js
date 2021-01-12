@@ -19,10 +19,8 @@ module.exports = io => {
   });
 
   router.get('/playedGames/:userID', async (req, res) => {
-
     const userID = req.params.userID;
     const games = await gameModel.getAllGamesByUserID(userID);
-
     res.status(200).send({ list: games });
   });
 
@@ -43,7 +41,6 @@ module.exports = io => {
     const game = await gameModel.getGameByID(gameID);
 
     if (game) {
-      // console.log(game[0]);
       res.status(200).send({ game: game[0] });
     }
     //else res.status(404).send()
@@ -99,8 +96,7 @@ module.exports = io => {
       socket.broadcast.emit(`invite_${data.userID}`, { ...data });
     });
 
-    socket.on("game_started", data => {
-      // const timeUpAt = Date.now() + data.timeThinkingEachTurn * 1000;
+    socket.on("game_started", async data => {
       const isXTurn = true;
       const gameInfo = {
         ...allGamesInfo.get(data.gameID),
@@ -111,7 +107,6 @@ module.exports = io => {
       //Viết sẳn để hàm set ở dưới mới xài
       const gameInterval = function () {
         return setInterval(async () => {
-          // const countDown = Math.round((timeUpAt - Date.now()) / 1000);
           const timeRemaining = allGamesInfo.get(data.gameID).counter - 1;
           allGamesInfo.get(data.gameID).counter = timeRemaining;
 
@@ -166,8 +161,9 @@ module.exports = io => {
         }, 1000);
       }
 
-      if (gameIntervals.has(data.gameID) == false) {
+      if (gameIntervals.has(data.gameID) === false) {
         gameIntervals.set(data.gameID, gameInterval());
+        await gameModel.updateGame(data.gameID, { Status: 2 });
       }
 
       io.sockets.emit(`game_started_${data.gameID}`, { counter: gameInfo.counter });
@@ -176,7 +172,6 @@ module.exports = io => {
     socket.on("move", async data => {
       clearInterval(gameIntervals.get(data.gameID));
       // gameIntervals.delete(data.gameID);
-
       const gameInfo = allGamesInfo.get(data.gameID);
       const history = data.history;
       gameInfo.moves = history;
@@ -193,7 +188,7 @@ module.exports = io => {
       if (winInfo.winner !== null) { // đã có thắng thua
         console.log("Thắng");
 
-        // update db game, user
+        // update  game
         const gameOverAt = new Date().toISOString();
         const game = {
           Player2ID: player2[0].ID,
@@ -204,6 +199,7 @@ module.exports = io => {
           GameOverAt: convertISOToYMD(gameOverAt),
         }
         await gameModel.updateGame(data.gameID, game);
+
         // update players' elo
         if (winInfo.winner === "X") {
           console.log("x thắng");
@@ -220,7 +216,6 @@ module.exports = io => {
           player2[0].WinCount += 1;
           player2[0].PlayCount += 1;
         }
-
         await Promise.all([
           userModel.updateUserScore(player1[0].ID,
             { Elo: player1[0].Elo, WinCount: player1[0].WinCount, PlayCount: player1[0].PlayCount }),
@@ -228,13 +223,13 @@ module.exports = io => {
             { Elo: player2[0].Elo, WinCount: player2[0].WinCount, PlayCount: player2[0].PlayCount })
         ]);
 
+        // emit thông báo tới room
         io.sockets.emit(`game_over_${data.gameID}`, {
           winner: winInfo.winner, elo: gameInfo.elo, player1: player1[0], player2: player2[0]
         });
         gameIntervals.delete(data.gameID);
         allGamesInfo.delete(data.gameID);
 
-        // emit thông báo tới room
       } else if (winInfo.isDraw) {
         // Draw
         const gameOverAt = new Date().toISOString();
@@ -263,11 +258,13 @@ module.exports = io => {
         io.sockets.emit(`game_over_${data.gameID}`, {
           winner: null, elo: 1, player1: player1[0], player2: player2[0]
         });
+
       } else {
         // chưa có người thắng thua, thì tạo interval mới cho game đó
         const gameInterval = function () {
+
           return setInterval(async () => {
-            // const countDown = Math.round((timeUpAt - Date.now()) / 1000);
+
             const timeRemaining = allGamesInfo.get(data.gameID).counter - 1;
             allGamesInfo.get(data.gameID).counter = timeRemaining;
 
@@ -286,6 +283,7 @@ module.exports = io => {
                 GameOverAt: convertISOToYMD(gameOverAt),
               }
               await gameModel.updateGame(data.gameID, game);
+
               // update players' elo
               if (data.isXTurn) {
                 console.log("x thua");
@@ -302,13 +300,13 @@ module.exports = io => {
                 player2[0].Elo -= gameInfo.elo;
                 player2[0].PlayCount += 1;
               }
-
               await Promise.all([
                 userModel.updateUserScore(player1[0].ID,
                   { Elo: player1[0].Elo, WinCount: player1[0].WinCount, PlayCount: player1[0].PlayCount }),
                 userModel.updateUserScore(player2[0].ID,
                   { Elo: player2[0].Elo, WinCount: player2[0].WinCount, PlayCount: player2[0].PlayCount })
               ]);
+
               // emit time up
               io.sockets.emit(`time_up_${data.gameID}`, { winner: gameInfo.isXTurn ? "O" : "X", elo: gameInfo.elo, player1: player1[0], player2: player2[0] });
               gameIntervals.delete(data.gameID);
@@ -324,6 +322,9 @@ module.exports = io => {
           gameIntervals.set(data.gameID, gameInterval());
         }
       }
+
+      console.log(gameInfo);
+
       socket.broadcast.emit(`load_moves_${data.gameID}`, {
         history: data.history,
         player: data.player,
@@ -336,85 +337,126 @@ module.exports = io => {
     });
 
     socket.on("chat", data => {
-      // console.log(data);
       const gameInfo = allGamesInfo.get(data.gameID);
       gameInfo.chatHistory = gameInfo.chatHistory.concat([data.message]);
       socket.broadcast.emit(`load_chat_${data.gameID}`, { message: data.message });
     });
 
     socket.on("join_game", async data => {
-      const originPlayers = await gameModel.getPlayers(data.gameID);
-      // game status === 2 means playing
 
-      if (originPlayers.length === 2) {  // there is already opponent 
-        console.log('khán giả');
+      const gameStatus = await gameModel.getGameStatusByID(data.gameID);
+      const mainPlayers = await gameModel.getPlayers(data.gameID);
+      const gameInfo = allGamesInfo.get(data.gameID);
 
+      // game chưa bắt đầu
+      if (gameStatus[0].Status === 1) {
+        if (mainPlayers.length === 2) {  // there is already opponent 
+          const addResult = trackGameObservers.addObserverToMap(observerOfAGame, data.gameID, data.userID);
+          const joinerName = await userModel.getUserNameByID(data.userID);
+          const message = {
+            ownerID: null,
+            message: joinerName[0].Name + " has joined the game"
+          }
+          gameInfo.chatHistory = gameInfo.chatHistory.concat([message]);
+
+          if (addResult === 1) {
+            const observerIDsIterator = observerOfAGame.get(data.gameID).keys();
+            const observerIDs = Array.from(observerIDsIterator)
+            const result = observerIDs.map(id => {
+              return "'" + id.replace("'", "''") + "'";
+            }).join();
+            const observers = await userModel.getUsersByIDsLite(result);
+            const game = await gameModel.getGameByID(data.gameID);
+
+            io.sockets.emit(`notify_join_game_${data.gameID}`, {
+              isMainPlayer: false,
+              player1: mainPlayers[0],
+              player2: mainPlayers[1],
+              observers,
+              userID: data.userID,
+              game: game[0],
+              player1Ready: gameInfo.player1Ready,
+              player2Ready: gameInfo.player2Ready,
+              chatHistory: gameInfo.chatHistory
+            });
+
+            // io.sockets.emit(`I_need_game_info_${data.gameID}_${game[0].Player1ID}`, {
+            //   userID: data.userID
+            // });
+          }
+        } else {// là người chơi thứ 2
+
+          await gameModel.updateGame(data.gameID, { Player2ID: data.userID });
+          const [player1, player2, game] = await Promise.all([
+            gameModel.getPlayer1(data.gameID),
+            gameModel.getPlayer2(data.gameID),
+            gameModel.getGameByID(data.gameID)
+          ]);
+          const message = {
+            ownerID: null,
+            message: player2[0].Name + " has joined the game"
+          }
+          gameInfo.chatHistory = gameInfo.chatHistory.concat([message]);
+
+          io.sockets.emit(`notify_join_game_${data.gameID}`, {
+            isMainPlayer: true,
+            // do ko biết được thứ tự player1 hay player2 là dòng nào,
+            // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
+            observers: [],
+            player1: player1[0],
+            player2: player2[0],
+            userID: data.userID,
+            game: game[0],
+            chatHistory: gameInfo.chatHistory
+          });
+
+          // io.sockets.emit(`I_need_game_info_${data.gameID}_${game[0].Player1ID}`, {
+          //   userID: data.userID
+          // });
+        }
+
+      } else if (gameStatus[0].Status === 2) {  // game đang bắt đầu
+
+        // là người chơi chính
+
+
+
+
+        // là người quan sát
         const addResult = trackGameObservers.addObserverToMap(observerOfAGame, data.gameID, data.userID);
-
         const joinerName = await userModel.getUserNameByID(data.userID);
         const message = {
           ownerID: null,
           message: joinerName[0].Name + " has joined the game"
         }
-        const gameInfo = allGamesInfo.get(data.gameID);
         gameInfo.chatHistory = gameInfo.chatHistory.concat([message]);
 
         if (addResult === 1) {
           const observerIDsIterator = observerOfAGame.get(data.gameID).keys();
-          const observerIDs = Array.from(observerIDsIterator)
+          const observerIDs = Array.from(observerIDsIterator);
           const result = observerIDs.map(id => {
             return "'" + id.replace("'", "''") + "'";
           }).join();
-
           const observers = await userModel.getUsersByIDsLite(result);
           const game = await gameModel.getGameByID(data.gameID);
 
           io.sockets.emit(`notify_join_game_${data.gameID}`, {
             isMainPlayer: false,
-            player1: originPlayers[0],
-            player2: originPlayers[1],
+            // do ko biết được thứ tự player1 hay player2 là dòng nào,
+            // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
             observers,
+            player1: mainPlayers[0],
+            player2: mainPlayers[1],
             userID: data.userID,
-            game: game[0]
-          });
-
-          io.sockets.emit(`I_need_game_info_${data.gameID}_${game[0].Player1ID}`, {
-            userID: data.userID
+            game: game[0],
+            chatHistory: gameInfo.chatHistory,
+            moves: gameInfo.moves,
+            isXTurn: gameInfo.isXTurn,
+            counter: gameInfo.counter
           });
         }
-        return;
       }
 
-      //else : là người chơi thứ 2
-
-      await gameModel.updateGame(data.gameID, { Player2ID: data.userID });
-      const [player1, player2, game] = await Promise.all([
-        gameModel.getPlayer1(data.gameID),
-        gameModel.getPlayer2(data.gameID),
-        gameModel.getGameByID(data.gameID)
-      ]);
-
-      const message = {
-        ownerID: null,
-        message: player2[0].Name + " has joined the game"
-      }
-      const gameInfo = allGamesInfo.get(data.gameID);
-      gameInfo.chatHistory = gameInfo.chatHistory.concat([message]);
-
-      io.sockets.emit(`notify_join_game_${data.gameID}`, {
-        isMainPlayer: true,
-        // do ko biết được thứ tự player1 hay player2 là dòng nào,
-        // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
-        observers: [],
-        player1: player1[0],
-        player2: player2[0],
-        userID: data.userID,
-        game: game[0]
-      });
-
-      io.sockets.emit(`I_need_game_info_${data.gameID}_${game[0].Player1ID}`, {
-        userID: data.userID
-      });
     });
 
     socket.on(`I_provide_game_info`, (data) => {
@@ -426,6 +468,9 @@ module.exports = io => {
 
     socket.on("ready", data => {
       // console.log(data);
+      const gameInfo = allGamesInfo.get(data.gameID);
+      gameInfo.player1Ready = data.player1.player1Ready;
+      gameInfo.player2Ready = data.player2.player2Ready;
       socket.broadcast.emit(`ready_${data.gameID}`, data);
     });
 
@@ -454,6 +499,9 @@ module.exports = io => {
         return;
       } else { // có người chờ ghép cặp
         for (let i = 0; i < waitingUserForPairing.length; i++) {
+
+          if (newUser.userID === waitingUserForPairing[i].userID) // chính nó bắt cặp với nó
+            continue;
 
           if (canBePaired(newUser.elo, waitingUserForPairing[i].elo)) { // khoảng cách elo ok
             /* hero unit */
@@ -492,18 +540,19 @@ module.exports = io => {
               }],
               isXTurn: true,
               timeThinkingEachTurn: newGame.TimeThinkingEachTurn,
-              counter: newGame.TimeThinkingEachTurn
+              counter: newGame.TimeThinkingEachTurn,
+              player1Ready: false,
+              player2Ready: false,
             });
             // 4. thông báo cho người thứ 1 biết
             io.sockets.emit(`notify_join_game_${newGame.ID}`, {
               isMainPlayer: true,
-              // do ko biết được thứ tự player1 hay player2 là dòng nào,
-              // nên cần kiểm tra bằng ID của người join vào phòng (data.userID)
               observers: [],
               player1: player1[0],
               player2: player2[0],
               userID: newUser.userID,
-              game: game[0]
+              game: game[0],
+              chatHistory: allGamesInfo.get(newGame.ID).chatHistory
             });
             // 5. xóa người thứ 1 khỏi hàng đợi
             waitingUserForPairing.splice(i, 1);
@@ -590,7 +639,9 @@ module.exports = io => {
         chatHistory: [],
         isXTurn: true,
         timeThinkingEachTurn: timeThinkingEachTurn,
-        counter: timeThinkingEachTurn
+        counter: timeThinkingEachTurn,
+        player1Ready: false,
+        player2Ready: false,
       });
 
       if (result.affectedRows === 0) {
@@ -661,7 +712,7 @@ module.exports = io => {
         }
         await gameModel.updateGame(data.gameID, game);
         // update players' elo
-        
+
         if (game.Result === 1) {
           console.log("x thắng");
           player1[0].Elo += gameInfo.elo;

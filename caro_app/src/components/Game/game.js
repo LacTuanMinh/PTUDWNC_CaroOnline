@@ -94,46 +94,46 @@ function Game({ socket, onlineUserList }) {
   }
 
   // update user info
-  async function updatePlayersInfo(data) {
-    const res = await fetch(`${API_URL}/users/update`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`
-      }
-    });
-    const result = await res.json();
-    console.log(result);
-    if (res.status === 200) {
-      console.log(result.msg);
-      setPlayer1(result.player1);
-      setPlayer2(result.player2);
-    }
-    else {
-      window.alert(result.msg);
-    }
-  }
+  // async function updatePlayersInfo(data) {
+  //   const res = await fetch(`${API_URL}/users/update`, {
+  //     method: 'POST',
+  //     body: JSON.stringify(data),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       Authorization: `Bearer ${jwtToken}`
+  //     }
+  //   });
+  //   const result = await res.json();
+  //   console.log(result);
+  //   if (res.status === 200) {
+  //     console.log(result.msg);
+  //     setPlayer1(result.player1);
+  //     setPlayer2(result.player2);
+  //   }
+  //   else {
+  //     window.alert(result.msg);
+  //   }
+  // }
 
-  async function updateGameInfo(data) {
-    const res = await fetch(`${API_URL}/games/update`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`
-      }
-    });
-    const result = await res.json();
-    console.log(result);
-    if (res.status === 200) {
-      // console.log(result.msg);
-      setGame(result.game);
-    }
-    else {
-      window.alert(result.msg);
-    }
-  }
+  // async function updateGameInfo(data) {
+  //   const res = await fetch(`${API_URL}/games/update`, {
+  //     method: 'POST',
+  //     body: JSON.stringify(data),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       Authorization: `Bearer ${jwtToken}`
+  //     }
+  //   });
+  //   const result = await res.json();
+  //   console.log(result);
+  //   if (res.status === 200) {
+  //     // console.log(result.msg);
+  //     setGame(result.game);
+  //   }
+  //   else {
+  //     window.alert(result.msg);
+  //   }
+  // }
 
   // authen when component mount
   useEffect(() => {
@@ -154,30 +154,6 @@ function Game({ socket, onlineUserList }) {
     }
   }, []);
 
-  // set game status (can start?) depends on 'youreReady' and 'opponentReady'
-  useEffect(() => {
-    if (player1Ready && player2Ready) {
-      console.log("game started");
-      socket.emit("game_started", {
-        gameID,
-        elo: calculateElo(player1.Elo, player2.Elo)
-      });
-
-      // socket.on(`game_started_${gameID}`, (data) => {
-      //   setStart(player1Ready && player2Ready);
-      //   setCounter(data.counter)
-      // })
-    }
-  }, [player1Ready, player2Ready]);
-
-  useEffect(() => {
-    console.log('game really stared');
-    socket.on(`game_started_${gameID}`, (data) => {
-      setStart(true);
-      setCounter(data.counter)
-    })
-  }, [gameID]);
-
   // get player info when component mount
   useEffect(() => {
     if (!game.Result) { // if (game.Result == null)
@@ -193,6 +169,28 @@ function Game({ socket, onlineUserList }) {
     }
   }, [game]);
 
+  // set game status (can start?) depends on 'youreReady' and 'opponentReady'
+  useEffect(() => {
+    if (player1Ready && player2Ready && isMainPlayer) {
+      socket.emit("game_started", {
+        gameID,
+        elo: calculateElo(player1.Elo, player2.Elo)
+      });
+    }
+  }, [player1Ready, player2Ready, isMainPlayer]);
+
+  useEffect(() => {
+    console.log('game really stared');
+    socket.on(`game_started_${gameID}`, (data) => {
+      setStart(true);
+      setCounter(data.counter);
+      // if (userID === data.player1ID) {
+      //   setContent("It's your turn");
+      //   setShowSnackBar(true);
+      // }
+    });
+  }, [gameID]);
+
   // load moves
   useEffect(() => {
     socket.on(`load_moves_${gameID}`, data => {
@@ -202,19 +200,12 @@ function Game({ socket, onlineUserList }) {
       setXIsNext(data.player === "X");
       setCounter(data.counter);
       setIsYourTurn(data.isYourTurn);
-      // if (data.opponentID === userID) {
-      //   setIsYourTurn(data.isYourTurn);
-      // }
-      // else {
-      //   if (data.player === "X") {
-      //     setIsYourTurn(data.isYourTurn);
-      //   }
-      //   else {
-      //     setIsYourTurn(!data.isYourTurn);
-      //   }
-      // }
+      if (isMainPlayer) {
+        setContent("It's your turn");
+        setShowSnackBar(true);
+      }
     });
-  }, [gameID, userID]);
+  }, [gameID, userID, isMainPlayer]);
 
   // load chat
   useEffect(() => {
@@ -239,27 +230,15 @@ function Game({ socket, onlineUserList }) {
         if (userID === data.player1.ID) {
           setPlayer1(data.player1);
           setPlayer2(data.player2);
-        }
-        else {
+        } else {
           setPlayer1(data.player2);
           setPlayer2(data.player1);
         }
         setIsMainPlayer(data.isMainPlayer);// default is false, now set to true
-        const message = {
-          ownerID: null,
-          message: data.player2.Name + " has joined the game"
-        }
-        setChatHistory(chatHistory => [...chatHistory, message]);
+        setChatHistory(data.chatHistory);
       } else { // is not main players
         console.log("IM A VIEWER");
-        // if we dont use [0] then joiner is an array
-        const joiner = data.observers.filter(observer => observer.ID === data.userID)[0];
-
-        const message = {
-          ownerID: null,
-          message: joiner.Name + " has joined the game"
-        }
-        setChatHistory(chatHistory => [...chatHistory, message]);
+        setChatHistory(data.chatHistory);
 
         if (userID !== data.player1.ID && userID !== data.player2.ID) {
           // chặn 2 màn hình người choi8 chính cập nhật màn hình khi khán giả vào phòng
@@ -270,6 +249,15 @@ function Game({ socket, onlineUserList }) {
           else {
             setPlayer1(data.player2);
             setPlayer2(data.player1);
+          }
+          setPlayer1Ready(data.player1Ready);
+          setPlayer2Ready(data.player2Ready);
+
+          if (data.game.Status === 2) {
+            console.log(data.moves);
+            setHistory(data.moves);
+            setIsYourTurn(data.isXTurn);
+            setCounter(data.counter);
           }
         }
       }
@@ -283,7 +271,9 @@ function Game({ socket, onlineUserList }) {
         gameID,
         userID: data.userID,
         chatHistory: chatHistory,
-        moves: history
+        moves: history,
+        player1Ready,
+        player2Ready,
       });
     });
   }, [gameID, userID, chatHistory, history]);
@@ -315,7 +305,7 @@ function Game({ socket, onlineUserList }) {
       }
       // setPlayer2Ready(data.value);
     });
-  }, [gameID]);
+  }, [userID, gameID]);
 
   // time up
   useEffect(() => {
@@ -588,11 +578,11 @@ function Game({ socket, onlineUserList }) {
 
   const handleAcceptRequest = () => {
     const tokens = dialogTitle.split(' ');
-    socket.emit("accept_request", { 
-      gameID, 
+    socket.emit("accept_request", {
+      gameID,
       to: player2.ID,
       elo: calculateElo(player1.Elo, player2.Elo),
-      drawOrSurrender: tokens[tokens.length - 1] 
+      drawOrSurrender: tokens[tokens.length - 1]
     });
     setRequestDialogOpen(false);
   }
@@ -606,14 +596,6 @@ function Game({ socket, onlineUserList }) {
     });
   }, [gameID]);
 
-  // useEffect(() => {
-  //   socket.on(`request_accepted_${gameID}`, data => {
-  //     if (data.to === userID) {
-  //       setContent("Your request has been accepted");
-  //       setShowSnackBar(true);
-  //     }
-  //   });
-  // }, [gameID]);
 
   /*opponent leave
     useEffect(() => {
@@ -648,44 +630,48 @@ function Game({ socket, onlineUserList }) {
   //   }
   // }, [game, player2]);
 
-  // const alertUser = e => {
-  //   e.preventDefault();
-  //   // e.returnValue = 'HAHA';
-  //   window.alert('You are reload the page!!!');
-  // }
+  const alertUser = e => {
+    e.preventDefault();
+    e.returnValue = 'HAHA';
+    window.alert('You are reload the page!!!');
+  }
 
-  // const handleEndConcert = (game, player2) => {
-  //   if (start) {
-  //     const elo = calculateElo(user.Elo, player2.Elo);
-  //     const win = !isYourTurn;
-  //     const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
-  //     //socket.emit("leave_game", { player1, player2, gameID, elo });
-  //     window.alert(msg);
-  //   }
-  //   else {
-  //     // leave game when the game is not starting yet
-  //     // reset owner of the game if the owner leaves
-  //     if (userID === game.Player1ID && player2.ID && !game.Result) {
-  //       console.log("emit owner leave game");
-  //       console.log(game);
-  //       console.log(player2.ID);
-  //       socket.emit("owner_leave_game", { game, userID, player2ID: player2.ID });
-  //     }
-  //   }
-  // }
+  const handleEndConcert = (game, player2) => {
+    // if (start) {
+    //   const elo = calculateElo(user.Elo, player2.Elo);
+    //   const win = !isYourTurn;
+    //   const msg = (win ? "You win\n+" : "You lose\n-") + elo + " elo";
+    //   //socket.emit("leave_game", { player1, player2, gameID, elo });
+    //   window.alert(msg);
+    // }
+    // else {
+    //   // leave game when the game is not starting yet
+    //   // reset owner of the game if the owner leaves
+    //   if (userID === game.Player1ID && player2.ID && !game.Result) {
+    //     console.log("emit owner leave game");
+    //     console.log(game);
+    //     console.log(player2.ID);
+    //     socket.emit("owner_leave_game", { game, userID, player2ID: player2.ID });
+    //   }
+    // }
+  }
 
   const handleURLChangeWhenPlayingGame = () => {
-    // if (('Are you sure you want to leave game')) {
+    // var r = window.confirm("Press a button!");
+    // if (r == true) {
+    //   console.log("ok ");
+    // } else {
+    //   console.log("cancel");;
     // }
   }
 
   const opponent = player === "X" ? "O" : "X";
   const element = (
     <React.Fragment>
-      <Prompt
-        when={start}
+      {/* <Prompt
+        when={true}
         message={() => handleURLChangeWhenPlayingGame()}
-      />
+      /> */}
       <InformationSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} content={content} />
 
       <Dialog open={requestDialogOpen} onClose={handleCloseRequest} aria-labelledby="form-dialog-title">
@@ -720,8 +706,8 @@ function Game({ socket, onlineUserList }) {
               setCounter={setCounter}
               start={start}
             />
-            {start && isMainPlayer ? 
-              <div style={{ display: 'flex'}}>
+            {start && isMainPlayer ?
+              <div style={{ display: 'flex' }}>
                 <Button color="primary" variant="contained" style={{ marginRight: '5px' }}
                   onClick={handleDrawRequest}
                 >

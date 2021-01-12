@@ -16,6 +16,7 @@ import config from '../../../constants/config.json';
 import IconButton from '@material-ui/core/IconButton';
 import HistoryIcon from '@material-ui/icons/History';
 import VisibilityIcon from '@material-ui/icons/Visibility';
+import { convertISOToDMY } from '../../../utils/helper';
 const API_URL = config.API_URL_TEST;
 
 const useStyles = makeStyles((theme) => ({
@@ -106,12 +107,13 @@ export default function PlayedGamesDialog() {
 													</ListItemAvatar>
 													<ListItemText
 														primary={game.Name}
-														secondary={(game.Player1ID === userID && game.Result === 1) || 
-															(game.Player2ID === userID && game.Result === 2) ? "You won" : 
-																((game.Player1ID === userID && game.Result === 2) || 
-																	(game.Player2ID === userID && game.Result === 1) ? "You lost" : "Draw")}
+														secondary={(game.Player1ID === userID && game.Result === 1) ||
+															(game.Player2ID === userID && game.Result === 2) ? "You won" :
+															((game.Player1ID === userID && game.Result === 2) ||
+																(game.Player2ID === userID && game.Result === 1) ? "You lost" : "Draw")}
 													/>
 													<ListItemSecondaryAction>
+														{convertISOToDMY(game.GameOverAt)}
 														<IconButton edge="end" aria-label="delete" onClick={() => handleChangeToViewPlayedGame(game.ID)} >
 															<VisibilityIcon />
 														</IconButton>
