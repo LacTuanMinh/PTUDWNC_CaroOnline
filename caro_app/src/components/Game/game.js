@@ -174,6 +174,7 @@ function Game({ socket, onlineUserList }) {
     if (player1Ready && player2Ready && isMainPlayer) {
       socket.emit("game_started", {
         gameID,
+        player1ID: game.Player1ID,
         elo: calculateElo(player1.Elo, player2.Elo)
       });
     }
@@ -184,12 +185,12 @@ function Game({ socket, onlineUserList }) {
     socket.on(`game_started_${gameID}`, (data) => {
       setStart(true);
       setCounter(data.counter);
-      // if (userID === data.player1ID) {
-      //   setContent("It's your turn");
-      //   setShowSnackBar(true);
-      // }
+      if (userID === data.player1ID) {
+        setContent("It's your turn");
+        setShowSnackBar(true);
+      }
     });
-  }, [gameID]);
+  }, [gameID, userID]);
 
   // load moves
   useEffect(() => {
@@ -254,9 +255,12 @@ function Game({ socket, onlineUserList }) {
           setPlayer2Ready(data.player2Ready);
 
           if (data.game.Status === 2) {
-            console.log(data.moves);
+            console.log(data);
             setHistory(data.moves);
+            setStepNumber(data.moves.length - 1);
+            setXIsNext(data.isXTurn);
             setIsYourTurn(data.isXTurn);
+            setStart(true);
             setCounter(data.counter);
           }
         }
@@ -620,6 +624,7 @@ function Game({ socket, onlineUserList }) {
         setGame(data.game);
       });
     }, [gameID]);*/
+  
   // useEffect(() => {
   //   window.addEventListener('beforeunload', alertUser);
   //   window.addEventListener('unload', handleEndConcert);
@@ -632,7 +637,7 @@ function Game({ socket, onlineUserList }) {
 
   const alertUser = e => {
     e.preventDefault();
-    e.returnValue = 'HAHA';
+    e.returnValue = 'BYE';
     window.alert('You are reload the page!!!');
   }
 
@@ -657,21 +662,16 @@ function Game({ socket, onlineUserList }) {
   }
 
   const handleURLChangeWhenPlayingGame = () => {
-    // var r = window.confirm("Press a button!");
-    // if (r == true) {
-    //   console.log("ok ");
-    // } else {
-    //   console.log("cancel");;
-    // }
+    
   }
 
   const opponent = player === "X" ? "O" : "X";
   const element = (
     <React.Fragment>
-      {/* <Prompt
+      <Prompt
         when={true}
         message={() => handleURLChangeWhenPlayingGame()}
-      /> */}
+      />
       <InformationSnackbar open={showSnackbar} setOpen={(isOpen) => setShowSnackBar(isOpen)} content={content} />
 
       <Dialog open={requestDialogOpen} onClose={handleCloseRequest} aria-labelledby="form-dialog-title">
@@ -704,7 +704,6 @@ function Game({ socket, onlineUserList }) {
             <Timer
               counter={counter}
               setCounter={setCounter}
-              start={start}
             />
             {start && isMainPlayer ?
               <div style={{ display: 'flex' }}>
@@ -751,7 +750,6 @@ function Game({ socket, onlineUserList }) {
             />
           </div>
           <div className="game-info">
-
             <div className="chat-box" >
               <CardHeader title="Chat Box"></CardHeader>
               <Card style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', width: '100%', minHeight: '200px', maxHeight: '200px', overflowY: 'scroll' }}>
@@ -779,11 +777,7 @@ function Game({ socket, onlineUserList }) {
               </form>
             </div>
 
-            <div className="paper-like-shadow" style={{
-              marginTop: '20px',
-              marginLeft: '20px',
-              minWidth: '320px',
-            }}
+            <div className="paper-like-shadow" style={{ marginTop: '20px', marginLeft: '20px', minWidth: '320px' }}
             >
               <Accordion>
                 <AccordionSummary

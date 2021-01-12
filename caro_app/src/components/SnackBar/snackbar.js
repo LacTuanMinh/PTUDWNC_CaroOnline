@@ -50,7 +50,7 @@ export function InformationSnackbar({ open, setOpen, content }) {
 					horizontal: 'center',
 				}}
 				open={open}
-				autoHideDuration={5000}
+				autoHideDuration={3000}
 				onClose={handleClose}
 			>
 				<SnackbarContent

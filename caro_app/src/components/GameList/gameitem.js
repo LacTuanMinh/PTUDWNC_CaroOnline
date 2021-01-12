@@ -69,9 +69,10 @@ function GameItem({ game, socket }) {
             title="Image title"
           />
           <CardContent className={classes.cardContent}>
-            <Typography gutterBottom variant="h5" component="h2">
+            <Typography gutterBottom variant="h5" component="h2" style={{ wordBreak: "break-all" }}>
               {game.Name}
             </Typography>
+            <Typography>Status: {game.Status === 1 ? "Waiting" : "Playing"}</Typography>
           </CardContent>
           <CardActions>
             <Button size="small" color="primary" style={{ fontWeight: "bold" }} onClick={joinGame}>

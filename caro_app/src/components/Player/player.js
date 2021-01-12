@@ -30,7 +30,7 @@ function Player({ player, xOrO }) {
     if (player.ID) {
       retrieveAvatar();
     }
-  }, [player.ID]);
+  }, [player.ID, token]);
   return (
     <div style={{ border: `3px solid ${xOrO === "X" ? "blue" : "red"}` }}>
       <CardMedia image={avatar ? avatar : defaultAvatar}

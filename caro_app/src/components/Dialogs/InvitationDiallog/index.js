@@ -53,7 +53,7 @@ export default function InvitationDialog({ socket }) {
         aria-labelledby="alert-dialog-slide-title"
         aria-describedby="alert-dialog-slide-description"
       >
-        <DialogTitle id="alert-dialog-slide-title"><Typography variant="h4">{`Invitation`}</Typography></DialogTitle>
+        <DialogTitle id="alert-dialog-slide-title">Invitation</DialogTitle>
         <DialogContent >
           <DialogContentText id="alert-dialog-slide-description" style={{ fontSize: '18px' }}>
             <b>{hostName}</b> wants you to join the room

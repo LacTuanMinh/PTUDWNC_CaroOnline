@@ -166,7 +166,7 @@ module.exports = io => {
         await gameModel.updateGame(data.gameID, { Status: 2 });
       }
 
-      io.sockets.emit(`game_started_${data.gameID}`, { counter: gameInfo.counter });
+      io.sockets.emit(`game_started_${data.gameID}`, { counter: gameInfo.counter, player1ID: data.player1ID });
     });
 
     socket.on("move", async data => {
@@ -511,7 +511,7 @@ module.exports = io => {
               Name: dockerNames.getRandomName(),
               Password: null,
               IsBlockedRule: false,
-              TimeThinkingEachTurn: 30,
+              TimeThinkingEachTurn: 60,
               Moves: null,
               Status: 1,  // waiting
               Player1ID: waitingUserForPairing[i].userID,
