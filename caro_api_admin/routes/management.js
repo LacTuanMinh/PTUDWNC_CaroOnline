@@ -66,7 +66,6 @@ router.get('/playedGames/:userID', async (req, res) => {
 router.get('/playedGameDetail/:ID', async (req, res) => {
 	const gameID = req.params.ID;
 	const game = await managementModel.getGameByID(gameID);
-	console.log(gameID, game);
 	const [player1Name, player2Name] = await Promise.all([
 		managementModel.getUserNameByID(game[0].Player1ID),
 		managementModel.getUserNameByID(game[0].Player2ID),

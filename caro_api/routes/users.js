@@ -34,7 +34,6 @@ module.exports = function (io) { // catch here
   router.get('/get/:ID', async (req, res) => {
     const userID = req.params.ID;
     const user = await userModel.getUserByID(userID);
-    console.log(user[0]);
     if (user) {
       res.status(200).send({ player1: user[0] });
     }
@@ -58,7 +57,6 @@ module.exports = function (io) { // catch here
     const results = await userModel.getUserByID(userID);
     if (results.length === 1) {
       const result = results[0];
-      console.log((results));
       delete result.Password;
       delete result.Status;
       delete result.IsAdmin;
@@ -90,12 +88,9 @@ module.exports = function (io) { // catch here
 
     const userID = req.params.userID;
     const { Name, Email, DateOfBirth } = req.body;
-    console.log(Name, Email, DateOfBirth);
     const formattedDOB = convertISOToYMD(DateOfBirth);
 
     const result = await userModel.updateUserInfo(userID, { Name, Email, DateOfBirth: formattedDOB });
-
-    console.log(result);
 
     if (result.affectedRows === 1) {
       res.status(200).send({ mesg: 'ok' });

@@ -31,7 +31,6 @@ router.post('/authenticate', (req, res) => {
 router.get('/get/:ID', async (req, res) => {
   const userID = req.params.ID;
   const user = await userModel.getUserByID(userID);
-  console.log(user[0]);
   if (user) {
     res.status(200).send({ player1: user[0] });
   }
@@ -55,7 +54,6 @@ router.get('/profile/:userID', async (req, res) => {
   const results = await userModel.getUserByID(userID);
   if (results.length === 1) {
     const result = results[0];
-    console.log((results));
     delete result.Password;
     delete result.Status;
     delete result.IsAdmin;
@@ -86,7 +84,6 @@ router.post('/profile/updateinfo/:userID', async (req, res) => {
 
   const userID = req.params.userID;
   const { Name, Email, DateOfBirth } = req.body;
-  console.log(Name, Email, DateOfBirth);
   const formattedDOB = convertISOToYMD(DateOfBirth);
 
   const result = await userModel.updateUserInfo(userID, { Name, Email, DateOfBirth: formattedDOB });
@@ -94,9 +91,7 @@ router.post('/profile/updateinfo/:userID', async (req, res) => {
   console.log(result);
 
   if (result.affectedRows === 1) {
-    console.log("ok");
     res.status(200).send({ mesg: 'ok' });
-
   } else res.status(400).end();
 
 });

@@ -98,7 +98,6 @@ module.exports = function (passport) {
 
       allUser.forEach(user => {
         if (user.Username === username) {
-          console.log("trùng");
           isExisted = true;
         }
       });
@@ -131,9 +130,6 @@ module.exports = function (passport) {
     } else {
       return res.status(500).send({ msg: "Please try again" });
     }
-    // console.log(result);
-    // const token = jwt.sign({ id: newUser.ID }, config.passportKey);
-    // return res.status(200).send({ mesg: "Welcom to join my app", token, id: newUser.ID, name: newUser.Username });
   });
 
   router.post('/active', async (req, res) => {

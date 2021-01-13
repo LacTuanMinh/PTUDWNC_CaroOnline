@@ -100,13 +100,10 @@ export default function OnlineUsers({ onlineUserList }) {
   }, [onlineUserList]);
 
   useEffect(() => {
-    if (searchString !== "")// có nội dung cần tìm
-    {
-      // console.log("v");
+    if (searchString !== "") {// có nội dung cần tìm
       setOnlineUserListCopy(onlineUserListCopy.slice()
         .filter(user => user.Name.toLowerCase().includes(searchString.toLowerCase())))
-    }
-    else {
+    } else {
       setOnlineUserListCopy(onlineUserList);
     }
   }, [searchString, onlineUserList]); // 2nd dependency help make sure new client connects will not make filtered list wrong

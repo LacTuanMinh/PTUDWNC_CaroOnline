@@ -131,7 +131,6 @@ export default function Profile() {
 
       if (res.status === 200) {
         const result = await res.blob();
-        console.log(result);
         setAvatar(URL.createObjectURL(result));
       }
     }

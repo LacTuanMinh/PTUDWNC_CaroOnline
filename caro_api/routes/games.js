@@ -32,7 +32,6 @@ module.exports = io => {
       userModel.getUserNameByID(game[0].Player1ID),
       userModel.getUserNameByID(game[0].Player2ID),
     ]);
-    console.log({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
     res.status(200).send({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
   });
 
@@ -312,7 +311,6 @@ module.exports = io => {
       const gameStatus = await gameModel.getGameStatusByID(data.gameID);
       const mainPlayers = await gameModel.getPlayers(data.gameID);
       const gameInfo = allGamesInfo.get(data.gameID);
-      console.log(gameInfo);
 
       // game chưa bắt đầu
       if (gameStatus[0].Status === 1) {
@@ -448,8 +446,6 @@ module.exports = io => {
     });
 
     socket.on("run_out_of_time", async data => {
-      console.log("run_out");
-      console.log(data);
       const newPlayer = {
         ...data.player,
         Elo: data.player.Elo + (data.win ? data.elo : -data.elo),
@@ -556,13 +552,9 @@ module.exports = io => {
     });
 
     socket.on("leave_game", async data => {
-
-      console.log(data);
       const { gameID, userID, name } = data;
-
       const gameStatus = await gameModel.getGameStatusByID(gameID);
       const gameInfo = allGamesInfo.get(gameID);
-      console.log(gameStatus[0]);
       if (gameStatus[0].Status === 0) {  // thì ko cần làm gì cả
         return;
       }
@@ -623,25 +615,7 @@ module.exports = io => {
         }
         socket.broadcast.emit(`observer_leave_game_${gameID}`, { observers, chatHistory: gameInfo.chatHistory });
       }
-
-
     });
-
-    // chưa cập nhật giao diện bên front-end
-    // socket.on("owner_leave_game", async data => {
-    //   console.log("owner leaves game");
-    //   console.log(data);
-    //   const newGame = {
-    //     ...data.game,
-    //     Player1ID: data.opponentID,
-    //     Player2ID: null
-    //   }
-    //   await gameModel.updateGame(data.game.ID, {
-    //     Player1ID: newGame.Player1ID,
-    //     Player2ID: newGame.Player2ID
-    //   });
-    //   socket.broadcast.emit(`owner_leave_game_${data.game.ID}`, { game: newGame });
-    // });
 
     socket.on("client_NewGame", async data => {
       const { name, password, isBlockedRule, timeThinkingEachTurn, userID } = data;

@@ -10,13 +10,10 @@ const jwtOptions = {
     secretOrKey: config.passportKey
 };
 const JWT_strategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
-
-    // console.log('You access jwtstrategy. userID : ' + jwt_payload.id);
-
     const user = await userModel.getUserByID(jwt_payload.id);
-    if (user[0] !== null)
+    if (user[0] !== null) {
         return next(null, user[0]);
-    else return next(null, false);
+    } else return next(null, false);
 });
 
 // use the JWT strategy

@@ -111,7 +111,6 @@ export default function Profile() {
 
       if (res.status === 200) {
         const result = await res.json();
-        console.log(result.userInfo);
         setInfo(result.userInfo);
         setName(result.userInfo.Name);
         setEmail(result.userInfo.Email);

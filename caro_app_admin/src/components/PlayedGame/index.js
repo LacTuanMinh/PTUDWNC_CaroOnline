@@ -123,7 +123,6 @@ export default function PlayedGame() {
   else {
     if (winInfo.isDraw) {
       status = "Draw!!!";
-      window.alert("Draw!!!");
     }
     else {
       status = "Next player: " + (xIsNext ? "X" : "O");
