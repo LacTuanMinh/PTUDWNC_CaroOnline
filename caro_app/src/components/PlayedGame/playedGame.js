@@ -7,7 +7,6 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Divider from '@material-ui/core/Divider';
 import { authen } from '../../utils/helper';
 import defaultAvatar from '../../images/defaultAvatar.jpg';
 import { calculateWinner } from '../Game/gameServices';
@@ -75,7 +74,7 @@ export default function PlayedGame() {
         const result = await res.json();
         const game = result.game;
         setGame(game);
-        const moves = JSON.parse(game.Moves);
+        let moves = JSON.parse(game.Moves);
         setHistory(moves);
         setChatHistory(JSON.parse(game.ChatHistory));
         setStepNumber(moves.length - 1);
@@ -85,7 +84,6 @@ export default function PlayedGame() {
         setAvatar2(await retrieveAvatar(game.Player2ID));
       }
     }
-
     retrieveGameData();
   }, [setGame, setHistory, setChatHistory, setAvatar1, setAvatar2]);
 
@@ -100,7 +98,7 @@ export default function PlayedGame() {
 
   const current = history.slice(stepNumber, stepNumber + 1)[0];
   const winInfo = calculateWinner(current.squares, current.position, game.IsBlockedRule);
-  const winner = winInfo.winner; // X or O
+  let winner = winInfo.winner; // X or O or null
   const moves = history.map((step, move) => {
     const boardSize = config.boardSize;
     const rowIndex = Math.floor(step.position / boardSize);
@@ -118,16 +116,22 @@ export default function PlayedGame() {
     moves.reverse();
   }
 
-  const opponent = player === "X" ? "O" : "X";
-
   let status;
   if (winner) {
     status = "Winner: " + winner;
   }
   else {
-    if (winInfo.isDraw) {
-      status = "Draw!!!";
-      window.alert("Draw!!!");
+    if (stepNumber === history.length - 1) {
+      if (game.Result === 0) {
+        status = "Draw!!!";
+        //window.alert("Draw!!!");
+      } else if (game.Result === 1) {
+        status = "Winner: X";
+        winner = "X";
+      } else if (game.Result === 2) {
+        status = "Winner: O";
+        winner = "O";
+      }
     }
     else {
       status = "Next player: " + (xIsNext ? "X" : "O");
@@ -139,7 +143,6 @@ export default function PlayedGame() {
   return (
     <>
       <div style={{ position: 'relative' }}>
-
         <div className="game" style={{ marginTop: '25px' }}>
           <div className="player-info">
             <CardHeader title="Player Info"></CardHeader>
@@ -210,22 +213,19 @@ export default function PlayedGame() {
                 <AccordionDetails style={{ display: 'flex', flexDirection: 'column' }}>
                   {game.IsBlockedRule ? <Typography>Blocked Rule</Typography> : <React.Fragment></React.Fragment>}
 
-                  <div>{status}</div>
+                  <div style={{ color: winner === "X" ? 'blue' : winner === "O" ? 'red' : '' }}>{status}</div>
                   <div>
                     <button onClick={() => sortButtonClicked()}>
                       {isAscending ? "Descending" : "Ascending"}
                     </button>
                   </div>
                   <ol style={{ maxHeight: '200px', overflowY: 'scroll' }}>{moves}</ol>
-
                 </AccordionDetails>
               </Accordion>
-
             </div>
           </div>
         </div>
       </div>
     </>
-
   );
 }

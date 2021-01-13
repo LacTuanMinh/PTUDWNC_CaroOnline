@@ -9,7 +9,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import EloRanking from '../Ranking/index';
+import EloRanking from '../Ranking/ranking';
 import { useHistory } from 'react-router-dom';
 import { authen } from '../../utils/helper';
 import config from '../../constants/config.json';

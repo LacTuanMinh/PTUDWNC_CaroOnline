@@ -8,6 +8,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import LockIcon from '@material-ui/icons/Lock';
+import TimerIcon from '@material-ui/icons/Timer';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -68,9 +69,10 @@ function GameItem({ game, socket }) {
             title="Image title"
           />
           <CardContent className={classes.cardContent}>
-            <Typography gutterBottom variant="h5" component="h2">
+            <Typography gutterBottom variant="h5" component="h2" style={{ wordBreak: "break-all" }}>
               {game.Name}
             </Typography>
+            <Typography>Status: {game.Status === 1 ? "Waiting" : "Playing"}</Typography>
           </CardContent>
           <CardActions>
             <Button size="small" color="primary" style={{ fontWeight: "bold" }} onClick={joinGame}>
@@ -81,6 +83,8 @@ function GameItem({ game, socket }) {
               : <React.Fragment></React.Fragment>}
             {game.IsBlockedRule ? <Typography style={{ fontWeight: "bold" }}>Blocked Rule</Typography>
               : <React.Fragment></React.Fragment>}
+            <TimerIcon size="small" color="primary"></TimerIcon>
+            <Typography>{game.TimeThinkingEachTurn}s</Typography>
           </CardActions>
         </Card>
       </Grid>

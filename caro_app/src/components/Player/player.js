@@ -6,7 +6,7 @@ import config from '../../constants/config.json';
 const API_URL = config.API_URL_TEST;
 
 function Player({ player, xOrO }) {
-
+  const userID = localStorage.getItem('userID');
   const token = localStorage.getItem('jwtToken');
   const [avatar, setAvatar] = useState("");
 
@@ -30,11 +30,23 @@ function Player({ player, xOrO }) {
     if (player.ID) {
       retrieveAvatar();
     }
-  }, [player.ID]);
+  }, [player.ID, token]);
+
+  const handleToUserDetail = (id) => {
+    if (userID === id) {
+      const userDetail = window.open(`/profile`, "_blank");
+      userDetail.focus();
+      return;
+    }
+    const userDetail = window.open(`/userDetail/${id}`, "_blank");
+    userDetail.focus();
+  }
+
   return (
     <div style={{ border: `3px solid ${xOrO === "X" ? "blue" : "red"}` }}>
-      <CardMedia image={avatar ? avatar : defaultAvatar}
+      <CardMedia image={player.Avatar ? avatar : defaultAvatar}
         style={{ height: '120px', width: '200px' }}
+        onClick={() => handleToUserDetail(player.ID)}
       />
       <Typography>Name: {player.Name}</Typography>
       <Typography>Elo: {player.Elo}</Typography>

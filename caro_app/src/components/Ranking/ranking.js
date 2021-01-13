@@ -34,11 +34,17 @@ const useStyles = makeStyles({
 	},
 	center: {
 		textAlign: 'center',
+		fontWeight: 'bolder',
+		fontSize: '18px'
+	},
+	pointer: {
+		cursor: 'pointer'
 	}
 });
 
 export default function CustomizedTables() {
 	const classes = useStyles();
+	const userID = localStorage.getItem('userID');
 	const [list, setList] = useState([]);
 
 	useEffect(() => {
@@ -50,15 +56,20 @@ export default function CustomizedTables() {
 					'Content-Type': 'application/json',
 				},
 			});
-
 			const result = await res.json();
 			if (res.status === 200) {
 				setList(result.list);
 			}
-
 		}
 		retrieveEloRanking();
 	}, []);
+
+	const handleToUserDetail = (id) => {
+		if (userID === id)
+			return;
+		const userDetail = window.open(`/userDetail/${id}`, "_blank");
+		userDetail.focus();
+	}
 
 	return (
 		<>
@@ -79,14 +90,20 @@ export default function CustomizedTables() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{list.map((row, index) => (
-							<StyledTableRow key={index}>
-								<StyledTableCell className={classes.center} component="th" scope="row"> 	{index + 1} 	</StyledTableCell>
-								<StyledTableCell className={classes.center} component="th" scope="row"> {row.Name} </StyledTableCell>
-								<StyledTableCell className={classes.center} >{row.Elo}</StyledTableCell>
-								<StyledTableCell className={classes.center} >{row.WinRate}%</StyledTableCell>
-							</StyledTableRow>
-						))}
+						{
+							list.length === 0 ?
+								<StyledTableRow  >
+									<StyledTableCell className={`${classes.center} ${classes.pointer}`} component="th" scope="row" colSpan="4"> No Player Data	</StyledTableCell>
+								</StyledTableRow> :
+								(list.map((row, index) => (
+									<StyledTableRow key={index} onClick={() => handleToUserDetail(row.ID)}>
+										<StyledTableCell className={`${classes.center} ${classes.pointer}`} component="th" scope="row"> 	{index + 1} 	</StyledTableCell>
+										<StyledTableCell className={`${classes.center} ${classes.pointer}`} component="th" scope="row"> {row.Name} {userID === row.ID ? " (You)" : ""} </StyledTableCell>
+										<StyledTableCell className={`${classes.center} ${classes.pointer}`} >{row.Elo}</StyledTableCell>
+										<StyledTableCell className={`${classes.center} ${classes.pointer}`} >{row.WinRate}%</StyledTableCell>
+									</StyledTableRow>
+								)))
+						}
 					</TableBody>
 				</Table>
 			</TableContainer >
