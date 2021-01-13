@@ -295,6 +295,7 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
                 </Typography>
               </div>)}
             buttonText="Login"
+            autoLoad={false}
             onSuccess={responseGoogle}
             onFailure={responseGoogle}
             cookiePolicy={'single_host_origin'}
