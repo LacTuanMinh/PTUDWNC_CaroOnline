@@ -41,22 +41,6 @@ module.exports = function (io) { // catch here
     //else res.status(404).send()
   });
 
-  router.post('/update', async (req, res) => {
-    const { player1, win, elo, player2ID } = req.body;
-
-    const entity = {
-      ...player1,
-      Elo: player1.Elo + (win ? elo : -elo),
-      WinCount: player1.WinCount + (win ? 1 : 0),
-      PlayCount: player1.PlayCount + 1
-    }
-    console.log('entity', entity);
-
-    await userModel.updateUserScore(player1.ID, { Elo: entity.Elo, WinCount: entity.WinCount, PlayCount: entity.PlayCount });
-    const player2 = await userModel.getUserByID(player2ID);
-    return res.status(200).send({ msg: "Players updated", player1: entity, player2: player2[0] });
-  });
-
   router.post('/signout', async (req, res) => {
 
     const { userID } = req.body;
@@ -207,7 +191,7 @@ module.exports = function (io) { // catch here
     });
 
     socket.on("client_LoggedOut", async (data) => {
-      // console.log("client logged out", data.userID);
+
       const rmvResult = trackUserOnline.removeClientFromMap(userSocketIdMap, data.userID, socket.id);
 
       if (rmvResult === 1) {

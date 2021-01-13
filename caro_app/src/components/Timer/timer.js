@@ -16,7 +16,7 @@ function Timer({ counter, setCounter }) {
     } else {
       setCounter(0);
     }
-  });
+  }, [counter]);
 
   return (
     <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '10px' }}>

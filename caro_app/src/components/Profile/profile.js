@@ -274,7 +274,7 @@ export default function Profile() {
                   </table>
                 </CardContent>
                 <CardActions>
-                  <PlayedGamesDialog />
+                  <PlayedGamesDialog userID={userID} />
                 </CardActions>
               </Card>
             </div>

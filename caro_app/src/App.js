@@ -12,10 +12,11 @@ import Profile from './components/Profile/profile';
 import SignUp from './components/SignUp/signup';
 import Navbar from './components/Navbar/navbar';
 import Footer from './components/Footer/footer';
-import ActiveDestination from './components/ActiveDestination/index';
+import ActiveDestination from './components/ActiveDestination/activeDestination';
 import PlayedGame from './components/PlayedGame/playedGame';
 import InvitationDialog from './components/Dialogs/InvitationDiallog/index';
-import ResetDestination from './components/ResetDetination/index';
+import ResetDestination from './components/ResetDetination/resetDestination';
+import UserDetail from './components/UserDetail/userDetail';
 import './App.css';
 import socketIOClient from "socket.io-client";
 import config from './constants/config.json';
@@ -33,11 +34,6 @@ function App() {
       setOnlineUserList(list);
     });
   }, [setOnlineUserList]);
-
-  // useEffect(()=>{
-
-  // })
-
 
   return (
     <Router>
@@ -72,6 +68,9 @@ function App() {
           </Route>
           <Route path='/playedGame/:id'>
             <PlayedGame />
+          </Route>
+          <Route path='/userDetail/:id'>
+            <UserDetail />
           </Route>
         </Switch>
       </div>

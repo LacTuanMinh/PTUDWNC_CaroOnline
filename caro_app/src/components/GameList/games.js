@@ -101,7 +101,12 @@ function Games({ socket }) {
       if (data.game.Player1ID === userID) {
         history.push(`/games/${data.game.ID}`);
       }
-    })
+    });
+
+    socket.on(`remove_game`, data => {
+      setGames(games => games.filter(game => game.ID !== data.gameID));
+    });
+
   }, []);
 
   const addGameButtonClicked = () => {

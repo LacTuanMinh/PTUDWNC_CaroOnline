@@ -75,12 +75,6 @@ export default function PlayedGame() {
         const game = result.game;
         setGame(game);
         let moves = JSON.parse(game.Moves);
-        if (moves.length === 0) {
-          moves = [{
-            squares: Array(0).fill(null),
-            position: -1
-          }];
-        }
         setHistory(moves);
         setChatHistory(JSON.parse(game.ChatHistory));
         setStepNumber(moves.length - 1);
@@ -219,7 +213,7 @@ export default function PlayedGame() {
                 <AccordionDetails style={{ display: 'flex', flexDirection: 'column' }}>
                   {game.IsBlockedRule ? <Typography>Blocked Rule</Typography> : <React.Fragment></React.Fragment>}
 
-                  <div style={{ color: winner === "X" ? 'blue' :  winner === "O" ? 'red' : '' }}>{status}</div>
+                  <div style={{ color: winner === "X" ? 'blue' : winner === "O" ? 'red' : '' }}>{status}</div>
                   <div>
                     <button onClick={() => sortButtonClicked()}>
                       {isAscending ? "Descending" : "Ascending"}

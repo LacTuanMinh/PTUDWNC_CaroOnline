@@ -66,7 +66,7 @@ module.exports = function (passport) {
       ID: id,
       Name: name,
       Username: id,
-      Password: 'facebook',
+      Password: 'socialLogin',
       Email: email,
       Status: 0, // -1 : inactive , 0: offline, 1: online, 2: banned
       IsAdmin: 0,
@@ -86,30 +86,6 @@ module.exports = function (passport) {
   });
 
   // router.get('/auth/facebook', passport.authenticate('facebook')); //, { scope: ['public_profile', 'email'] }
-
-  // router.get('/auth/facebook/callback',
-  //   passport.authenticate('facebook', {
-  //     successRedirect: '/facebooksignin',
-  //     failureRedirect: '/signinfail'
-  //   }));
-
-  // router.get('/facebooksignin', (req, res) => {
-  //   const token = jwt.sign({ id: req.user.ID }, config.passportKey);
-  //   console.log(req.headers);
-  //   return res.status(200).send({ msg: "Welcom to join our app", token, id: req.user.ID, name: req.user.Name });
-  // });
-
-  // router.get('/signinfail', (req, res) => {
-
-  // });
-
-  // function isLoggedIn(req, res, next) {
-  //   if (req.isAuthenticated()) {
-  //     console.log("you are facebook-authenticated");
-  //     return next();
-  //   }
-  //   res.status(401).send({ msg: "You have not signed in Facebook. Please do sign in Facebook to continue" })
-  // }
 
   router.post('/signup', async (req, res) => {
 

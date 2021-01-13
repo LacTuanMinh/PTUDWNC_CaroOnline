@@ -26,4 +26,6 @@ module.exports = {
     addGame: entity => db.add('Games', entity),
 
     updateGame: (id, entity) => db.patch('Games', entity, { ID: id }),
+
+    deleteGame: id => db.delete(`DELETE FROM Games WHERE ID = ?`, [id]),
 }

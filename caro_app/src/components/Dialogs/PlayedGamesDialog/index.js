@@ -41,9 +41,9 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-export default function PlayedGamesDialog() {
+export default function PlayedGamesDialog({ userID }) {
 	const classes = useStyles();
-	const userID = localStorage.getItem('userID');
+	// const userID = localStorage.getItem('userID');
 	const token = window.localStorage.getItem('jwtToken');
 	const [open, setOpen] = useState(false);
 	const [dense, setDense] = useState(false);
@@ -81,11 +81,11 @@ export default function PlayedGamesDialog() {
 	return (
 		<>
 			<Button fullWidth variant="contained" color="secondary" onClick={handleClickOpen}>
-				Review your played games
+				Review played games
       </Button>
 			<Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title" fullWidth>
 				<form >
-					<DialogTitle id="form-dialog-title">Review your played games</DialogTitle>
+					<DialogTitle id="form-dialog-title">Review played games</DialogTitle>
 					<DialogContent>
 
 						<div className={classes.demo}>
@@ -124,9 +124,7 @@ export default function PlayedGamesDialog() {
 										))}
 									</List>
 							}
-
 						</div>
-
 					</DialogContent>
 					{/* <DialogActions>
 						<Button color="secondary">
