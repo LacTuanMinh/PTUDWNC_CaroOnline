@@ -229,7 +229,6 @@ module.exports = function (passport) {
   router.get('/ranking', async (req, res) => {
 
     const result = await userModel.getRanking(10);
-    console.log(result);
     res.status(200).send({ list: result });
   })
 

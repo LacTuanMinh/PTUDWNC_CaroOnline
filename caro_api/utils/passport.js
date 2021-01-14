@@ -17,6 +17,14 @@ const JWT_strategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
 	else return next(null, false);
 });
 
+// use these strategy
+module.exports = passport => {
+	passport.use(JWT_strategy);
+	// passport.use(FB_strategy);
+}
+
+
+
 // create facebook strategy
 // const FacebookStrategy = require('passport-facebook').Strategy;
 // const fbOptions = {
@@ -49,8 +57,3 @@ const JWT_strategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
 // 	}
 // })
 
-// use these strategy
-module.exports = passport => {
-	passport.use(JWT_strategy);
-	// passport.use(FB_strategy);
-}
