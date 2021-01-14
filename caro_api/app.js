@@ -20,7 +20,7 @@ const gamesRouter = require('./routes/games');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({ origin: '*' }));
 app.use(session({
   resave: false,
   saveUninitialized: true,
