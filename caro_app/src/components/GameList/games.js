@@ -81,7 +81,6 @@ function Games({ socket }) {
         }
       });
       const result = await res.json();
-      // console.log(result);
       setGames(result.games);
     }
     getAllGames();
@@ -125,7 +124,6 @@ function Games({ socket }) {
       timeThinkingEachTurn,
       userID
     }
-    // console.log(data);
     if (isBlankString(data.name)) {
       alert('Game name can not be empty');
       return;

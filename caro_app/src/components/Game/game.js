@@ -75,7 +75,6 @@ function Game({ socket, onlineUserList }) {
       }
     });
     const result = await res.json();
-    console.log(result);
 
     setPlayer1(result.player1);
   }
@@ -89,7 +88,6 @@ function Game({ socket, onlineUserList }) {
       }
     });
     const result = await res.json();
-    console.log(result);
     setGame(result.game);
   }
 
@@ -417,8 +415,7 @@ function Game({ socket, onlineUserList }) {
       playerID: userID,
       opponentID: player2.ID,
       gameID,
-      isBlockedRule: game.isBlockedRule,
-      // game,
+      isBlockedRule: game.IsBlockedRule,
       isYourTurn
     });
   }
@@ -466,7 +463,6 @@ function Game({ socket, onlineUserList }) {
   else {
     if (winInfo.isDraw) {
       status = "Draw!!!";
-      window.alert("Draw!!!");
     }
     else {
       status = "Next player: " + (xIsNext ? "X" : "O");

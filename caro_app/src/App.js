@@ -30,7 +30,6 @@ function App() {
 
   useEffect(() => {
     socket.on("server_RefreshList", list => {
-      console.log(list);
       setOnlineUserList(list);
     });
   }, [setOnlineUserList]);

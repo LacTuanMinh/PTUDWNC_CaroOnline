@@ -110,7 +110,6 @@ function SignUp({ socket, isLoggedIn, setIsLoggedIn }) {
       }
     });
     const result = await res.json();
-    // console.log(result);
     if (res.status === 200 || res.status === 500 || res.status === 400) {
       setContent(result.msg);
       setShowSnackBar(true);
