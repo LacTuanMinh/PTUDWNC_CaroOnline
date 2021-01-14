@@ -195,34 +195,35 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
   }
 
   const responseGoogle = async (response) => {
+
     console.log(response);
-
-    const data = {
-      name: response.profileObj.name,
-      email: response.profileObj.email,
-      id: response.googleId
-    };
-    const res = await fetch(`${API_URL}/auth/socialmedia`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json',
+    if (response?.profileObj) {
+      const data = {
+        name: response.profileObj.name,
+        email: response.profileObj.email,
+        id: response.googleId
+      };
+      const res = await fetch(`${API_URL}/auth/socialmedia`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      const result = await res.json();
+      if (res.status === 200) {
+        window.localStorage.setItem('jwtToken', result.token);
+        window.localStorage.setItem('userID', result.id);
+        window.localStorage.setItem('name', result.name);
+        socket.emit('client_LoggedIn', { userID: result.id });
+        alert("Welcome to our app");
+        setIsLoggedIn(true);
+        history.push("/");
+      } else {
+        // alert(result.mesg);
+        setContents([{ id: -1, msg: result.msg }]);
+        setShowSnackBar(true);
       }
-    });
-
-    const result = await res.json();
-    if (res.status === 200) {
-      window.localStorage.setItem('jwtToken', result.token);
-      window.localStorage.setItem('userID', result.id);
-      window.localStorage.setItem('name', result.name);
-      socket.emit('client_LoggedIn', { userID: result.id });
-      alert("Welcome to our app");
-      setIsLoggedIn(true);
-      history.push("/");
-    } else {
-      // alert(result.mesg);
-      setContents([{ id: -1, msg: result.msg }]);
-      setShowSnackBar(true);
     }
   }
 
@@ -288,18 +289,26 @@ function SignIn({ socket, isLoggedIn, setIsLoggedIn }) {
           <GoogleLogin
             clientId="226602372235-lp2s47icle0bm0c58rnsp58f9a4tuid3.apps.googleusercontent.com" // clientID này của account: lactuanminh2121
             render={renderProps => (
-              <div className={`${classes.socialLoginButton} ${classes.google} ${classes.shadow}`} onClick={renderProps.onClick}>
+              <div className={`${classes.socialLoginButton} ${classes.google} ${classes.shadow}`}
+                onClick={renderProps.onClick}>
                 <Typography style={{ display: 'table-cell', verticalAlign: 'middle', fontWeight: 'bold' }}>
                   <img src={GoogleIcon} alt="Google icon" style={{ width: '25px', height: '25px', margin: '10px', verticalAlign: 'middle' }} />
                     Sign in with Google
                 </Typography>
               </div>)}
             buttonText="Login"
-            autoLoad={false}
             onSuccess={responseGoogle}
             onFailure={responseGoogle}
             cookiePolicy={'single_host_origin'}
-          />
+            icon={false}
+          >
+            {/* <div className={`${classes.socialLoginButton} ${classes.google} ${classes.shadow}`}>
+              <Typography style={{ display: 'table-cell', verticalAlign: 'middle', fontWeight: 'bold' }}>
+                <img src={GoogleIcon} alt="Google icon" style={{ width: '25px', height: '25px', verticalAlign: 'middle' }} />
+                     Sign in with Google
+                 </Typography>
+            </div> */}
+          </GoogleLogin>
         </Grid>
       </Grid>
 

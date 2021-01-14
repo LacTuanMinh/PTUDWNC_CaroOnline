@@ -32,7 +32,7 @@ module.exports = io => {
       userModel.getUserNameByID(game[0].Player1ID),
       userModel.getUserNameByID(game[0].Player2ID),
     ]);
-    console.log({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
+    // console.log({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
     res.status(200).send({ game: game[0], player1Name: player1Name[0].Name, player2Name: player2Name[0].Name });
   });
 
