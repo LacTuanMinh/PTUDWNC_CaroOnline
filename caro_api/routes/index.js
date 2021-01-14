@@ -125,7 +125,7 @@ module.exports = function (passport) {
     const result = await userModel.addUser(newUser);
 
     if (result.affectedRows === 1) {
-      const content = `WELCOME!<br>Now you need to click the link below to active your account.<br><a href="${config.APP_URL_DEPLOY}/active/${newUser.ID}">${config.APP_URL_DEPLOY}/active/${newUser.ID}</a>`
+      const content = `WELCOME!<br>Now you need to click the link below to active your account.<br><a href="${config.APP_URL_TEST}/active/${newUser.ID}">${config.APP_URL_TEST}/active/${newUser.ID}</a>`
       emailServer.send(newUser.Email, content, "Active your account on our app!");
       return res.status(200).send({ msg: "Please check your email to active your account." });
     } else {
@@ -188,7 +188,7 @@ module.exports = function (passport) {
     const addResult = await accountModel.addRequest(newResetRequest);
 
     if (addResult.affectedRows === 1) {
-      const content = `Reset Password!<br>Now you need to click the link below to recover your account.<br><a href="${config.APP_URL_DEPLOY}/reset/${newResetRequest.ID}">${config.APP_URL_DEPLOY}/reset/${newResetRequest.ID}</a>`
+      const content = `Reset Password!<br>Now you need to click the link below to recover your account.<br><a href="${config.APP_URL_TEST}/reset/${newResetRequest.ID}">${config.APP_URL_TEST}/reset/${newResetRequest.ID}</a>`
       emailServer.send(newResetRequest.Email, content, "Reset your password on our app!");
       return res.status(200).send({ msg: "Please check your email to continue." });
     } else {
